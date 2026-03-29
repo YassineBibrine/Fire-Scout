@@ -1,21 +1,16 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>bringup</name>
+  <name>mapping</name>
   <version>0.0.0</version>
-  <description>Launch and configuration files for Fire-Scout</description>
+  <description>Per-robot SLAM and global map merge package skeleton.</description>
   <maintainer email="your.email@domain.com">Fire-Scout Team</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_python</buildtool_depend>
   <depend>firescout_interfaces</depend>
-  <depend>simulation</depend>
-  <depend>mapping</depend>
-  <depend>exploration</depend>
-  <depend>response</depend>
-  <depend>coordination</depend>
-  <depend>slam_toolbox</depend>
-  <depend>nav2_core</depend>
   <depend>rclpy</depend>
+  <depend>slam_toolbox</depend>
+  <depend>nav_msgs</depend>
   <exec_depend>ros2launch</exec_depend>
 </package>

@@ -1,0 +1,5 @@
+builtin_interfaces/Time stamp
+string[] contributing_robot_ids
+float32 merged_coverage_ratio
+float32 mean_alignment_error_m
+bool healthy

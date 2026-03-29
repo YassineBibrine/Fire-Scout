@@ -1,0 +1,6 @@
+string auction_id
+string robot_id
+string candidate_frontier_id
+float32 utility_score
+float32 eta_sec
+float32 energy_cost

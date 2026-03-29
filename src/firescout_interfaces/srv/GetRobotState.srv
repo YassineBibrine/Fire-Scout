@@ -1,0 +1,5 @@
+string robot_id
+---
+firescout_interfaces/RobotHealth health
+string current_task_id
+geometry_msgs/PoseStamped current_pose

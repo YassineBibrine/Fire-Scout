@@ -1,0 +1,6 @@
+string robot_id
+string task_id
+bool accepted
+float32 eta_sec
+---
+bool recorded

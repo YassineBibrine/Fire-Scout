@@ -1,0 +1,4 @@
+firescout_interfaces/TaskAssignment assignment
+---
+bool accepted
+string reason

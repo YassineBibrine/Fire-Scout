@@ -1,0 +1,10 @@
+builtin_interfaces/Time stamp
+string robot_id
+uint32 heartbeat_seq
+float32 battery_pct
+float32 cpu_load_pct
+bool comms_ok
+bool localization_ok
+bool mobility_ok
+uint8 mode
+string[] active_fault_codes

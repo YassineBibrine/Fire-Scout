@@ -1,0 +1,5 @@
+string robot_id
+bool save_map
+---
+bool accepted
+string message

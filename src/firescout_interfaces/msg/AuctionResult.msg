@@ -1,0 +1,5 @@
+string auction_id
+string winner_robot_id
+string task_id
+geometry_msgs/PoseStamped target_pose
+uint8 task_type

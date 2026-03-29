@@ -1,0 +1,5 @@
+string incident_id
+string resolver_robot_id
+string note
+---
+bool resolved

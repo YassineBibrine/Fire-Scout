@@ -1,0 +1,9 @@
+builtin_interfaces/Time stamp
+string incident_id
+uint8 incident_type
+geometry_msgs/PoseStamped pose
+float32 confidence
+uint8 priority
+string[] source_robot_ids
+string assigned_robot_id
+bool resolved

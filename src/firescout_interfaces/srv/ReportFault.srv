@@ -1,0 +1,4 @@
+firescout_interfaces/FaultEvent fault
+---
+bool accepted
+string ticket_id

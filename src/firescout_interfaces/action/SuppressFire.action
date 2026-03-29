@@ -1,0 +1,10 @@
+string robot_id
+string incident_id
+geometry_msgs/PoseStamped target_pose
+uint8 suppression_mode
+---
+bool completed
+string result_message
+---
+float32 progress_pct
+string current_step
