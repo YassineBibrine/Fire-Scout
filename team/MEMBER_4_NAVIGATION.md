@@ -56,6 +56,7 @@ Implement autonomous navigation using Nav2 stack, including path planning, obsta
 - [ ] Test multi-robot navigation without collisions
 - [ ] Verify goal cancellation and recovery
 - [ ] Integrate with mission planning system
+- [ ] Profile navigation performance (latency, replanning frequency, controller stability)
 
 ## Package Structure
 ```
@@ -89,3 +90,4 @@ colcon build --packages-select navigation_node
 ✓ Recovery behaviors work when stuck
 ✓ Multiple robots don't collide
 ✓ Performance: 1Hz navigation updates minimum
+✓ Navigation profiling report shared with Member 6 for release validation

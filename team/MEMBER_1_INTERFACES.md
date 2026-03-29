@@ -29,6 +29,12 @@ Define and maintain all custom ROS 2 message types and services used across Fire
 - [ ] Test message generation with `colcon build`
 - [ ] Verify messages are accessible from other packages
 
+### Phase 4: Integration Governance
+- [ ] Publish an interface contract table (topics, services, publishers, subscribers)
+- [ ] Define message/service versioning and deprecation policy
+- [ ] Add interface CI checks (message generation and import smoke test)
+- [ ] Run compatibility review with Members 3, 4, and 5 before integration freeze
+
 ## Key Notes
 - This package **must build first** — all other packages depend on it
 - Ensure `<depend>firescout_interfaces</depend>` is declared in dependent packages' `package.xml`
@@ -44,3 +50,4 @@ colcon build --packages-select firescout_interfaces
 ✓ All interfaces compile without errors
 ✓ Message types are accessible to other packages
 ✓ Documentation is complete and clear
+✓ Interface contract and versioning policy are adopted by all teams

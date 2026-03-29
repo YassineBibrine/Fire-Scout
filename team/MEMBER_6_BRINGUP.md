@@ -52,6 +52,7 @@ Coordinate all system components through launch files and configuration, ensurin
 
 ### Phase 5: RViz Configuration
 - [ ] Create RViz config file: `config/firescout_viz.rviz`
+  - Start from Member 2 baseline RViz simulation profile
   - Display map from SLAM
   - Show planned path from Nav2
   - Visualize sensor data (scans, IMU, camera)
@@ -63,13 +64,15 @@ Coordinate all system components through launch files and configuration, ensurin
 - [ ] Environment-specific configs (simulation vs real)
 - [ ] Robot-specific configs for multi-robot setup
 - [ ] Documentation for all configurable parameters
+- [ ] Integrate system-level diagnostics and health monitoring (inputs from Member 5)
+- [ ] Own sensor calibration documentation aggregation and publication
 
 ### Phase 7: Testing & Validation
-- [ ] Full system integration test (all components together)
-- [ ] Multi-robot coordination tests
-- [ ] Failure mode handling
-- [ ] Performance profiling
-- [ ] Documentation and README
+- [ ] Coordinate full system integration test (shared execution with Members 2, 3, and 4)
+- [ ] Coordinate sensor-to-SLAM/Nav2 integration tests with Member 5, Member 3, and Member 4
+- [ ] Coordinate multi-robot coordination tests and publish final test matrix
+- [ ] Run failure-mode drills with component owners and verify recovery paths
+- [ ] Finalize release documentation and bringup README
 
 ## Package Structure
 ```

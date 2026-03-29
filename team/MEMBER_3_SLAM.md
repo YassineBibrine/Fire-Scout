@@ -49,6 +49,7 @@ Implement and configure SLAM (Simultaneous Localization and Mapping) using `slam
 - [ ] Test with simulation (Member 2)
 - [ ] Generate merged maps from multi-robot scenarios
 - [ ] Verify map persistence and recovery
+- [ ] Benchmark map quality metrics (coverage, loop-closure rate, merge consistency)
 
 ## Package Structure
 ```

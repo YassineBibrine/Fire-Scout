@@ -48,6 +48,12 @@ simulation/
 - [ ] Verify robot spawning and sensor output
 - [ ] Check TF (transform) tree
 
+### Phase 5: Camera & Visualization Baseline
+- [ ] Implement TurtleBot3 simulation camera pipeline and topic naming
+- [ ] Validate image bridging/transport for simulation camera topics
+- [ ] Create baseline RViz simulation profile (map, TF, scan, camera)
+- [ ] Hand off RViz baseline and camera topic contract to Member 6 for final bringup integration
+
 ## Key Notes
 - Uses `ament_cmake` because Gazebo assets need to be installed to `share/`
 - Runtime stack: `ros_gz_sim` + `ros_gz_bridge` + `turtlebot3_description`
@@ -69,3 +75,4 @@ colcon build --packages-select simulation
 ✓ Robots spawn correctly in simulation
 ✓ Sensors publish data to ROS topics
 ✓ Can visualize in RViz2
+✓ Camera simulation topics are stable and documented
