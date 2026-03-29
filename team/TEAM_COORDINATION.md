@@ -5,7 +5,7 @@
 | # | Member | Role | Primary Package |
 |---|--------|------|-----------------|
 | 1 | **Interfaces** | Message/Service definitions | `firescout_interfaces` |
-| 2 | **Simulation** | Gazebo environment & models | `simulation` |
+| 2 | **Simulation** | Gazebo Ionic + TurtleBot3 environment | `simulation` |
 | 3 | **SLAM** | Mapping & localization | `slam_node` (new) |
 | 4 | **Navigation** | Path planning & autonomy | `navigation_node` (new) |
 | 5 | **Sensors** | Drivers & data processing | `sensor_drivers` (new) |
@@ -29,7 +29,7 @@ firescout_interfaces (Member 1)
 
 ### Phase 1: Foundation (Week 1)
 - [ ] **Member 1** - Define all message types & services
-- [ ] **Member 2** - Create Gazebo world and basic robot model
+- [ ] **Member 2** - Create Gazebo Ionic world and TurtleBot3 baseline setup
 - [ ] **Member 6** - Create basic launch structure
 
 **Sync Point:** All interfaces approved, simulation runs

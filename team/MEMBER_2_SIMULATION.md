@@ -1,7 +1,7 @@
-# Member 2: Simulation & Gazebo Environment
+# Member 2: Simulation (Gazebo Ionic) & TurtleBot3
 
 ## Responsibility
-Build and maintain the Gazebo simulation environment including worlds, robot models, and simulation-specific launch files.
+Build and maintain the Gazebo Ionic simulation environment including worlds, TurtleBot3 integration, and simulation-specific launch files.
 
 ## Primary Files
 - `src/simulation/worlds/*.world`
@@ -19,8 +19,8 @@ simulation/
 │   ├── firescout_robot/
 │   └── obstacles/
 └── launch/
-    ├── gazebo.launch.py
-    └── spawn_robots.launch.py
+  ├── gazebo_ionic.launch.py
+  └── spawn_turtlebot3.launch.py
 ```
 
 ## Tasks
@@ -33,26 +33,24 @@ simulation/
 - [ ] Configure physics engine (gravity, friction, etc.)
 
 ### Phase 2: Robot Model
-- [ ] Create multi-robot URDF with:
-  - Base frame and geometry
-  - LiDAR sensor
-  - IMU sensor
-  - Camera (optional)
-- [ ] Add collision meshes
-- [ ] Define sensor plugins for Gazebo
+- [ ] Integrate TurtleBot3 model set (burger/waffle/waffle_pi)
+- [ ] Define multi-robot spawn strategy with namespaces
+- [ ] Confirm LiDAR and IMU topics match SLAM and Nav2 expectations
+- [ ] Add any Fire-Scout-specific sensor/plugin extensions on top of TurtleBot3 base
 
 ### Phase 3: Launch Files
-- [ ] Create `gazebo.launch.py` to start Gazebo with the world
-- [ ] Create `spawn_robots.launch.py` to spawn one or more robots
+- [ ] Create `gazebo_ionic.launch.py` to start Gazebo Ionic (`gz sim`) with the world
+- [ ] Create `spawn_turtlebot3.launch.py` to spawn one or more TurtleBot3 robots
 - [ ] Add configurable parameters (number of robots, initial poses, etc.)
 
 ### Phase 4: Testing
-- [ ] Test simulation launch: `ros2 launch simulation gazebo.launch.py`
+- [ ] Test simulation launch: `ros2 launch simulation gazebo_ionic.launch.py`
 - [ ] Verify robot spawning and sensor output
 - [ ] Check TF (transform) tree
 
 ## Key Notes
 - Uses `ament_cmake` because Gazebo assets need to be installed to `share/`
+- Runtime stack: `ros_gz_sim` + `ros_gz_bridge` + `turtlebot3_description`
 - `CMakeLists.txt` includes install directive for worlds, models, launch:
   ```cmake
   install(DIRECTORY worlds models launch

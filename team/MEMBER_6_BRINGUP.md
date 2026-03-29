@@ -18,7 +18,7 @@ Coordinate all system components through launch files and configuration, ensurin
   ```
   full_system.launch.py (main entry point)
   ├── simulation.launch.py
-  │   ├── gazebo.launch.py (from Member 2)
+  │   ├── gazebo_ionic.launch.py (from Member 2)
   │   ├── all_sensors.launch.py (from Member 5)
   │   └── slam.launch.py (from Member 3)
   ├── real_robots.launch.py
@@ -78,7 +78,7 @@ bringup/
 │   ├── full_system.launch.py (main entry)
 │   ├── simulation.launch.py
 │   ├── real_robots.launch.py
-│   ├── gazebo.launch.py (includes from Member 2)
+│   ├── gazebo_ionic.launch.py (includes from Member 2)
 │   ├── slam.launch.py (includes from Member 3)
 │   ├── nav2.launch.py (includes from Member 4)
 │   └── sensors.launch.py (includes from Member 5)

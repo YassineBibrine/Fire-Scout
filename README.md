@@ -1,6 +1,6 @@
 # Fire-Scout ROS 2 Kilted Workspace
 
-A multi-robot autonomous surveillance and mapping system built on ROS 2 Kilted.
+A multi-robot autonomous surveillance and mapping system built on ROS 2 Kilted, Gazebo Ionic, and TurtleBot3.
 
 ## Workspace Structure
 
@@ -40,6 +40,17 @@ Before building, install the required ROS 2 Kilted packages:
 sudo apt install ros-kilted-slam-toolbox
 sudo apt install ros-kilted-nav2-core
 sudo apt install ros-kilted-rviz2
+sudo apt install ros-kilted-ros-gz
+sudo apt install ros-kilted-ros-gz-sim
+sudo apt install ros-kilted-turtlebot3
+sudo apt install ros-kilted-turtlebot3-description
+```
+
+Set TurtleBot3 model (example: Burger):
+
+```bash
+echo 'export TURTLEBOT3_MODEL=burger' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 **For multirobot map merging:** Try apt first, then build from source only if not available in your enabled repositories:
@@ -65,10 +76,16 @@ Launch the full system:
 ros2 launch bringup full_system.launch.py
 ```
 
+Launch only Gazebo Ionic simulation:
+
+```bash
+ros2 launch simulation gazebo_ionic.launch.py
+```
+
 ## Notes
 
 - **firescout_interfaces**: Provides custom messages for sensor data and trajectory references
-- **simulation**: Uses `ament_cmake` with proper asset installation (worlds, models) to `share/`
+- **simulation**: Targets Gazebo Ionic (`ros_gz_sim`) and TurtleBot3 models
 - **bringup**: Python package with properly configured `setup.py` for launch file discovery
 
 All custom interfaces are defined in `firescout_interfaces` and referenced by other packages via `<depend>firescout_interfaces</depend>`.
