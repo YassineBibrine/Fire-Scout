@@ -11,7 +11,7 @@ Implement autonomous navigation using Nav2 stack, including path planning, obsta
   - `src/navigation_node/package.xml`
 
 ## Dependencies
-- `nav2_core` (installed via: `sudo apt install ros-jazzy-nav2-core`)
+- `nav2_core` (installed via: `sudo apt install ros-kilted-nav2-core`)
 - `nav2_bringup`
 - `nav2_behaviors`
 

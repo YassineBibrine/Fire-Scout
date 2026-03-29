@@ -1,6 +1,6 @@
-# Fire-Scout ROS 2 Jazzy Workspace
+# Fire-Scout ROS 2 Kilted Workspace
 
-A multi-robot autonomous surveillance and mapping system built on ROS 2 Jazzy.
+A multi-robot autonomous surveillance and mapping system built on ROS 2 Kilted.
 
 ## Workspace Structure
 
@@ -34,15 +34,21 @@ colcon build
 
 ## Installation Requirements
 
-Before building, install the required ROS 2 Jazzy packages:
+Before building, install the required ROS 2 Kilted packages:
 
 ```bash
-sudo apt install ros-jazzy-slam-toolbox
-sudo apt install ros-jazzy-nav2-core
-sudo apt install ros-jazzy-rviz2
+sudo apt install ros-kilted-slam-toolbox
+sudo apt install ros-kilted-nav2-core
+sudo apt install ros-kilted-rviz2
 ```
 
-**For multirobot map merging:** Clone and build from source (not available via apt in Jazzy):
+**For multirobot map merging:** Try apt first, then build from source only if not available in your enabled repositories:
+
+```bash
+sudo apt install ros-kilted-multirobot-map-merge
+```
+
+Fallback (source build):
 
 ```bash
 cd ~/ros2_ws/src

@@ -10,8 +10,8 @@ Implement and configure SLAM (Simultaneous Localization and Mapping) using `slam
   - `src/slam_node/package.xml`
 
 ## Dependencies
-- `slam_toolbox` (installed via: `sudo apt install ros-jazzy-slam-toolbox`)
-- `multirobot_map_merge` (build from source)
+- `slam_toolbox` (installed via: `sudo apt install ros-kilted-slam-toolbox`)
+- `multirobot_map_merge` (apt if available, otherwise build from source)
 
 ## Tasks
 
@@ -25,8 +25,11 @@ Implement and configure SLAM (Simultaneous Localization and Mapping) using `slam
 - [ ] Test SLAM with simulated robot
 
 ### Phase 2: Multi-Robot Map Merging
-- [ ] Install/build `multirobot_map_merge` from source:
+- [ ] Install/build `multirobot_map_merge`:
   ```bash
+  sudo apt install ros-kilted-multirobot-map-merge
+
+  # Fallback if apt package is unavailable
   cd ~/ros2_ws/src
   git clone https://github.com/cra-ros-pkg/multirobot_map_merge.git
   cd ~/ros2_ws && colcon build --packages-select multirobot_map_merge
@@ -62,8 +65,8 @@ slam_node/
 ```
 
 ## Key Notes
-- `slam_toolbox` is available via apt for Jazzy
-- `multirobot_map_merge` must be built from source
+- `slam_toolbox` is available via apt for Kilted
+- `multirobot_map_merge` may be apt-installed depending on repo availability; source build is the fallback
 - Coordinate with Member 5 (sensors) for LiDAR scan topics
 - Coordinate with Member 6 (bringup) for integration into full system launch
 
