@@ -1,0 +1,4 @@
+firescout_interfaces:
+  ros__parameters:
+    version: 1.0.0
+    freeze_day: monday

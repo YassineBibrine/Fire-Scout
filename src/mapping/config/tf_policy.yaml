@@ -1,0 +1,3 @@
+mapping:
+  ros__parameters:
+    global_frame: map_merged

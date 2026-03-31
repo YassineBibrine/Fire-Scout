@@ -1,0 +1,3 @@
+mapping:
+  ros__parameters:
+    merged_map_topic: /mapping/merged_map

@@ -1,93 +1,44 @@
-# Member 4: Navigation & Path Planning
+# Member 4: Exploration + Common Utilities Lead
+
+## Package Ownership
+- `src/exploration`
+- `src/common_utils`
 
 ## Responsibility
-Implement autonomous navigation using Nav2 stack, including path planning, obstacle avoidance, and behavior trees.
+Own frontier exploration and auction logic, plus shared helper utilities used by teams without cross-importing runtime packages.
 
-## Primary Files
-- `src/navigation_node/` (new package - create this)
-  - `src/navigation_node/config/nav2_params.yaml`
-  - `src/navigation_node/launch/nav2_launch.py`
-  - `src/navigation_node/behavior_trees/` (BT XML files)
-  - `src/navigation_node/package.xml`
+## Files and Folders
+- `src/exploration/exploration/`
+- `src/exploration/launch/`
+- `src/exploration/config/`
+- `src/exploration/test/`
+- `src/common_utils/common_utils/`
+- `src/common_utils/config/`
+- `src/common_utils/test/`
 
-## Dependencies
-- `nav2_core` (installed via: `sudo apt install ros-kilted-nav2-core`)
-- `nav2_bringup`
-- `nav2_behaviors`
+## Implementation Tasks (Exploration)
+- [ ] Implement frontier detector runtime node
+- [ ] Implement auctioneer runtime node
+- [ ] Implement bidder runtime node for per-robot participation
+- [ ] Keep global and per-robot exploration launch files aligned
 
-## Tasks
+## Implementation Tasks (Common Utils)
+- [ ] Maintain shared geometry/math helper functions
+- [ ] Maintain namespace helper utilities
+- [ ] Maintain QoS profile helper definitions
+- [ ] Ensure package contains no ROS runtime nodes
 
-### Phase 1: Nav2 Stack Setup
-- [ ] Create `navigation_node` package
-- [ ] Create Nav2 parameters YAML file with:
-  - Costmap configuration
-  - Planner settings (Dijkstra, DWB, etc.)
-  - Controller parameters
-  - Recovery behaviors
-- [ ] Create launch file: `nav2_launch.py`
+## Configuration Tasks
+- [ ] Maintain `exploration/config/frontier.yaml`
+- [ ] Maintain `exploration/config/auction.yaml`
+- [ ] Maintain `common_utils/config/defaults.yaml`
 
-### Phase 2: Path Planning
-- [ ] Configure global planner:
-  - A* or Dijkstra algorithm selection
-  - Map resolution and inflation radius
-- [ ] Configure local controller:
-  - DWB local controller or TEB
-  - Velocity and acceleration limits
-  - Safety margins
+## Testing Tasks
+- [ ] Maintain exploration tests (`test_frontier_output.py`, `test_auction_single_winner.py`, `test_bid_timeout.py`)
+- [ ] Maintain common_utils tests (`test_math_utils.py`, `test_geometry_utils.py`, `test_namespace_utils.py`)
 
-### Phase 3: Costmap & Collision Avoidance
-- [ ] Setup global costmap (static map from SLAM)
-- [ ] Setup local costmap (local obstacle detection from sensors)
-- [ ] Configure obstacle inflation and cost propagation
-- [ ] Define no-go zones and safety boundaries
-
-### Phase 4: Behavior & Recovery
-- [ ] Define behavior tree for autonomous missions:
-  - Navigate to goal
-  - Handle stuck situations
-  - Retry logic
-- [ ] Implement recovery behaviors:
-  - Spin recovery
-  - Back-up recovery
-  - Clear costmap action
-
-### Phase 5: Testing & Integration
-- [ ] Test navigation in simulation
-- [ ] Test multi-robot navigation without collisions
-- [ ] Verify goal cancellation and recovery
-- [ ] Integrate with mission planning system
-- [ ] Profile navigation performance (latency, replanning frequency, controller stability)
-
-## Package Structure
-```
-navigation_node/
-├── config/
-│   ├── nav2_params.yaml
-│   └── maps/
-├── launch/
-│   └── nav2_launch.py
-├── behavior_trees/
-│   └── navigate.xml
-├── src/
-├── CMakeLists.txt
-└── package.xml
-```
-
-## Key Notes
-- Relies on maps from Member 3 (SLAM)
-- Uses sensor data from Member 5 (sensors)
-- Coordinate with Member 2 (simulation) for environment testing
-- Integrate into Member 6's system launch
-
-## Build Command
-```bash
-colcon build --packages-select navigation_node
-```
-
-## Success Criteria
-✓ Robot navigates to goal without manual intervention
-✓ Obstacles are avoided autonomously
-✓ Recovery behaviors work when stuck
-✓ Multiple robots don't collide
-✓ Performance: 1Hz navigation updates minimum
-✓ Navigation profiling report shared with Member 6 for release validation
+## Done Criteria
+- [ ] Exploration produces deterministic assignments
+- [ ] Auction rules are documented and tested
+- [ ] common_utils remains dependency-safe and reusable
+- [ ] Exploration/common_utils tests pass in CI

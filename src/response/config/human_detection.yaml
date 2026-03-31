@@ -1,0 +1,3 @@
+response:
+  ros__parameters:
+    human_confidence_threshold: 0.6

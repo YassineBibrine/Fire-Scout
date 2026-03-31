@@ -1,0 +1,5 @@
+monitoring:
+  ros__parameters:
+    topics:
+      - /mapping/merged_map
+      - /mission/state

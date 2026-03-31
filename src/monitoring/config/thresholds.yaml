@@ -1,0 +1,4 @@
+monitoring:
+  ros__parameters:
+    max_latency_ms: 150
+    min_rate_hz: 1.0

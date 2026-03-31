@@ -6,21 +6,23 @@ A multi-robot autonomous surveillance and mapping system built on ROS 2 Kilted, 
 
 ```
 src/
-├── firescout_interfaces/     # Custom message and service definitions (builds first)
-│   └── msg/
-├── simulation/               # Gazebo simulation environment
-│   ├── worlds/
-│   ├── models/
-│   └── launch/
-└── bringup/                  # Launch and configuration files
-    └── launch/
+├── firescout_interfaces/     # Custom message/service/action contract
+├── common_utils/             # Shared helper utilities (no runtime nodes)
+├── simulation/               # Gazebo Ionic worlds/models/bridges
+├── mapping/                  # SLAM + map merge
+├── exploration/              # Frontier and auction coordination
+├── response/                 # Fire/human detection and response
+├── coordination/             # Mission and fault orchestration
+├── monitoring/               # Latency/rate/metrics monitoring
+├── testing_tools/            # Dummy publishers and integration helpers
+└── bringup/                  # Full system launch composition
 ```
 
 ## Build Order
 
-1. **firescout_interfaces** - Must build first (other packages depend on it)
-2. **simulation** - Depends on firescout_interfaces
-3. **bringup** - Depends on firescout_interfaces
+1. **firescout_interfaces** - Must build first (all runtime packages depend on it)
+2. **Runtime packages** - simulation, mapping, exploration, response, coordination, monitoring, testing_tools
+3. **bringup** - depends on runtime packages and composes full-system launch
 
 `colcon build` handles this automatically via `package.xml` dependencies.
 
@@ -86,6 +88,8 @@ ros2 launch simulation gazebo_ionic.launch.py
 
 - **firescout_interfaces**: Provides custom messages for sensor data and trajectory references
 - **simulation**: Targets Gazebo Ionic (`ros_gz_sim`) and TurtleBot3 models
-- **bringup**: Python package with properly configured `setup.py` for launch file discovery
+- **monitoring**: Tracks topic rates and latency thresholds
+- **testing_tools**: Provides dummy nodes for parallel team development and integration testing
+- **bringup**: Composes global and per-robot launch stacks
 
 All custom interfaces are defined in `firescout_interfaces` and referenced by other packages via `<depend>firescout_interfaces</depend>`.

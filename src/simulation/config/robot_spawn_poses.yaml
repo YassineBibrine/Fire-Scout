@@ -1,0 +1,5 @@
+simulation:
+  ros__parameters:
+    robot1: [0.0, 0.0, 0.0]
+    robot2: [2.0, 0.0, 0.0]
+    robot3: [4.0, 0.0, 0.0]

@@ -1,0 +1,7 @@
+simulation:
+  ros__parameters:
+    bridged_topics:
+      - scan
+      - odom
+      - imu
+      - camera

@@ -1,0 +1,4 @@
+testing_tools:
+  ros__parameters:
+    scan_rate_hz: 10.0
+    odom_rate_hz: 20.0

@@ -1,53 +1,41 @@
-# Member 1: Interfaces & Message Definitions
+# Member 1: Interfaces Contract Lead
+
+## Package Ownership
+- `src/firescout_interfaces`
 
 ## Responsibility
-Define and maintain all custom ROS 2 message types and services used across Fire-Scout.
+Own and govern all ROS interfaces (`msg`, `srv`, `action`) as the single source of truth for inter-package communication.
 
-## Primary Files
-- `src/firescout_interfaces/msg/SensorData.msg`
-- `src/firescout_interfaces/msg/ReferenceTrajectory.msg`
-- `src/firescout_interfaces/srv/StartMapping.srv`
-- `src/firescout_interfaces/srv/StopMapping.srv`
+## Files and Folders
+- `src/firescout_interfaces/msg/`
+- `src/firescout_interfaces/srv/`
+- `src/firescout_interfaces/action/`
+- `src/firescout_interfaces/config/interface_contract.yaml`
+- `src/firescout_interfaces/test/`
 - `src/firescout_interfaces/CMakeLists.txt`
 - `src/firescout_interfaces/package.xml`
 
-## Tasks
+## Implementation Tasks
+- [ ] Define and maintain all custom messages for mapping, exploration, response, and coordination
+- [ ] Define and maintain all services for tasking, fault handling, and map control
+- [ ] Define and maintain all actions for long-running operations
+- [ ] Enforce naming, field semantics, and versioning policy in `interface_contract.yaml`
+- [ ] Validate no redundant or overlapping interfaces
 
-### Phase 1: Interface Definition
-- [ ] Refine `SensorData.msg` with all required sensor fields (IMU, LiDAR, camera, temperature, etc.)
-- [ ] Refine `ReferenceTrajectory.msg` with trajectory planning fields
-- [ ] Define `StartMapping.srv` with mapping configuration parameters
-- [ ] Define `StopMapping.srv` with save/cleanup options
-- [ ] Add any additional message types needed (RobotStatus, MapMetadata, etc.)
+## Configuration and Validation Tasks
+- [ ] Keep `config/interface_contract.yaml` aligned with current APIs
+- [ ] Add generation checks for messages/services/actions
+- [ ] Add serialization compatibility checks
+- [ ] Add contract validation tests for required fields and naming consistency
 
-### Phase 2: Documentation
-- [ ] Document all message fields and their units
-- [ ] Create examples showing message usage
-- [ ] Ensure backward compatibility notes
+## Testing Tasks
+- [ ] Maintain tests in `test/test_msg_generation.py`
+- [ ] Maintain tests in `test/test_srv_generation.py`
+- [ ] Maintain tests in `test/test_action_generation.py`
+- [ ] Review integration breakages caused by interface changes
 
-### Phase 3: Testing
-- [ ] Test message generation with `colcon build`
-- [ ] Verify messages are accessible from other packages
-
-### Phase 4: Integration Governance
-- [ ] Publish an interface contract table (topics, services, publishers, subscribers)
-- [ ] Define message/service versioning and deprecation policy
-- [ ] Add interface CI checks (message generation and import smoke test)
-- [ ] Run compatibility review with Members 3, 4, and 5 before integration freeze
-
-## Key Notes
-- This package **must build first** — all other packages depend on it
-- Ensure `<depend>firescout_interfaces</depend>` is declared in dependent packages' `package.xml`
-- Any changes here require rebuilding dependent packages
-
-## Build Command
-```bash
-cd ~/ws/Fire-Scout
-colcon build --packages-select firescout_interfaces
-```
-
-## Success Criteria
-✓ All interfaces compile without errors
-✓ Message types are accessible to other packages
-✓ Documentation is complete and clear
-✓ Interface contract and versioning policy are adopted by all teams
+## Done Criteria
+- [ ] All interfaces generate successfully
+- [ ] Contract file is updated and reviewed
+- [ ] No downstream package blocked by interface ambiguity
+- [ ] Interface tests pass in CI

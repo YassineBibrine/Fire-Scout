@@ -1,78 +1,39 @@
-# Member 2: Simulation (Gazebo Ionic) & TurtleBot3
+# Member 2: Simulation Lead (Gazebo Ionic + TurtleBot3)
+
+## Package Ownership
+- `src/simulation`
 
 ## Responsibility
-Build and maintain the Gazebo Ionic simulation environment including worlds, TurtleBot3 integration, and simulation-specific launch files.
+Own simulation assets, multi-robot spawning, and Gazebo bridge definitions for `/robot1`, `/robot2`, `/robot3`.
 
-## Primary Files
-- `src/simulation/worlds/*.world`
-- `src/simulation/models/` (URDF/SDF files)
-- `src/simulation/launch/*.launch.py`
+## Files and Folders
+- `src/simulation/worlds/`
+- `src/simulation/models/`
+- `src/simulation/launch/`
+- `src/simulation/config/`
+- `src/simulation/test/`
 - `src/simulation/CMakeLists.txt`
 - `src/simulation/package.xml`
 
-## Directory Structure
-```
-simulation/
-├── worlds/              # Gazebo world files (.world)
-│   └── firescout_env.world
-├── models/              # Robot URDF/SDF and meshes
-│   ├── firescout_robot/
-│   └── obstacles/
-└── launch/
-  ├── gazebo_ionic.launch.py
-  └── spawn_turtlebot3.launch.py
-```
+## Implementation Tasks
+- [ ] Maintain Gazebo world files and robot model assets
+- [ ] Maintain spawn launch with deterministic namespace behavior
+- [ ] Maintain bridge launch with explicit per-robot topic mapping
+- [ ] Keep `gazebo_ionic.launch.py`, `gz_world.launch.py`, and `spawn_robot.launch.py` aligned
+- [ ] Ensure clock and simulation settings support all other stacks
 
-## Tasks
+## Configuration Tasks
+- [ ] Maintain `config/bridge_topics_robot.yaml`
+- [ ] Maintain `config/robot_spawn_poses.yaml`
+- [ ] Maintain `config/sim_physics.yaml`
 
-### Phase 1: Environment Setup
-- [ ] Create Gazebo world file (`firescout_env.world`) with:
-  - Terrain/ground plane
-  - Example buildings/obstacles
-  - Lighting and physics configuration
-- [ ] Configure physics engine (gravity, friction, etc.)
+## Testing Tasks
+- [ ] Maintain `test/test_spawn_namespaces.py`
+- [ ] Maintain `test/test_bridge_topics.py`
+- [ ] Maintain `test/test_clock_available.py`
 
-### Phase 2: Robot Model
-- [ ] Integrate TurtleBot3 model set (burger/waffle/waffle_pi)
-- [ ] Define multi-robot spawn strategy with namespaces
-- [ ] Confirm LiDAR and IMU topics match SLAM and Nav2 expectations
-- [ ] Add any Fire-Scout-specific sensor/plugin extensions on top of TurtleBot3 base
-
-### Phase 3: Launch Files
-- [ ] Create `gazebo_ionic.launch.py` to start Gazebo Ionic (`gz sim`) with the world
-- [ ] Create `spawn_turtlebot3.launch.py` to spawn one or more TurtleBot3 robots
-- [ ] Add configurable parameters (number of robots, initial poses, etc.)
-
-### Phase 4: Testing
-- [ ] Test simulation launch: `ros2 launch simulation gazebo_ionic.launch.py`
-- [ ] Verify robot spawning and sensor output
-- [ ] Check TF (transform) tree
-
-### Phase 5: Camera & Visualization Baseline
-- [ ] Implement TurtleBot3 simulation camera pipeline and topic naming
-- [ ] Validate image bridging/transport for simulation camera topics
-- [ ] Create baseline RViz simulation profile (map, TF, scan, camera)
-- [ ] Hand off RViz baseline and camera topic contract to Member 6 for final bringup integration
-
-## Key Notes
-- Uses `ament_cmake` because Gazebo assets need to be installed to `share/`
-- Runtime stack: `ros_gz_sim` + `ros_gz_bridge` + `turtlebot3_description`
-- `CMakeLists.txt` includes install directive for worlds, models, launch:
-  ```cmake
-  install(DIRECTORY worlds models launch
-    DESTINATION share/${PROJECT_NAME}
-  )
-  ```
-- Coordinate with Member 1 for sensor message types
-
-## Build Command
-```bash
-colcon build --packages-select simulation
-```
-
-## Success Criteria
-✓ Gazebo world launches without errors
-✓ Robots spawn correctly in simulation
-✓ Sensors publish data to ROS topics
-✓ Can visualize in RViz2
-✓ Camera simulation topics are stable and documented
+## Done Criteria
+- [ ] 3 robots spawn with clean namespaces
+- [ ] Bridged topics are available for all robots
+- [ ] Simulation tests pass in CI
+- [ ] No TF/topic collisions caused by simulation assets

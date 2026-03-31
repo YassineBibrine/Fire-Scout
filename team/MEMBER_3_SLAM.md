@@ -1,83 +1,47 @@
-# Member 3: SLAM & Mapping
+# Member 3: Mapping + Monitoring Lead
+
+## Package Ownership
+- `src/mapping`
+- `src/monitoring`
 
 ## Responsibility
-Implement and configure SLAM (Simultaneous Localization and Mapping) using `slam_toolbox` and handle multi-robot map coordination.
+Own SLAM, map merging, TF map policy, and system observability (latency/rate metrics).
 
-## Primary Files
-- `src/slam_node/` (new package - create this)
-  - `src/slam_node/config/*.lua` (slam_toolbox configuration)
-  - `src/slam_node/launch/online_async.launch.py`
-  - `src/slam_node/package.xml`
+## Files and Folders
+- `src/mapping/mapping/`
+- `src/mapping/launch/`
+- `src/mapping/config/`
+- `src/mapping/test/`
+- `src/monitoring/monitoring/`
+- `src/monitoring/launch/`
+- `src/monitoring/config/`
+- `src/monitoring/test/`
 
-## Dependencies
-- `slam_toolbox` (installed via: `sudo apt install ros-kilted-slam-toolbox`)
-- `multirobot_map_merge` (apt if available, otherwise build from source)
+## Implementation Tasks (Mapping)
+- [ ] Implement per-robot SLAM runtime nodes and wrappers
+- [ ] Implement map merge runtime node and status publisher
+- [ ] Maintain TF policy from merged map to per-robot map frames
+- [ ] Keep mapping launch files aligned with bringup robot/global stacks
 
-## Tasks
+## Implementation Tasks (Monitoring)
+- [ ] Implement topic-rate monitoring node
+- [ ] Implement latency monitoring node
+- [ ] Implement metrics exporter node
+- [ ] Define monitored topics and threshold policies
 
-### Phase 1: Single-Robot SLAM
-- [ ] Create `slam_node` package
-- [ ] Create SLAM configuration file for online async mapping
-- [ ] Create launch file: `online_async.launch.py`
-  - Remap LiDAR scan topic
-  - Configure map frame name
-  - Set initial pose (if needed)
-- [ ] Test SLAM with simulated robot
+## Configuration Tasks
+- [ ] Maintain `mapping/config/slam_toolbox_robot.yaml`
+- [ ] Maintain `mapping/config/map_merge.yaml`
+- [ ] Maintain `mapping/config/tf_policy.yaml`
+- [ ] Maintain `monitoring/config/monitor_topics.yaml`
+- [ ] Maintain `monitoring/config/thresholds.yaml`
 
-### Phase 2: Multi-Robot Map Merging
-- [ ] Install/build `multirobot_map_merge`:
-  ```bash
-  sudo apt install ros-kilted-multirobot-map-merge
+## Testing Tasks
+- [ ] Maintain mapping tests (`test_slam_topics.py`, `test_map_merge_output.py`, `test_tf_consistency.py`)
+- [ ] Maintain monitoring tests (`test_topic_rate_alarm.py`, `test_latency_alarm.py`)
 
-  # Fallback if apt package is unavailable
-  cd ~/ros2_ws/src
-  git clone https://github.com/cra-ros-pkg/multirobot_map_merge.git
-  cd ~/ros2_ws && colcon build --packages-select multirobot_map_merge
-  ```
-- [ ] Create multi-robot SLAM launch file
-- [ ] Configure map merging parameters
-- [ ] Set up namespace handling for multiple robots
-
-### Phase 3: Configuration & Tuning
-- [ ] Tune SLAM parameters for Fire-Scout environment:
-  - Loop closure thresholds
-  - Feature detection settings
-  - Map update rates
-- [ ] Create configuration files for different scenarios (indoor, outdoor, etc.)
-
-### Phase 4: Integration & Testing
-- [ ] Test with simulation (Member 2)
-- [ ] Generate merged maps from multi-robot scenarios
-- [ ] Verify map persistence and recovery
-- [ ] Benchmark map quality metrics (coverage, loop-closure rate, merge consistency)
-
-## Package Structure
-```
-slam_node/
-├── config/
-│   ├── default_online_async.lua
-│   └── firescout_mapper.lua
-├── launch/
-│   ├── online_async.launch.py
-│   └── multi_robot_slam.launch.py
-├── src/
-├── CMakeLists.txt
-└── package.xml
-```
-
-## Key Notes
-- `slam_toolbox` is available via apt for Kilted
-- `multirobot_map_merge` may be apt-installed depending on repo availability; source build is the fallback
-- Coordinate with Member 5 (sensors) for LiDAR scan topics
-- Coordinate with Member 6 (bringup) for integration into full system launch
-
-## Build Commands
-```bash
-colcon build --packages-select slam_node
-```
-
-## Success Criteria
-✓ Single robot generates valid occupancy maps
-✓ Multiple robots' maps merge correctly
-✓ Loop closures detected and corrected
-✓ Maps persist across sessions
+## Done Criteria
+- [ ] Merged map topic is stable and documented
+- [ ] TF map policy has no frame conflicts
+- [ ] Monitoring alarms trigger correctly
+- [ ] Mapping and monitoring tests pass in CI

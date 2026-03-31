@@ -1,0 +1,3 @@
+exploration:
+  ros__parameters:
+    auction_timeout_sec: 1.0

@@ -1,0 +1,6 @@
+bringup:
+  ros__parameters:
+    robots:
+      - robot1
+      - robot2
+      - robot3
