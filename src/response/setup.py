@@ -19,5 +19,10 @@ setup(
     description='Response package skeleton for Fire-Scout.',
     license='Apache-2.0',
     tests_require=['pytest'],
-    entry_points={'console_scripts': []},
+    entry_points={
+        'console_scripts': [
+            'detection_pipeline_node = response.detection_pipeline_node:main',
+            'incident_queue_node = response.incident_queue_node:main',
+        ]
+    },
 )

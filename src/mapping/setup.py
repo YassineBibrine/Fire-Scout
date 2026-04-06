@@ -19,5 +19,10 @@ setup(
     description='Mapping package skeleton for Fire-Scout.',
     license='Apache-2.0',
     tests_require=['pytest'],
-    entry_points={'console_scripts': []},
+    entry_points={
+        'console_scripts': [
+            'slam_status_node = mapping.slam_status_node:main',
+            'map_merge_status_node = mapping.map_merge_status_node:main',
+        ]
+    },
 )

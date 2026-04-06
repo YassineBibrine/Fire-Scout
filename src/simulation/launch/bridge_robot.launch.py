@@ -1,6 +1,7 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, LogInfo
+from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -12,11 +13,20 @@ def generate_launch_description():
         description='Robot namespace/id for ros_gz bridge mapping.',
     )
 
-    # This launch file intentionally logs the contract endpoint.
-    # Each team should add ros_gz_bridge parameter_bridge instances here.
-    info = LogInfo(msg=['Bridge contract active for namespace: ', robot_id])
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='bridge_topics',
+        output='screen',
+        arguments=[
+            [robot_id, '/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan'],
+            [robot_id, '/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry'],
+            [robot_id, '/camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image'],
+            '/clock@rosgraph_msgs/msg/Clock@gz.msgs.Clock',
+        ],
+    )
 
     return LaunchDescription([
         robot_id_arg,
-        info,
+        bridge,
     ])

@@ -19,5 +19,10 @@ setup(
     description='Coordination package skeleton for Fire-Scout.',
     license='Apache-2.0',
     tests_require=['pytest'],
-    entry_points={'console_scripts': []},
+    entry_points={
+        'console_scripts': [
+            'health_node = coordination.health_node:main',
+            'mission_node = coordination.mission_node:main',
+        ]
+    },
 )

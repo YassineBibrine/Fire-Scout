@@ -19,5 +19,10 @@ setup(
     description='Exploration package skeleton for Fire-Scout.',
     license='Apache-2.0',
     tests_require=['pytest'],
-    entry_points={'console_scripts': []},
+    entry_points={
+        'console_scripts': [
+            'auction_node = exploration.auction_node:main',
+            'frontier_node = exploration.frontier_node:main',
+        ]
+    },
 )

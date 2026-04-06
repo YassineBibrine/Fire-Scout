@@ -93,3 +93,20 @@ ros2 launch simulation gazebo_ionic.launch.py
 - **bringup**: Composes global and per-robot launch stacks
 
 All custom interfaces are defined in `firescout_interfaces` and referenced by other packages via `<depend>firescout_interfaces</depend>`.
+
+## First Version Baseline (v1)
+
+This repository now includes a v1 pure-Python baseline for core package logic and unit tests:
+
+- coordination: heartbeat timeout, auction task assignment, fault reassignment
+- exploration: single-winner auction resolution, bid timeout behavior, frontier extraction from occupancy grids
+- mapping: expected per-robot map topics, map-merge readiness status, TF graph consistency checks
+- response: detection-to-incident conversion and incident priority ordering
+- monitoring: latency threshold alarms and topic-rate alarms
+- testing_tools: namespaced dummy payload generators for scan/odom/camera/heartbeat/frontier/fault events
+
+Run the v1 unit tests from the workspace root:
+
+```bash
+PYTHONPATH=src/coordination:src/exploration:src/mapping:src/response:src/monitoring:src/testing_tools pytest -q src/coordination/test src/exploration/test src/mapping/test src/response/test src/monitoring/test src/testing_tools/test
+```
