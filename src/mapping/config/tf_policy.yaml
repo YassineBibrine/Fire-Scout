@@ -1,3 +1,104 @@
-mapping:
-  ros__parameters:
-    global_frame: map_merged
+# Fire-Scout TF Policy (Reference Document)
+# ----------------------------------------
+# This file is a policy/reference artifact only.
+# It is NOT consumed directly by nodes at runtime.
+
+tf_policy:
+  version: 1
+  owner: Member_3_SLAM
+  description: >
+    Canonical TF ownership and frame hierarchy for Fire-Scout multi-robot SLAM.
+    Each robot maintains an isolated local chain under its namespaced map frame,
+    while global map serves as the root frame for merged/global operations.
+
+  global_root:
+    frame: map
+    frame_type: global
+    published_by: map_merge.launch.py static_transform_publisher scaffold
+    update_rate_hz: static
+    notes: >
+      Root world frame for global merged map and cross-robot alignment.
+
+  robots:
+    - robot_id: robot1
+      chain:
+        - parent: map
+          child: robot1/map
+          frame_type: namespaced_map
+          published_by: tf2_ros/static_transform_publisher (initial identity)
+          update_rate_hz: static
+          authority: mapping/launch/map_merge.launch.py
+          notes: Initial global->local map bridge; can be refined by map alignment.
+        - parent: robot1/map
+          child: robot1/odom
+          frame_type: local_odom
+          published_by: slam_toolbox (robot1 async SLAM)
+          update_rate_hz: 20.0
+          authority: mapping/launch/slam_robot.launch.py
+          notes: SLAM correction transform from map to odometry drift frame.
+        - parent: robot1/odom
+          child: robot1/base_footprint
+          frame_type: base
+          published_by: robot_state_publisher / localization stack
+          update_rate_hz: 30.0
+          authority: platform bringup
+          notes: Robot body pose in local odom frame.
+
+    - robot_id: robot2
+      chain:
+        - parent: map
+          child: robot2/map
+          frame_type: namespaced_map
+          published_by: tf2_ros/static_transform_publisher (initial identity)
+          update_rate_hz: static
+          authority: mapping/launch/map_merge.launch.py
+          notes: Initial global->local map bridge; can be refined by map alignment.
+        - parent: robot2/map
+          child: robot2/odom
+          frame_type: local_odom
+          published_by: slam_toolbox (robot2 async SLAM)
+          update_rate_hz: 20.0
+          authority: mapping/launch/slam_robot.launch.py
+          notes: SLAM correction transform from map to odometry drift frame.
+        - parent: robot2/odom
+          child: robot2/base_footprint
+          frame_type: base
+          published_by: robot_state_publisher / localization stack
+          update_rate_hz: 30.0
+          authority: platform bringup
+          notes: Robot body pose in local odom frame.
+
+    - robot_id: robot3
+      chain:
+        - parent: map
+          child: robot3/map
+          frame_type: namespaced_map
+          published_by: tf2_ros/static_transform_publisher (initial identity)
+          update_rate_hz: static
+          authority: mapping/launch/map_merge.launch.py
+          notes: Initial global->local map bridge; can be refined by map alignment.
+        - parent: robot3/map
+          child: robot3/odom
+          frame_type: local_odom
+          published_by: slam_toolbox (robot3 async SLAM)
+          update_rate_hz: 20.0
+          authority: mapping/launch/slam_robot.launch.py
+          notes: SLAM correction transform from map to odometry drift frame.
+        - parent: robot3/odom
+          child: robot3/base_footprint
+          frame_type: base
+          published_by: robot_state_publisher / localization stack
+          update_rate_hz: 30.0
+          authority: platform bringup
+          notes: Robot body pose in local odom frame.
+
+  frame_naming_rules:
+    - Use fully namespaced robot frames: robotX/map, robotX/odom, robotX/base_footprint.
+    - Never publish un-namespaced odom/base frames in multi-robot runtime.
+    - Keep global root frame fixed as map.
+
+  verification_checks:
+    - Transform availability: map -> robotX/map for X in {1,2,3}
+    - Transform availability: robotX/map -> robotX/odom for X in {1,2,3}
+    - Transform availability: robotX/odom -> robotX/base_footprint for X in {1,2,3}
+    - No disconnected TF subtrees during nominal operation.

@@ -20,5 +20,9 @@ setup(
     description='Monitoring package for Fire-Scout.',
     license='Apache-2.0',
     tests_require=['pytest'],
-    entry_points={'console_scripts': []},
+    entry_points={'console_scripts': [
+        'topic_rate_monitor = monitoring.topic_rate_monitor_node:main',
+        'latency_monitor    = monitoring.latency_monitor_node:main',
+        'metrics_exporter   = monitoring.metrics_exporter_node:main',
+    ]},
 )

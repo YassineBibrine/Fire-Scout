@@ -1,5 +1,72 @@
-monitoring:
+# Fire-Scout monitoring topic inventory and per-topic expectations.
+
+topic_rate_monitor_node:
   ros__parameters:
-    topics:
-      - /mapping/merged_map
-      - /mission/state
+    # Sliding window size (seconds) used to estimate message rates.
+    window_sec: 5.0
+    # Check loop frequency for evaluating all monitored topics.
+    check_rate_hz: 2.0
+
+    # Topics monitored for publication rate.
+    monitored_topics:
+      - /robot1/scan                 # Robot1 lidar scan stream.
+      - /robot2/scan                 # Robot2 lidar scan stream.
+      - /robot3/scan                 # Robot3 lidar scan stream.
+      - /robot1/odom                 # Robot1 odometry stream.
+      - /robot2/odom                 # Robot2 odometry stream.
+      - /robot3/odom                 # Robot3 odometry stream.
+      - /robot1/map                  # Robot1 local SLAM map stream.
+      - /robot2/map                  # Robot2 local SLAM map stream.
+      - /robot3/map                  # Robot3 local SLAM map stream.
+      - /map                         # Global merged map stream.
+      - /mapping/map_merge_status    # Map merge status heartbeat.
+
+    # Required expected publication rates (Hz), one-to-one with monitored_topics.
+    expected_rates_hz:
+      - 10.0                         # /robot1/scan expected at 10 Hz.
+      - 10.0                         # /robot2/scan expected at 10 Hz.
+      - 10.0                         # /robot3/scan expected at 10 Hz.
+      - 20.0                         # /robot1/odom expected at 20 Hz.
+      - 20.0                         # /robot2/odom expected at 20 Hz.
+      - 20.0                         # /robot3/odom expected at 20 Hz.
+      - 1.0                          # /robot1/map expected at 1 Hz.
+      - 1.0                          # /robot2/map expected at 1 Hz.
+      - 1.0                          # /robot3/map expected at 1 Hz.
+      - 1.0                          # /map expected at 1 Hz.
+      - 1.0                          # /mapping/map_merge_status expected at 1 Hz.
+
+latency_monitor_node:
+  ros__parameters:
+    # Topics monitored for latency checks (header-bearing topics only).
+    monitored_topics:
+      - /robot1/scan                 # Robot1 lidar scan latency.
+      - /robot2/scan                 # Robot2 lidar scan latency.
+      - /robot3/scan                 # Robot3 lidar scan latency.
+      - /robot1/odom                 # Robot1 odom latency.
+      - /robot2/odom                 # Robot2 odom latency.
+      - /robot3/odom                 # Robot3 odom latency.
+      - /robot1/map                  # Robot1 local map latency.
+      - /robot2/map                  # Robot2 local map latency.
+      - /robot3/map                  # Robot3 local map latency.
+      - /map                         # Global merged map latency.
+
+    # Per-topic-type maximum transport latency (ms).
+    scan_max_latency_ms: 200.0       # LaserScan max allowed latency.
+    odom_max_latency_ms: 100.0       # Odometry max allowed latency.
+    map_max_latency_ms: 2000.0       # OccupancyGrid max allowed latency.
+
+metrics_exporter_node:
+  ros__parameters:
+    # Topic inventory used to compute alarming ratio for overall health state.
+    monitored_topics:
+      - /robot1/scan                 # Monitored scan topic.
+      - /robot2/scan                 # Monitored scan topic.
+      - /robot3/scan                 # Monitored scan topic.
+      - /robot1/odom                 # Monitored odom topic.
+      - /robot2/odom                 # Monitored odom topic.
+      - /robot3/odom                 # Monitored odom topic.
+      - /robot1/map                  # Monitored local map topic.
+      - /robot2/map                  # Monitored local map topic.
+      - /robot3/map                  # Monitored local map topic.
+      - /map                         # Monitored global map topic.
+      - /mapping/map_merge_status    # Monitored merge status topic.

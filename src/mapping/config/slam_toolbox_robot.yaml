@@ -1,3 +1,78 @@
-mapping:
+# NOTE:
+# This file is shared by all robots. Keep robotX placeholders here as policy
+# documentation, then apply robot-specific values via launch remaps/overrides.
+# Example runtime substitution:
+#   robotX/odom -> robot1/odom
+#   robotX/map -> robot1/map
+#   robotX/base_footprint -> robot1/base_footprint
+
+slam_toolbox:
   ros__parameters:
+    # Clock source for simulation environments (Gazebo).
     use_sim_time: true
+
+    # Core operation mode and map update characteristics.
+    mode: mapping                    # Explicitly run in mapping mode.
+    resolution: 0.05                 # Output grid resolution in meters/cell.
+    max_laser_range: 12.0            # Ignore scan returns beyond this range.
+    minimum_time_interval: 0.2       # Minimum time between accepted scans.
+    map_update_interval: 1.0         # Seconds between map publication updates.
+
+    # Frame policy placeholders (replace robotX at runtime).
+    odom_frame: robotX/odom          # Robot-local odometry frame.
+    map_frame: robotX/map            # Robot-local map frame.
+    base_frame: robotX/base_footprint  # Robot base frame used for SLAM pose.
+
+    # Topic policy placeholder. Runtime launch remapping should bind /scan,
+    # /odom, and /map to the specific robot namespace.
+    scan_topic: /robotX/scan
+
+    # TF and execution behavior.
+    transform_publish_period: 0.02   # Publish map->odom transform at 50 Hz.
+    transform_timeout: 0.2           # TF lookup timeout in seconds.
+    tf_buffer_duration: 30.0         # TF history length used by slam_toolbox.
+    stack_size_to_use: 40000000      # Larger stack for heavy graph operations.
+    throttle_scans: 1                # Use every scan (no decimation).
+    enable_interactive_mode: true    # Enable marker/manual interaction tools.
+
+    # Solver backend settings (Ceres + SPA).
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+
+    # Scan matching and graph growth controls.
+    use_scan_matching: true
+    use_scan_barycenter: true
+    minimum_travel_distance: 0.1
+    minimum_travel_heading: 0.1
+    scan_buffer_size: 10
+    scan_buffer_maximum_scan_distance: 12.0
+    link_match_minimum_response: 0.1
+    link_scan_maximum_distance: 1.5
+    loop_search_maximum_distance: 3.0
+    do_loop_closing: true
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    loop_match_minimum_response_fine: 0.45
+
+    # Correlation search windows for coarse and loop searches.
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+
+    # Penalty terms and angular search controls.
+    distance_variance_penalty: 0.5
+    angle_variance_penalty: 1.0
+    fine_search_angle_offset: 0.00349
+    coarse_search_angle_offset: 0.349
+    coarse_angle_resolution: 0.0349
+    minimum_angle_penalty: 0.9
+    minimum_distance_penalty: 0.5
+    use_response_expansion: true

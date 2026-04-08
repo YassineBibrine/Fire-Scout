@@ -11,6 +11,7 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/mapping/launch', glob('launch/*.launch.py')),
+        ('share/mapping/config', glob('config/*.yaml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -19,5 +20,8 @@ setup(
     description='Mapping package skeleton for Fire-Scout.',
     license='Apache-2.0',
     tests_require=['pytest'],
-    entry_points={'console_scripts': []},
+    entry_points={'console_scripts': [
+        'slam_wrapper_node = mapping.slam_wrapper_node:main',
+        'map_merge_node    = mapping.map_merge_node:main',
+    ]},
 )

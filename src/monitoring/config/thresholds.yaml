@@ -1,4 +1,22 @@
-monitoring:
+# Fire-Scout monitoring thresholds and alarm behavior.
+
+topic_rate_monitor_node:
   ros__parameters:
-    max_latency_ms: 150
-    min_rate_hz: 1.0
+    # Alarm when actual topic rate falls below this fraction of expected rate.
+    min_rate_ratio: 0.7
+    # Cooldown between repeated alarm emissions for the same condition.
+    alarm_cooldown_sec: 5.0
+
+latency_monitor_node:
+  ros__parameters:
+    # Maximum allowed latency by topic type (milliseconds).
+    scan_max_latency_ms: 200.0
+    odom_max_latency_ms: 100.0
+    map_max_latency_ms: 2000.0
+    # Cooldown between repeated alarm emissions for the same condition.
+    alarm_cooldown_sec: 5.0
+
+metrics_exporter_node:
+  ros__parameters:
+    # Keep exporter cadence explicit and centralized in thresholds config.
+    publish_rate_hz: 1.0
