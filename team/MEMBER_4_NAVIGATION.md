@@ -17,28 +17,28 @@ Own frontier exploration and auction logic, plus shared helper utilities used by
 - `src/common_utils/test/`
 
 ## Implementation Tasks (Exploration)
-- [ ] Implement frontier detector runtime node
-- [ ] Implement auctioneer runtime node
-- [ ] Implement bidder runtime node for per-robot participation
-- [ ] Keep global and per-robot exploration launch files aligned
+- [x] Implement frontier detector runtime node
+- [x] Implement auctioneer runtime node
+- [x] Implement bidder runtime node for per-robot participation
+- [x] Keep global and per-robot exploration launch files aligned
 
 ## Implementation Tasks (Common Utils)
-- [ ] Maintain shared geometry/math helper functions
-- [ ] Maintain namespace helper utilities
-- [ ] Maintain QoS profile helper definitions
-- [ ] Ensure package contains no ROS runtime nodes
+- [x] Maintain shared geometry/math helper functions
+- [x] Maintain namespace helper utilities
+- [x] Maintain QoS profile helper definitions
+- [x] Ensure package contains no ROS runtime nodes
 
 ## Configuration Tasks
-- [ ] Maintain `exploration/config/frontier.yaml`
-- [ ] Maintain `exploration/config/auction.yaml`
-- [ ] Maintain `common_utils/config/defaults.yaml`
+- [x] Maintain `exploration/config/frontier.yaml`
+- [x] Maintain `exploration/config/auction.yaml`
+- [x] Maintain `common_utils/config/defaults.yaml`
 
 ## Testing Tasks
-- [ ] Maintain exploration tests (`test_frontier_output.py`, `test_auction_single_winner.py`, `test_bid_timeout.py`)
-- [ ] Maintain common_utils tests (`test_math_utils.py`, `test_geometry_utils.py`, `test_namespace_utils.py`)
+- [x] Maintain exploration tests (`test_frontier_output.py`, `test_auction_single_winner.py`, `test_bid_timeout.py`)
+- [x] Maintain common_utils tests (`test_math_utils.py`, `test_geometry_utils.py`, `test_namespace_utils.py`)
 
 ## Done Criteria
-- [ ] Exploration produces deterministic assignments
-- [ ] Auction rules are documented and tested
-- [ ] common_utils remains dependency-safe and reusable
+- [x] Exploration produces deterministic assignments
+- [x] Auction rules are documented and tested
+- [x] common_utils remains dependency-safe and reusable
 - [ ] Exploration/common_utils tests pass in CI
