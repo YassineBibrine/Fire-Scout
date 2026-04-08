@@ -1,6 +1,6 @@
-builtin_interfaces/Time stamp
-uint8 phase
-bool degraded_mode
-uint8 active_robot_count
-uint16 open_incident_count
-uint16 assigned_task_count
+# Current mission state
+string mission_id
+string state
+string[] active_robots
+float32 mission_progress
+builtin_interfaces/Time timestamp

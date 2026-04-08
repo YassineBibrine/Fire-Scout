@@ -1,6 +1,8 @@
-string requester_robot_id
-string incident_id
-uint8 needed_capability
+# Request assistance from other robots
+string robot_id
+string assistance_type
+string details
 ---
-bool granted
-string helper_robot_id
+bool assigned
+string assisting_robot
+string message

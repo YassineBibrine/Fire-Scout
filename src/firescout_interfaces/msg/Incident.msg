@@ -1,9 +1,8 @@
-builtin_interfaces/Time stamp
+# Incident message for fire/human incidents
 string incident_id
-uint8 incident_type
-geometry_msgs/PoseStamped pose
-float32 confidence
-uint8 priority
-string[] source_robot_ids
-string assigned_robot_id
-bool resolved
+string incident_type
+string robot_id
+geometry_msgs/Pose position
+float32 priority
+builtin_interfaces/Time detection_time
+builtin_interfaces/Time last_updated

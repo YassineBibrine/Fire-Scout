@@ -23,3 +23,19 @@ Thumbs.db
 
 # ROS
 .colcon/
+
+# ROS2 build artifacts
+build/
+install/
+log/
+*.pyc
+__pycache__/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db

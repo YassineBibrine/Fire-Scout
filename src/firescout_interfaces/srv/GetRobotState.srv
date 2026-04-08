@@ -1,5 +1,7 @@
+# Get robot state
 string robot_id
 ---
-firescout_interfaces/RobotHealth health
+string state
+float32 battery_level
+geometry_msgs/Pose current_pose
 string current_task_id
-geometry_msgs/PoseStamped current_pose

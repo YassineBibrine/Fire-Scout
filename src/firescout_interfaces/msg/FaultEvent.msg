@@ -1,7 +1,6 @@
-builtin_interfaces/Time stamp
+# Fault event message
 string robot_id
-uint8 severity
-string fault_code
+string fault_type
+string severity
 string description
-bool latched
-bool requires_reassignment
+builtin_interfaces/Time timestamp

@@ -1,10 +1,15 @@
-string robot_id
-string incident_id
-geometry_msgs/PoseStamped target_pose
-uint8 suppression_mode
+# Goal
+string fire_id
+geometry_msgs/Pose fire_location
+float32 required_water_volume
+float32 estimated_duration
 ---
-bool completed
-string result_message
+# Result
+bool success
+string message
+float32 water_used
+float32 suppression_time_seconds
 ---
-float32 progress_pct
-string current_step
+# Feedback
+float32 progress
+float32 remaining_water

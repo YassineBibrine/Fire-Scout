@@ -1,5 +1,7 @@
+# Auction announcement for frontier exploration
 string auction_id
-uint8 task_type
-geometry_msgs/PoseStamped target_pose
-float32 timeout_sec
-uint8 priority
+string frontier_id
+float32 starting_bid
+float32 min_bid_increment
+float32 bidding_duration_seconds
+builtin_interfaces/Time timestamp
