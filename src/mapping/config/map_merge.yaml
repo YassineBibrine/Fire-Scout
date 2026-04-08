@@ -1,3 +1,21 @@
-mapping:
+multirobot_map_merge:
   ros__parameters:
-    merged_map_topic: /mapping/merged_map
+    # Clock source; keep true for Gazebo simulation runs.
+    use_sim_time: true
+
+    # Core merge behavior.
+    known_init_poses: false        # False = estimate relative transforms online.
+    merging_rate: 1.0              # Frequency (Hz) for publishing merged map.
+    estimation_rate: 0.5           # Frequency (Hz) for inter-map transform estimation.
+    confidence_threshold: 1.0      # Minimum confidence needed to accept alignment.
+
+    # I/O topic/frame conventions.
+    world_frame: map               # Global frame for merged output.
+    merged_map_topic: /map         # Published merged occupancy grid topic.
+    robot_map_topic: map           # Per-robot map topic suffix, e.g., /robot1/map.
+    robot_namespace: ""            # Empty means discover robots by namespace/topic scan.
+
+    # Discovery and throttling controls.
+    discovery_rate: 0.5            # Rate (Hz) for scanning available robot map topics.
+    have_merged_map_publisher: true  # Enable merged map publisher in this node.
+    relaunch_on_loop_closure: false  # Keep merge process stable across SLAM loop closures.

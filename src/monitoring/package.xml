@@ -10,6 +10,8 @@
   <buildtool_depend>ament_python</buildtool_depend>
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
   <depend>firescout_interfaces</depend>
   <exec_depend>ros2launch</exec_depend>
 </package>
