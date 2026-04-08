@@ -1,3 +1,4 @@
-builtin_interfaces/Time stamp
-string robot_id
-firescout_interfaces/Frontier[] frontiers
+# Array of frontiers
+Frontier[] frontiers
+string robot_id               # Robot that discovered these frontiers
+builtin_interfaces/Time timestamp

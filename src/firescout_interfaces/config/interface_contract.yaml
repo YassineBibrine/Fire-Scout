@@ -1,4 +1,77 @@
-firescout_interfaces:
-  ros__parameters:
-    version: 1.0.0
-    freeze_day: monday
+# Interface Contract for FireScout Project
+# Version: 1.0.0
+# Owner: Member 1 "Ali" (Interfaces Contract Lead)
+
+version: "1.0.0"
+last_updated: "2026-04-01"
+
+# Naming conventions
+naming:
+  message_suffix: ".msg"
+  service_suffix: ".srv"
+  action_suffix: ".action"
+  topic_naming: "/{namespace}/{topic_name}"
+  service_naming: "/{namespace}/services/{service_name}"
+  action_naming: "/{namespace}/actions/{action_name}"
+
+# Message specifications
+messages:
+  RobotHealth:
+    description: "Robot health and status information"
+    fields:
+      battery_percentage: "float32 [0-100]"
+      cpu_load: "float32 [0-100]"
+      memory_usage: "float32 [0-100]"
+    
+  Frontier:
+    description: "Exploration frontier representation"
+    fields:
+      centroid: "geometry_msgs/Pose"
+      size: "float32 >0"
+      cost: "float32 >0"
+      gain: "float32 >0"
+
+  FireDetection:
+    description: "Fire detection with confidence"
+    fields:
+      confidence: "float32 [0-1]"
+      intensity: "float32 [0-10]"
+
+# Service specifications
+services:
+  AssignTask:
+    description: "Assign task to robot"
+    request:
+      task_id: "string"
+      task_type: "string"
+      priority: "float32 [0-1]"
+    response:
+      success: "bool"
+      message: "string"
+
+# Action specifications
+actions:
+  SuppressFire:
+    description: "Long-running fire suppression"
+    goal:
+      required_water_volume: "float32 >0"
+    result:
+      success: "bool"
+      suppression_time_seconds: "float32"
+    feedback:
+      progress: "float32 [0-100]"
+
+# Versioning policy
+versioning:
+  policy: "Semantic Versioning (MAJOR.MINOR.PATCH)"
+  major_change: "Breaking changes (field removal, type change)"
+  minor_change: "Backward compatible additions (new fields with defaults)"
+  patch_change: "Bug fixes, documentation updates"
+
+# Validation rules
+validation:
+  required_fields: true
+  field_naming: "snake_case"
+  message_size_limit: "10 MB"
+  array_size_limit: 1000
+  string_length_limit: 255

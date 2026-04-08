@@ -1,5 +1,6 @@
-string robot_id
-bool use_sim_time
+# Start mapping on a robot
+string robot_name
+bool merge_with_global
 ---
-bool accepted
+bool success
 string message

@@ -1,5 +1,7 @@
+# Resolve an incident
 string incident_id
-string resolver_robot_id
-string note
+string resolved_by_robot
+string resolution_notes
 ---
-bool resolved
+bool success
+string message

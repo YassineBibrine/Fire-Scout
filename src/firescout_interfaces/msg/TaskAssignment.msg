@@ -1,7 +1,9 @@
+# Task assignment message
 string task_id
-string robot_id
-uint8 task_type
-uint8 priority
-geometry_msgs/PoseStamped target_pose
-float32 timeout_sec
-string source_incident_id
+string task_type
+string assigned_robot
+geometry_msgs/Pose target_pose
+float32 priority
+float32 estimated_duration
+builtin_interfaces/Time assignment_time
+builtin_interfaces/Time deadline

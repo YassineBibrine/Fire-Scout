@@ -1,5 +1,6 @@
+# Stop mapping on robot
 string robot_id
-bool save_map
 ---
-bool accepted
+bool success
 string message
+string map_saved_path

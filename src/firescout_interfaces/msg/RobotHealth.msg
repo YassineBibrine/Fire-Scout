@@ -1,10 +1,8 @@
-builtin_interfaces/Time stamp
-string robot_id
-uint32 heartbeat_seq
-float32 battery_pct
-float32 cpu_load_pct
-bool comms_ok
-bool localization_ok
-bool mobility_ok
-uint8 mode
-string[] active_fault_codes
+# Robot health status message
+string robot_name          # Robot namespace/name
+float32 battery_percentage # Battery level 0-100
+float32 cpu_load           # CPU load percentage
+float32 memory_usage       # Memory usage percentage
+float32 temperature        # CPU temperature in Celsius
+bool is_connected          # Network connectivity status
+builtin_interfaces/Time timestamp

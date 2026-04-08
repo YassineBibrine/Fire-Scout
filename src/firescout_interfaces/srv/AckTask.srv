@@ -1,6 +1,8 @@
-string robot_id
+# Acknowledge task
 string task_id
-bool accepted
-float32 eta_sec
+string robot_id
+bool accept
+string message
 ---
-bool recorded
+bool success
+string response_message

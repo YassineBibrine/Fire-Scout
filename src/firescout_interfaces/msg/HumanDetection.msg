@@ -1,7 +1,8 @@
-builtin_interfaces/Time stamp
-string robot_id
-string detection_id
-geometry_msgs/PoseStamped pose
+# Human detection message
+string robot_name
+geometry_msgs/Pose position
 float32 confidence
-bool moving
-bool needs_assistance
+bool is_moving
+bool needs_rescue
+float32[] bounding_box
+builtin_interfaces/Time detection_time

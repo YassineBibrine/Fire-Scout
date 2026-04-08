@@ -1,4 +1,8 @@
-firescout_interfaces/FaultEvent fault
+# Report fault from robot
+string robot_id
+string fault_type
+string severity
+string description
 ---
-bool accepted
-string ticket_id
+bool logged
+string fault_id

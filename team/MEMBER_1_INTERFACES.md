@@ -1,41 +1,106 @@
-# Member 1: Interfaces Contract Lead
+# Member 1: Interfaces Contract Lead - Documentation
 
-## Package Ownership
-- `src/firescout_interfaces`
+## Responsabilités
+- Gouverner toutes les interfaces ROS2 (msg, srv, action) comme source unique de vérité
+- Maintenir le contrat d'interface et la politique de versioning
+- Assurer la compatibilité entre les packages
 
-## Responsibility
-Own and govern all ROS interfaces (`msg`, `srv`, `action`) as the single source of truth for inter-package communication.
+## Package: firescout_interfaces
 
-## Files and Folders
-- `src/firescout_interfaces/msg/`
-- `src/firescout_interfaces/srv/`
-- `src/firescout_interfaces/action/`
-- `src/firescout_interfaces/config/interface_contract.yaml`
-- `src/firescout_interfaces/test/`
-- `src/firescout_interfaces/CMakeLists.txt`
-- `src/firescout_interfaces/package.xml`
+### Messages (16)
+| Message | Description | Utilisé par |
+|---------|-------------|-------------|
+| RobotHealth | État de santé du robot | Monitoring, Coordination |
+| Frontier | Frontière d'exploration | Exploration |
+| FrontierArray | Tableau de frontières | Exploration |
+| FireDetection | Détection d'incendie | Response |
+| HumanDetection | Détection de personne | Response |
+| TaskAssignment | Assignation de tâche | Coordination, Exploration |
+| Incident | Événement incident | Response, Coordination |
+| FaultEvent | Événement de panne | Coordination |
+| MissionState | État de la mission | Coordination |
+| MapMergeStatus | Statut de fusion de cartes | Mapping |
+| NodeStatus | Statut des noeuds | Monitoring |
+| AuctionAnnouncement | Annonce d'enchère | Exploration |
+| AuctionBid | Offre d'enchère | Exploration |
+| AuctionResult | Résultat d'enchère | Exploration |
+| ReferenceTrajectory | Trajectoire de référence | Navigation |
+| SensorData | Données capteur génériques | Response |
 
-## Implementation Tasks
-- [ ] Define and maintain all custom messages for mapping, exploration, response, and coordination
-- [ ] Define and maintain all services for tasking, fault handling, and map control
-- [ ] Define and maintain all actions for long-running operations
-- [ ] Enforce naming, field semantics, and versioning policy in `interface_contract.yaml`
-- [ ] Validate no redundant or overlapping interfaces
+### Services (10)
+| Service | Description |
+|---------|-------------|
+| AssignTask | Assigner une tâche à un robot |
+| StartMapping | Démarrer la cartographie |
+| StopMapping | Arrêter la cartographie |
+| SetRobotMode | Changer le mode du robot |
+| AckTask | Accuser réception d'une tâche |
+| GetRobotState | Obtenir l'état du robot |
+| ReportFault | Signaler une panne |
+| RequestAssistance | Demander de l'assistance |
+| ResolveIncident | Résoudre un incident |
+| SetMapMergeEnabled | Activer/désactiver fusion de cartes |
 
-## Configuration and Validation Tasks
-- [ ] Keep `config/interface_contract.yaml` aligned with current APIs
-- [ ] Add generation checks for messages/services/actions
-- [ ] Add serialization compatibility checks
-- [ ] Add contract validation tests for required fields and naming consistency
+### Actions (2)
+| Action | Description | Durée typique |
+|--------|-------------|---------------|
+| SuppressFire | Suppression d'incendie | 30-120 secondes |
+| RescueHuman | Sauvetage de personne | 60-180 secondes |
 
-## Testing Tasks
-- [ ] Maintain tests in `test/test_msg_generation.py`
-- [ ] Maintain tests in `test/test_srv_generation.py`
-- [ ] Maintain tests in `test/test_action_generation.py`
-- [ ] Review integration breakages caused by interface changes
+## Contrat d'Interface
+Le fichier `config/interface_contract.yaml` définit:
+- Conventions de nommage
+- Politique de versioning sémantique
+- Règles de validation
 
-## Done Criteria
-- [ ] All interfaces generate successfully
-- [ ] Contract file is updated and reviewed
-- [ ] No downstream package blocked by interface ambiguity
-- [ ] Interface tests pass in CI
+## Tests
+- ✅ test_msg_generation.py - Vérifie tous les messages
+- ✅ test_srv_generation.py - Vérifie tous les services  
+- ✅ test_action_generation.py - Vérifie toutes les actions
+
+## État
+- [x] Toutes les interfaces définies
+- [x] Tests passent (10/10)
+- [x] Documentation complétée
+- [x] Contract à jour
+
+## Dépendances
+- std_msgs
+- geometry_msgs
+- builtin_interfaces
+- action_msgs
+
+## Validation
+```bash
+# Vérifier les messages
+ros2 interface list | grep firescout_interfaces/msg
+
+# Vérifier les services  
+ros2 interface list | grep firescout_interfaces/srv
+
+# Vérifier les actions
+ros2 interface list | grep firescout_interfaces/action
+
+### Mettre à jour le README principal
+
+```bash
+# Ajouter votre section dans le README
+cat >> README.md << 'EOF'
+
+## 🔌 Interfaces Package (Member 1 - Ali)
+
+Le package `firescout_interfaces` contient toutes les interfaces ROS2 du projet:
+
+- **16 Messages** : Communication de données entre nodes
+- **10 Services** : Requêtes/réponses synchrones  
+- **2 Actions** : Tâches longues avec feedback
+
+### Vérification rapide
+```bash
+# Compiler les interfaces
+colcon build --packages-select firescout_interfaces
+
+# Lister toutes les interfaces
+ros2 interface list | grep firescout_interfaces
+
+

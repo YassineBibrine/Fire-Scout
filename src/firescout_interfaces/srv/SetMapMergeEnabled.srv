@@ -1,4 +1,6 @@
-bool enabled
+# Enable/disable map merging
+bool enable
+string robot_id
 ---
-bool accepted
+bool success
 string message
