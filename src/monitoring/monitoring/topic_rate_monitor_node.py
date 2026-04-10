@@ -8,6 +8,7 @@ from typing import Callable, Deque, Dict, List
 import rclpy
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
 
@@ -24,11 +25,11 @@ class TopicRateMonitorNode(Node):
         self.declare_parameter('min_rate_ratio', 0.7)
 
         # Preferred parameter interface.
-        self.declare_parameter('monitored_topics', [])
-        self.declare_parameter('expected_rates_hz', [])
+        self.declare_parameter('monitored_topics', Parameter.Type.STRING_ARRAY)
+        self.declare_parameter('expected_rates_hz', Parameter.Type.DOUBLE_ARRAY)
 
         # Backward-compatible fallback used by older config stubs.
-        self.declare_parameter('topics', [])
+        self.declare_parameter('topics', Parameter.Type.STRING_ARRAY)
         self.declare_parameter('min_rate_hz', 0.0)
 
         self._window_sec = float(self.get_parameter('window_sec').value)

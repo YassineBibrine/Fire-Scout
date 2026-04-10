@@ -1,4 +1,5 @@
 import subprocess
+import sys
 import time
 
 import pytest
@@ -13,7 +14,9 @@ def ros_context():
     """Initialize ROS with deterministic latency thresholds for this test."""
     rclpy.init()
     process = subprocess.Popen([
-        'ros2', 'run', 'monitoring', 'latency_monitor',
+        sys.executable,
+        '-m',
+        'monitoring.latency_monitor_node',
         '--ros-args',
         '-p', 'monitored_topics:=[/monitoring/test/scan]',
         '-p', 'scan_max_latency_ms:=200.0',
@@ -24,25 +27,23 @@ def ros_context():
         yield
     finally:
         process.terminate()
-        process.wait(timeout=5)
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
         rclpy.shutdown()
 
 
-def _wait_for_message(node, timeout_sec: float = 3.0) -> str:
-    """Wait for one latency status message and return its payload."""
-    received = {'msg': None}
-
-    def _cb(msg: String) -> None:
-        received['msg'] = msg.data
-
-    sub = node.create_subscription(String, '/monitoring/latency_alarm', _cb, 10)
-    try:
-        deadline = time.time() + timeout_sec
-        while time.time() < deadline and received['msg'] is None:
-            rclpy.spin_once(node, timeout_sec=0.05)
-        return received['msg']
-    finally:
-        node.destroy_subscription(sub)
+def _wait_for_message_with_prefix(node, received, prefix: str, timeout_sec: float = 3.0) -> str:
+    """Wait until a captured latency message starts with the requested prefix."""
+    deadline = time.time() + timeout_sec
+    while time.time() < deadline:
+        rclpy.spin_once(node, timeout_sec=0.05)
+        for payload in received:
+            if payload.startswith(prefix):
+                return payload
+    return None
 
 
 def _publish_scan(publisher_node, publisher, stamp_msg) -> None:
@@ -64,6 +65,15 @@ def test_latency_alarm_old_and_fresh_scan(ros_context):
     """Verify stale header stamp triggers ALARM and fresh stamp triggers OK."""
     helper = rclpy.create_node('test_latency_alarm_helper')
     pub = helper.create_publisher(LaserScan, '/monitoring/test/scan', 10)
+    received_messages = []
+
+    # Keep a live subscriber during the entire test to avoid missing one-shot alarms.
+    sub = helper.create_subscription(
+        String,
+        '/monitoring/latency_alarm',
+        lambda msg: received_messages.append(msg.data),
+        10,
+    )
 
     try:
         # Give ROS graph a moment for discovery.
@@ -74,15 +84,26 @@ def test_latency_alarm_old_and_fresh_scan(ros_context):
         # Publish a stale scan (1 second old) which exceeds 200 ms threshold.
         stale_stamp = (helper.get_clock().now() - Duration(seconds=1.0)).to_msg()
         _publish_scan(helper, pub, stale_stamp)
-        stale_result = _wait_for_message(helper, timeout_sec=2.0)
+        stale_result = _wait_for_message_with_prefix(
+            helper,
+            received_messages,
+            'ALARM:/monitoring/test/scan:latency=',
+            timeout_sec=2.0,
+        )
         assert stale_result is not None, 'No latency message received for stale scan'
         assert stale_result.startswith('ALARM:/monitoring/test/scan:latency='), stale_result
 
         # Publish a fresh scan stamped at current time; should be within threshold.
         fresh_stamp = helper.get_clock().now().to_msg()
         _publish_scan(helper, pub, fresh_stamp)
-        fresh_result = _wait_for_message(helper, timeout_sec=2.0)
+        fresh_result = _wait_for_message_with_prefix(
+            helper,
+            received_messages,
+            'OK:/monitoring/test/scan:latency=',
+            timeout_sec=2.0,
+        )
         assert fresh_result is not None, 'No latency message received for fresh scan'
         assert fresh_result.startswith('OK:/monitoring/test/scan:latency='), fresh_result
     finally:
+        helper.destroy_subscription(sub)
         helper.destroy_node()

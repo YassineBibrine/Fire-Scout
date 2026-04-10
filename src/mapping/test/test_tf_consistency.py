@@ -1,3 +1,4 @@
+import subprocess
 import time
 
 import pytest
@@ -14,10 +15,70 @@ def tf_context():
     node = Node('test_tf_consistency_node')
     buffer = Buffer(cache_time=Duration(seconds=10.0))
     listener = TransformListener(buffer, node, spin_thread=False)
+    processes = []
+
+    # Launch static transforms map -> robotX/map for all robots.
+    for robot in ('robot1', 'robot2', 'robot3'):
+        processes.append(
+            subprocess.Popen([
+                'ros2',
+                'run',
+                'tf2_ros',
+                'static_transform_publisher',
+                '--ros-args',
+                '--remap',
+                f'__name:=static_tf_map_to_{robot}_map',
+                '--',
+                '0',
+                '0',
+                '0',
+                '0',
+                '0',
+                '0',
+                'map',
+                f'{robot}/map',
+            ])
+        )
+
+        # Launch static transforms robotX/map -> robotX/odom for all robots.
+        processes.append(
+            subprocess.Popen([
+                'ros2',
+                'run',
+                'tf2_ros',
+                'static_transform_publisher',
+                '--ros-args',
+                '--remap',
+                f'__name:=static_tf_{robot}_map_to_odom',
+                '--',
+                '0',
+                '0',
+                '0',
+                '0',
+                '0',
+                '0',
+                f'{robot}/map',
+                f'{robot}/odom',
+            ])
+        )
+
+    # Give TF static publishers time to be discovered by the listener.
+    time.sleep(2.0)
+
     try:
         yield node, buffer, listener
     finally:
+        # Terminate all static TF publisher processes and wait for clean exit.
+        for process in processes:
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
+
         node.destroy_node()
+        # Always shutdown rclpy last after all process/node teardown is complete.
         rclpy.shutdown()
 
 

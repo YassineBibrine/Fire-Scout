@@ -7,6 +7,7 @@ from typing import Callable, Dict, List
 import rclpy
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
 
@@ -24,10 +25,10 @@ class LatencyMonitorNode(Node):
         self.declare_parameter('map_max_latency_ms', 2000.0)
 
         # Preferred config interface from monitor_topics.yaml.
-        self.declare_parameter('monitored_topics', [])
+        self.declare_parameter('monitored_topics', Parameter.Type.STRING_ARRAY)
 
         # Backward-compatible fallback list.
-        self.declare_parameter('topics', [])
+        self.declare_parameter('topics', Parameter.Type.STRING_ARRAY)
 
         self._default_max_latency_ms = float(self.get_parameter('default_max_latency_ms').value)
         self._scan_max_latency_ms = float(self.get_parameter('scan_max_latency_ms').value)

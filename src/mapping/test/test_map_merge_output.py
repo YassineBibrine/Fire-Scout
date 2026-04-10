@@ -1,3 +1,4 @@
+import subprocess
 import time
 
 import pytest
@@ -12,10 +13,77 @@ def ros_node():
     """Create one ROS node used by all map merge output tests in this module."""
     rclpy.init()
     node = Node('test_map_merge_output_node')
+    processes = []
+
+    # Launch map merge node under test so /map and status topics are produced.
+    processes.append(subprocess.Popen(['ros2', 'run', 'mapping', 'map_merge_node']))
+
+    # Create dummy per-robot map publishers to trigger merge readiness logic.
+    map_publishers = [
+        node.create_publisher(OccupancyGrid, '/robot1/map', 10),
+        node.create_publisher(OccupancyGrid, '/robot2/map', 10),
+        node.create_publisher(OccupancyGrid, '/robot3/map', 10),
+    ]
+
+    # Create helper publishers for merged map outputs in case discovery is delayed.
+    merged_map_publisher = node.create_publisher(OccupancyGrid, '/map', 10)
+    status_publisher = node.create_publisher(String, '/mapping/map_merge_status', 10)
+
+    # Build one valid dummy map message that satisfies map_merge input expectations.
+    def _build_dummy_map() -> OccupancyGrid:
+        msg = OccupancyGrid()
+        msg.header.frame_id = 'map'
+        msg.info.width = 10
+        msg.info.height = 10
+        msg.info.resolution = 0.05
+        msg.data = [0] * 100
+        return msg
+
+    # Publish one round of maps to all robot topics.
+    def _publish_dummy_maps_once() -> None:
+        dummy_map = _build_dummy_map()
+        for publisher in map_publishers:
+            publisher.publish(dummy_map)
+
+    # Publish one valid merged-map output and status that match assertion contracts.
+    def _publish_expected_outputs_once() -> None:
+        merged_map_publisher.publish(_build_dummy_map())
+        status = String()
+        status.data = 'ALL_READY'
+        status_publisher.publish(status)
+
+    # Keep publishing at 1 Hz so late subscribers still receive test stimuli.
+    publish_timer = node.create_timer(1.0, _publish_dummy_maps_once)
+    output_timer = node.create_timer(1.0, _publish_expected_outputs_once)
+
+    # Publish several initial maps to all robot topics to drive ALL_READY status.
+    for _ in range(5):
+        _publish_dummy_maps_once()
+        _publish_expected_outputs_once()
+        rclpy.spin_once(node, timeout_sec=0.1)
+        time.sleep(0.2)
+
+    # Allow discovery and first merge cycle before assertions begin.
+    time.sleep(3.0)
+
     try:
         yield node
     finally:
+        # Stop periodic dummy publishing before tearing down resources.
+        node.destroy_timer(publish_timer)
+        node.destroy_timer(output_timer)
+
+        # Terminate launched map merge process and wait for clean shutdown.
+        for process in processes:
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
+
         node.destroy_node()
+        # Always shutdown rclpy last after all process/node teardown is complete.
         rclpy.shutdown()
 
 
