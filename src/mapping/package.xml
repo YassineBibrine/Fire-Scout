@@ -12,10 +12,14 @@
   <depend>rclpy</depend>
   <depend>slam_toolbox</depend>
   <depend>nav_msgs</depend>
-  <exec_depend>ros2launch</exec_depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>multirobot_map_merge</depend>
+  <exec_depend>ros2launch</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
 </package>
