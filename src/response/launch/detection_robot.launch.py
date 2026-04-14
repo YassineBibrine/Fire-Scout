@@ -1,14 +1,47 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, LogInfo
+from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
+
+from launch_ros.actions import Node
+
+from ament_index_python.packages import get_package_share_directory
+import os
 
 
 def generate_launch_description():
+
     robot_id = LaunchConfiguration('robot_id')
-    use_sim_time = LaunchConfiguration('use_sim_time')
+
+    # Get config file path correctly
+    pkg_share = get_package_share_directory('response')
+
+    config_file = os.path.join(
+        pkg_share,
+        'config',
+        'fire_detection.yaml'
+    )
 
     return LaunchDescription([
-        DeclareLaunchArgument('robot_id', default_value='robot1', description='Robot namespace/id.'),
-        DeclareLaunchArgument('use_sim_time', default_value='true', description='Use simulated clock.'),
-        LogInfo(msg=['Detection contract ready for ', robot_id, ' use_sim_time=', use_sim_time]),
+
+        DeclareLaunchArgument(
+            'robot_id',
+            default_value='robot1',
+            description='Robot namespace'
+        ),
+
+        Node(
+            package='response',
+            executable='fire_detection_node',
+            name='fire_detection_node',
+
+            namespace=robot_id,
+
+            parameters=[
+                config_file,
+                {'robot_id': robot_id}
+            ],
+
+            output='screen'
+        )
+
     ])
