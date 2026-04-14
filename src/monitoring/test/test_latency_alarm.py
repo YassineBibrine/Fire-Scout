@@ -4,6 +4,9 @@ import time
 from typing import Optional
 
 import pytest
+pytest.importorskip('rclpy')
+pytest.importorskip('sensor_msgs.msg')
+pytest.importorskip('std_msgs.msg')
 import rclpy
 from rclpy.duration import Duration
 from sensor_msgs.msg import LaserScan

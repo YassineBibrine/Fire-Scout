@@ -23,7 +23,8 @@ class TestServiceGeneration(unittest.TestCase):
     
     def test_assign_task_fields(self):
         """Test AssignTask service has required fields"""
-        from firescout_interfaces.srv import AssignTask
+        module = import_module('firescout_interfaces.srv')
+        AssignTask = getattr(module, 'AssignTask')
         
         # Check Request fields
         self.assertTrue(hasattr(AssignTask.Request, 'task_id'))

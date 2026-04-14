@@ -34,6 +34,7 @@ setup(
     description='Response package',
 
     license='Apache-2.0',
+    tests_require=['pytest'],
 
     entry_points={
         'console_scripts': [

@@ -24,7 +24,8 @@ class TestMessageGeneration(unittest.TestCase):
     
     def test_robot_health_fields(self):
         """Test RobotHealth message has required fields"""
-        from firescout_interfaces.msg import RobotHealth
+        module = import_module('firescout_interfaces.msg')
+        RobotHealth = getattr(module, 'RobotHealth')
         
         msg = RobotHealth()
         self.assertTrue(hasattr(msg, 'robot_name'))
@@ -37,7 +38,8 @@ class TestMessageGeneration(unittest.TestCase):
     
     def test_frontier_fields(self):
         """Test Frontier message has required fields"""
-        from firescout_interfaces.msg import Frontier
+        module = import_module('firescout_interfaces.msg')
+        Frontier = getattr(module, 'Frontier')
         
         msg = Frontier()
         self.assertTrue(hasattr(msg, 'centroid'))

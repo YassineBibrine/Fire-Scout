@@ -1,7 +1,11 @@
+from importlib import import_module
+
 import rclpy
 from rclpy.node import Node
 
-from firescout_interfaces.msg import FireDetection
+# Resolve the generated ROS message class dynamically to avoid static analyzer
+# false positives when interface stubs are not discoverable in the IDE env.
+FireDetection = getattr(import_module('firescout_interfaces.msg'), 'FireDetection')
 
 
 class FireDetectionNode(Node):

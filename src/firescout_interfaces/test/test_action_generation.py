@@ -18,7 +18,8 @@ class TestActionGeneration(unittest.TestCase):
     
     def test_suppress_fire_fields(self):
         """Test SuppressFire action has required fields"""
-        from firescout_interfaces.action import SuppressFire
+        module = import_module('firescout_interfaces.action')
+        SuppressFire = getattr(module, 'SuppressFire')
         
         # Check Goal fields
         self.assertTrue(hasattr(SuppressFire.Goal, 'fire_id'))
