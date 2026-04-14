@@ -1,0 +1,36 @@
+
+<?xml version="1.0" ?>
+<sdf version="1.8">
+
+<model name="simple_robot">
+  <static>false</static>
+
+  <link name="base_link">
+    <inertial>
+      <mass>1</mass>
+    </inertial>
+
+    <visual name="visual">
+      <geometry>
+        <cylinder>
+          <radius>0.2</radius>
+          <length>0.1</length>
+        </cylinder>
+      </geometry>
+    </visual>
+
+    <collision name="collision">
+      <geometry>
+        <cylinder>
+          <radius>0.2</radius>
+          <length>0.1</length>
+        </cylinder>
+      </geometry>
+    </collision>
+
+  </link>
+
+  <pose>0 0 0.1 0 0 0</pose>
+</model>
+
+</sdf>
