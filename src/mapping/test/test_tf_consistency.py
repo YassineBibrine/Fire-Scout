@@ -5,6 +5,7 @@ import pytest
 import rclpy
 from rclpy.duration import Duration
 from rclpy.node import Node
+from rclpy.time import Time
 from tf2_ros import Buffer, TransformListener
 
 
@@ -91,8 +92,8 @@ def _wait_for_transform(node: Node, tf_buffer: Buffer, target: str, source: str,
         rclpy.spin_once(node, timeout_sec=0.1)
 
         try:
-            if tf_buffer.can_transform(target, source, rclpy.time.Time(), timeout=Duration(seconds=0.1)):
-                tf_buffer.lookup_transform(target, source, rclpy.time.Time(), timeout=Duration(seconds=0.1))
+            if tf_buffer.can_transform(target, source, Time(), timeout=Duration(seconds=0.1)):
+                tf_buffer.lookup_transform(target, source, Time(), timeout=Duration(seconds=0.1))
                 return True
         except Exception:
             # Continue waiting until timeout if TF tree is still converging.
