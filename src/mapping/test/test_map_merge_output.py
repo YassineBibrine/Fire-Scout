@@ -2,6 +2,9 @@ import subprocess
 import time
 
 import pytest
+pytest.importorskip('rclpy')
+pytest.importorskip('nav_msgs.msg')
+pytest.importorskip('std_msgs.msg')
 import rclpy
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node

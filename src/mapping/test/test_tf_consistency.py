@@ -2,6 +2,8 @@ import subprocess
 import time
 
 import pytest
+pytest.importorskip('rclpy')
+pytest.importorskip('tf2_ros')
 import rclpy
 from rclpy.duration import Duration
 from rclpy.node import Node
