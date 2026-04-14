@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import time
+from typing import Optional
 
 import pytest
 import rclpy
@@ -44,7 +45,7 @@ def _spin_for(node, duration_sec: float) -> None:
         rclpy.spin_once(node, timeout_sec=0.05)
 
 
-def _wait_for_payload_prefix(node, received, prefix: str, timeout_sec: float = 4.0) -> str:
+def _wait_for_payload_prefix(node, received, prefix: str, timeout_sec: float = 4.0) -> Optional[str]:
     """Wait until any captured rate alarm payload starts with prefix."""
     deadline = time.time() + timeout_sec
     while time.time() < deadline:
@@ -55,7 +56,7 @@ def _wait_for_payload_prefix(node, received, prefix: str, timeout_sec: float = 4
     return None
 
 
-def _wait_for_payload_exact(node, received, expected: str, timeout_sec: float = 4.0) -> str:
+def _wait_for_payload_exact(node, received, expected: str, timeout_sec: float = 4.0) -> Optional[str]:
     """Wait until any captured rate alarm payload equals expected."""
     deadline = time.time() + timeout_sec
     while time.time() < deadline:
