@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import time
+from typing import Optional
 
 import pytest
 import rclpy
@@ -35,7 +36,7 @@ def ros_context():
         rclpy.shutdown()
 
 
-def _wait_for_message_with_prefix(node, received, prefix: str, timeout_sec: float = 3.0) -> str:
+def _wait_for_message_with_prefix(node, received, prefix: str, timeout_sec: float = 3.0) -> Optional[str]:
     """Wait until a captured latency message starts with the requested prefix."""
     deadline = time.time() + timeout_sec
     while time.time() < deadline:
