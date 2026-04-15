@@ -1,8 +1,44 @@
 from launch import LaunchDescription
-from launch.actions import LogInfo
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
+    """Launch all monitoring nodes in /monitoring namespace with shared configs."""
+    monitor_topics_yaml = [FindPackageShare('monitoring'), '/config/monitor_topics.yaml']
+    thresholds_yaml = [FindPackageShare('monitoring'), '/config/thresholds.yaml']
+
+    common_parameters = [monitor_topics_yaml, thresholds_yaml]
+
+    topic_rate_monitor = Node(
+        package='monitoring',
+        executable='topic_rate_monitor',
+        name='topic_rate_monitor_node',
+        namespace='monitoring',
+        output='screen',
+        parameters=common_parameters,
+    )
+
+    latency_monitor = Node(
+        package='monitoring',
+        executable='latency_monitor',
+        name='latency_monitor_node',
+        namespace='monitoring',
+        output='screen',
+        parameters=common_parameters,
+    )
+
+    metrics_exporter = Node(
+        package='monitoring',
+        executable='metrics_exporter',
+        name='metrics_exporter_node',
+        namespace='monitoring',
+        output='screen',
+        parameters=common_parameters,
+    )
+
     return LaunchDescription([
-        LogInfo(msg='monitoring package launch placeholder'),
+        topic_rate_monitor,
+        latency_monitor,
+        metrics_exporter,
     ])
