@@ -26,6 +26,11 @@ class FireDetectionNode(Node):
             'robot1'
         )
 
+        self.declare_parameter(
+            'publish_demo_detections',
+            False
+        )
+
         # Get parameters
         self.threshold = self.get_parameter(
             'fire_confidence_threshold'
@@ -33,6 +38,10 @@ class FireDetectionNode(Node):
 
         self.robot_id = self.get_parameter(
             'robot_id'
+        ).value
+
+        self.publish_demo_detections = self.get_parameter(
+            'publish_demo_detections'
         ).value
 
         # Create publisher
@@ -55,6 +64,9 @@ class FireDetectionNode(Node):
         )
 
     def timer_callback(self):
+
+        if not self.publish_demo_detections:
+            return
 
         # Fake confidence value
         fake_confidence = 0.8
