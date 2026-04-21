@@ -65,6 +65,15 @@ def generate_launch_description():
             ),
             launch_arguments={'use_sim_time': use_sim_time}.items(),
         ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('monitoring'),
+                    'launch',
+                    'monitoring.launch.py',
+                ])
+            ),
+        ),
     ]
 
     return LaunchDescription([

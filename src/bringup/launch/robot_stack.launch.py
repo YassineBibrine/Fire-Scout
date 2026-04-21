@@ -9,6 +9,8 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     simulation = LaunchConfiguration('simulation')
     robot_id = LaunchConfiguration('robot_id')
+    spawn_x = LaunchConfiguration('spawn_x')
+    spawn_y = LaunchConfiguration('spawn_y')
     use_sim_time = LaunchConfiguration('use_sim_time')
 
     simulation_arg = DeclareLaunchArgument(
@@ -20,6 +22,16 @@ def generate_launch_description():
         'robot_id',
         default_value='robot1',
         description='Robot namespace/id.',
+    )
+    spawn_x_arg = DeclareLaunchArgument(
+        'spawn_x',
+        default_value='0.0',
+        description='Robot spawn X coordinate in Gazebo.',
+    )
+    spawn_y_arg = DeclareLaunchArgument(
+        'spawn_y',
+        default_value='0.0',
+        description='Robot spawn Y coordinate in Gazebo.',
     )
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
@@ -39,6 +51,8 @@ def generate_launch_description():
             condition=IfCondition(simulation),
             launch_arguments={
                 'robot_id': robot_id,
+                'spawn_x': spawn_x,
+                'spawn_y': spawn_y,
                 'use_sim_time': use_sim_time,
             }.items(),
         ),
@@ -100,6 +114,8 @@ def generate_launch_description():
     return LaunchDescription([
         simulation_arg,
         robot_id_arg,
+        spawn_x_arg,
+        spawn_y_arg,
         use_sim_time_arg,
         *includes,
     ])

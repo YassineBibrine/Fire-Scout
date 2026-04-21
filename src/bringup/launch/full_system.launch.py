@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.actions import ExecuteProcess
 from launch.actions import GroupAction
 from launch.actions import IncludeLaunchDescription
 from launch.conditions import IfCondition
@@ -13,6 +14,7 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     simulation = LaunchConfiguration('simulation')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    auto_drive = LaunchConfiguration('auto_drive')
 
     simulation_arg = DeclareLaunchArgument(
         'simulation',
@@ -23,6 +25,11 @@ def generate_launch_description():
         'use_sim_time',
         default_value='true',
         description='Use simulated clock.',
+    )
+    auto_drive_arg = DeclareLaunchArgument(
+        'auto_drive',
+        default_value='false',
+        description='Publish demo cmd_vel to make robots move automatically.',
     )
 
     global_stack = IncludeLaunchDescription(
@@ -41,14 +48,20 @@ def generate_launch_description():
             PathJoinSubstitution([
                 FindPackageShare('simulation'),
                 'launch',
-                'gz_world.launch.py',
+                'sim.launch.py',
             ])
         ),
         condition=IfCondition(simulation),
     )
 
     robot_groups = []
-    for robot_id in ('robot1', 'robot2', 'robot3'):
+    robot_specs = (
+        ('robot1', '-2.0', '-2.0', '0.20'),
+        ('robot2', '0.0', '-2.0', '0.00'),
+        ('robot3', '2.0', '-2.0', '-0.20'),
+    )
+    auto_drive_publishers = []
+    for robot_id, spawn_x, spawn_y, ang_z in robot_specs:
         robot_stack = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution([
@@ -60,6 +73,8 @@ def generate_launch_description():
             launch_arguments={
                 'simulation': simulation,
                 'robot_id': robot_id,
+                'spawn_x': spawn_x,
+                'spawn_y': spawn_y,
                 'use_sim_time': use_sim_time,
             }.items(),
         )
@@ -69,11 +84,25 @@ def generate_launch_description():
                 robot_stack,
             ])
         )
+        auto_drive_publishers.append(
+            ExecuteProcess(
+                condition=IfCondition(auto_drive),
+                cmd=[
+                    'ros2', 'topic', 'pub', '-r', '5',
+                    f'/model/{robot_id}/cmd_vel',
+                    'geometry_msgs/msg/Twist',
+                    f'{{linear: {{x: 0.35}}, angular: {{z: {ang_z}}}}}',
+                ],
+                output='log',
+            )
+        )
 
     return LaunchDescription([
         simulation_arg,
         use_sim_time_arg,
+        auto_drive_arg,
         simulation_world,
         global_stack,
         *robot_groups,
+        *auto_drive_publishers,
     ])

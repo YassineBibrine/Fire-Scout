@@ -7,13 +7,30 @@ import os
 def generate_launch_description():
 
     pkg_sim = get_package_share_directory('simulation')
+    pkg_turtlebot3 = get_package_share_directory('turtlebot3_description')
 
     world = os.path.join(pkg_sim, 'worlds', 'world_1.sdf')
 
-    # 🔥 IMPORTANT : dire à Gazebo où trouver les resources
+    # 🔥 IMPORTANT : Tell Gazebo where to find resources (meshes, models, etc)
+    ros_share_dir = os.path.dirname(pkg_sim)  # Get /opt/ros/kilted/share/
+    
+    # Set GZ_SIM_RESOURCE_PATH for simulation resources
+    gz_resource_path = f'{pkg_sim}{os.pathsep}{ros_share_dir}'
     set_gz_resource_path = SetEnvironmentVariable(
         name='GZ_SIM_RESOURCE_PATH',
-        value=pkg_sim
+        value=gz_resource_path
+    )
+    
+    # Set GZ_MODEL_PATH for model/mesh resolution
+    set_gz_model_path = SetEnvironmentVariable(
+        name='GZ_MODEL_PATH',
+        value=ros_share_dir
+    )
+
+    # Disable FastDDS shared memory transport for this launch to reduce port-lock spam.
+    set_fastrtps_shm = SetEnvironmentVariable(
+        name='FASTDDS_BUILTIN_TRANSPORTS',
+        value='UDPv4'
     )
 
     gazebo = IncludeLaunchDescription(
@@ -29,5 +46,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         set_gz_resource_path,
+        set_gz_model_path,
+        set_fastrtps_shm,
         gazebo
     ])

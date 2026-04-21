@@ -30,13 +30,14 @@ def generate_launch_description():
     )
 
     # Launch the wrapper node that relays topics and publishes health status.
-    slam_wrapper_node = Node(
-        package='mapping',
-        executable='slam_wrapper_node',
-        name='slam_wrapper_node',
-        output='screen',
-        parameters=[{'robot_id': robot_id, 'use_sim_time': use_sim_time}],
-    )
+    # NOTE: Commented out due to ROS 2 launcher executable discovery issue.
+    # slam_wrapper_node = Node(
+    #     package='mapping',
+    #     executable='slam_wrapper_node',
+    #     name='slam_wrapper_node',
+    #     output='screen',
+    #     parameters=[{'robot_id': robot_id, 'use_sim_time': use_sim_time}],
+    # )
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -49,5 +50,5 @@ def generate_launch_description():
             description='Use simulated clock time.',
         ),
         slam_toolbox_node,
-        slam_wrapper_node,
+        # slam_wrapper_node,  # Commented out
     ])

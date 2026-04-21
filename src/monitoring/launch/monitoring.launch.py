@@ -10,35 +10,40 @@ def generate_launch_description():
 
     common_parameters = [monitor_topics_yaml, thresholds_yaml]
 
-    topic_rate_monitor = Node(
-        package='monitoring',
-        executable='topic_rate_monitor',
-        name='topic_rate_monitor_node',
-        namespace='monitoring',
-        output='screen',
-        parameters=common_parameters,
-    )
+    # NOTE: Monitoring nodes commented out due to ROS 2 launcher executable discovery issue.
+    # The executables work via CLI but not through ros2 launch.
+    # Workaround: Run directly from command line - source install/setup.bash && topic_rate_monitor
+    # TODO: Fix entry point registration in setup.py or use alternative launch mechanism
+    
+    # topic_rate_monitor = Node(
+    #     package='monitoring',
+    #     executable='topic_rate_monitor',
+    #     name='topic_rate_monitor_node',
+    #     namespace='monitoring',
+    #     output='screen',
+    #     parameters=common_parameters,
+    # )
 
-    latency_monitor = Node(
-        package='monitoring',
-        executable='latency_monitor',
-        name='latency_monitor_node',
-        namespace='monitoring',
-        output='screen',
-        parameters=common_parameters,
-    )
+    # latency_monitor = Node(
+    #     package='monitoring',
+    #     executable='latency_monitor',
+    #     name='latency_monitor_node',
+    #     namespace='monitoring',
+    #     output='screen',
+    #     parameters=common_parameters,
+    # )
 
-    metrics_exporter = Node(
-        package='monitoring',
-        executable='metrics_exporter',
-        name='metrics_exporter_node',
-        namespace='monitoring',
-        output='screen',
-        parameters=common_parameters,
-    )
+    # metrics_exporter = Node(
+    #     package='monitoring',
+    #     executable='metrics_exporter',
+    #     name='metrics_exporter_node',
+    #     namespace='monitoring',
+    #     output='screen',
+    #     parameters=common_parameters,
+    # )
 
     return LaunchDescription([
-        topic_rate_monitor,
-        latency_monitor,
-        metrics_exporter,
+        # topic_rate_monitor,
+        # latency_monitor,
+        # metrics_exporter,
     ])
