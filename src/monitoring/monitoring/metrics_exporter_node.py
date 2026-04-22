@@ -6,6 +6,7 @@ import json
 from typing import Dict, Set
 
 import rclpy
+from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from rclpy.node import Node
 from std_msgs.msg import String
 
@@ -23,8 +24,12 @@ class MetricsExporterNode(Node):
             publish_rate_hz = 1.0
 
         # Optional expected topics list used to compute alarm ratio robustly.
-        self.declare_parameter('monitored_topics', [])
-        self._monitored_topics = set(list(self.get_parameter('monitored_topics').value))
+        self.declare_parameter(
+            'monitored_topics',
+            value=[''],
+            descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING_ARRAY),
+        )
+        self._monitored_topics = {t for t in list(self.get_parameter('monitored_topics').value) if t}
 
         # Track active alarms keyed by topic so stale values are replaced.
         self._active_rate_alarms: Dict[str, str] = {}
