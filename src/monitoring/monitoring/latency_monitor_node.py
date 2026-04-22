@@ -7,7 +7,6 @@ from typing import Callable, Dict, List
 import rclpy
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
-from rclpy.parameter import Parameter
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
 
@@ -25,19 +24,19 @@ class LatencyMonitorNode(Node):
         self.declare_parameter('map_max_latency_ms', 2000.0)
 
         # Preferred config interface from monitor_topics.yaml.
-        self.declare_parameter('monitored_topics', Parameter.Type.STRING_ARRAY)
+        self.declare_parameter('monitored_topics', [''])
 
         # Backward-compatible fallback list.
-        self.declare_parameter('topics', Parameter.Type.STRING_ARRAY)
+        self.declare_parameter('topics', [''])
 
         self._default_max_latency_ms = float(self.get_parameter('default_max_latency_ms').value)
         self._scan_max_latency_ms = float(self.get_parameter('scan_max_latency_ms').value)
         self._odom_max_latency_ms = float(self.get_parameter('odom_max_latency_ms').value)
         self._map_max_latency_ms = float(self.get_parameter('map_max_latency_ms').value)
 
-        monitored_topics = list(self.get_parameter('monitored_topics').value)
+        monitored_topics = [t for t in list(self.get_parameter('monitored_topics').value) if t]
         if not monitored_topics:
-            monitored_topics = list(self.get_parameter('topics').value)
+            monitored_topics = [t for t in list(self.get_parameter('topics').value) if t]
 
         self._alarm_pub = self.create_publisher(String, '/monitoring/latency_alarm', 10)
         self._subscriptions = []

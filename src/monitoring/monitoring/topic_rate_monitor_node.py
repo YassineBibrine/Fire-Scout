@@ -3,12 +3,11 @@
 """Monitor topic publication rates and emit alarms when rates drop."""
 
 from collections import deque
-from typing import Callable, Deque, Dict, List
+from typing import Callable, Deque, Dict, List, Tuple
 
 import rclpy
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
-from rclpy.parameter import Parameter
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
 
@@ -25,11 +24,11 @@ class TopicRateMonitorNode(Node):
         self.declare_parameter('min_rate_ratio', 0.7)
 
         # Preferred parameter interface.
-        self.declare_parameter('monitored_topics', Parameter.Type.STRING_ARRAY)
-        self.declare_parameter('expected_rates_hz', Parameter.Type.DOUBLE_ARRAY)
+        self.declare_parameter('monitored_topics', [''])
+        self.declare_parameter('expected_rates_hz', [0.0])
 
         # Backward-compatible fallback used by older config stubs.
-        self.declare_parameter('topics', Parameter.Type.STRING_ARRAY)
+        self.declare_parameter('topics', [''])
         self.declare_parameter('min_rate_hz', 0.0)
 
         self._window_sec = float(self.get_parameter('window_sec').value)
@@ -72,14 +71,14 @@ class TopicRateMonitorNode(Node):
             f'window_sec={self._window_sec}, min_rate_ratio={self._min_rate_ratio}'
         )
 
-    def _load_topic_configuration(self) -> (List[str], List[float]):
+    def _load_topic_configuration(self) -> Tuple[List[str], List[float]]:
         """Load monitored topics and expected rates from parameters."""
-        monitored_topics = list(self.get_parameter('monitored_topics').value)
+        monitored_topics = [t for t in list(self.get_parameter('monitored_topics').value) if t]
         expected_rates = list(self.get_parameter('expected_rates_hz').value)
 
         # Backward-compatible fallback: use `topics` and single min_rate_hz.
         if not monitored_topics:
-            monitored_topics = list(self.get_parameter('topics').value)
+            monitored_topics = [t for t in list(self.get_parameter('topics').value) if t]
 
         if not monitored_topics:
             self.get_logger().warn('No monitored topics configured; monitor will publish OK.')
