@@ -38,7 +38,8 @@ def generate_launch_description():
 
             parameters=[
                 config_file,
-                {'robot_id': robot_id}
+                {'robot_id': robot_id},
+                {'publish_demo_detections': False}
             ],
 
             output='screen'
