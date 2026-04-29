@@ -1,6 +1,7 @@
 from importlib import import_module
 
 import rclpy
+from rclpy.duration import Duration
 from rclpy.node import Node
 
 # Resolve the generated ROS message classes dynamically to avoid static analyzer
@@ -83,7 +84,7 @@ class TaskAllocatorNode(Node):
 
         now = self.get_clock().now()
         assignment.assignment_time = now.to_msg()
-        assignment.deadline = (now + rclpy.time.Duration(seconds=30.0)).to_msg()
+        assignment.deadline = (now + Duration(seconds=30.0)).to_msg()
 
         return assignment
 

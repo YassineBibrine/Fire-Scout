@@ -13,17 +13,13 @@ def generate_launch_description():
     map_merge_params = [FindPackageShare('mapping'), '/config/map_merge.yaml']
 
     # Custom map merge node that merges /robotX/map and publishes /map status.
-    # NOTE: Temporarily commented out due to ROS 2 launcher executable discovery issue.
-    # The executable works via CLI but not through ros2 launch. Direct call works:
-    #   source install/setup.bash && map_merge_node
-    # Workaround: Use multirobot_map_merge directly instead until executable lookup is fixed.
-    # map_merge_node = Node(
-    #     package='mapping',
-    #     executable='map_merge_node',
-    #     name='map_merge_node',
-    #     output='screen',
-    #     parameters=[{'use_sim_time': use_sim_time}],
-    # )
+    map_merge_node = Node(
+        package='mapping',
+        executable='map_merge_node',
+        name='map_merge_node',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time}],
+    )
 
     # multirobot_map_merge backend configured from YAML.
     # NOTE: multirobot_map_merge package not installed in system, commenting out for now.
@@ -65,7 +61,7 @@ def generate_launch_description():
             default_value='true',
             description='Use simulated clock time.',
         ),
-        # map_merge_node,  # Commented out - see note above
+        map_merge_node,
         # multirobot_map_merge_node,  # Commented out - package not installed
         static_tf_robot1,
         static_tf_robot2,

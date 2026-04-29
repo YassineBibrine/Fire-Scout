@@ -34,11 +34,6 @@ class FaultSupervisorNode(Node):
 
         self.robots = ['robot1', 'robot2', 'robot3']
 
-        self.report_fault_client = self.create_client(
-            ReportFault,
-            '/coordination/services/report_fault'
-        )
-
         self.report_fault_service = self.create_service(
             ReportFault,
             '/coordination/services/report_fault',
@@ -75,39 +70,14 @@ class FaultSupervisorNode(Node):
             f"Fault from {event.robot_id}: {event.fault_type} severity={event.severity}"
         )
 
-        if not self.report_fault_client.service_is_ready():
-            self.get_logger().warning(
-                'ReportFault service not available'
-            )
-            return
+        request_robot_id = event.robot_id
+        fault_type = event.fault_type
+        severity = event.severity
 
-        request = ReportFault.Request()
-        request.robot_id = event.robot_id
-        request.fault_type = event.fault_type
-        request.severity = event.severity
-        request.description = event.description
-
-        future = self.report_fault_client.call_async(request)
-        future.add_done_callback(self.report_fault_done)
-
-    def report_fault_done(self, future):
-
-        try:
-            response = future.result()
-        except Exception as exc:
-            self.get_logger().warning(
-                f"ReportFault service call failed: {exc}"
-            )
-            return
-
-        if response is None:
-            self.get_logger().warning(
-                'ReportFault service returned no response'
-            )
-            return
-
+        fault_id = str(uuid.uuid4())
         self.get_logger().info(
-            f"ReportFault logged with id {response.fault_id}"
+            f"Fault logged: {request_robot_id} {fault_type} severity={severity} "
+            f"id={fault_id}"
         )
 
     def system_health_callback(self, status):
