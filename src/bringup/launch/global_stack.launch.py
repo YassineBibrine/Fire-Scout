@@ -74,6 +74,16 @@ def generate_launch_description():
                 ])
             ),
         ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('coordination'),
+                    'launch',
+                    'coordination_global.launch.py',
+                ])
+            ),
+            launch_arguments={'use_sim_time': use_sim_time}.items(),
+        ),
     ]
 
     return LaunchDescription([

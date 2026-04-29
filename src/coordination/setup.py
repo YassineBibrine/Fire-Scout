@@ -11,6 +11,7 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/coordination/launch', glob('launch/*.launch.py')),
+        ('share/coordination/config', glob('config/*.yaml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -19,5 +20,12 @@ setup(
     description='Coordination package skeleton for Fire-Scout.',
     license='Apache-2.0',
     tests_require=['pytest'],
-    entry_points={'console_scripts': []},
+    entry_points={
+        'console_scripts': [
+            'health_monitor_node = coordination.health_monitor_node:main',
+            'fault_supervisor_node = coordination.fault_supervisor_node:main',
+            'mission_manager_node = coordination.mission_manager_node:main',
+            'task_allocator_node = coordination.task_allocator_node:main',
+        ]
+    },
 )

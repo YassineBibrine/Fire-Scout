@@ -1,6 +1,6 @@
-# Result of auction
 string auction_id
-string winning_robot
-float32 winning_bid
-string[] losing_robots
+string winner_robot_id
+string task_id
+int32 task_type
+geometry_msgs/PoseStamped target_pose
 builtin_interfaces/Time timestamp
