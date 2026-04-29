@@ -20,5 +20,15 @@ setup(
     description='Testing tools package for Fire-Scout.',
     license='Apache-2.0',
     tests_require=['pytest'],
-    entry_points={'console_scripts': []},
+    entry_points={
+        'console_scripts': [
+            'dummy_scan_pub = testing_tools.dummy_scan_pub:main',
+            'dummy_odom_pub = testing_tools.dummy_odom_pub:main',
+            'dummy_heartbeat_pub = testing_tools.dummy_heartbeat_pub:main',
+            'dummy_fault_injector = testing_tools.dummy_fault_injector:main',
+            'dummy_frontier_pub = testing_tools.dummy_frontier_pub:main',
+            'dummy_camera_pub = testing_tools.dummy_camera_pub:main',
+            'namespace_lint_node = testing_tools.namespace_lint_node:main',
+        ]
+    },
 )

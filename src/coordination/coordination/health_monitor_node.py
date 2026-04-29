@@ -2,6 +2,7 @@ from importlib import import_module
 
 import rclpy
 from rclpy.node import Node
+from std_msgs.msg import String
 
 # Resolve the generated ROS message classes dynamically to avoid static analyzer
 # false positives when interface stubs are not discoverable in the IDE env.
@@ -43,9 +44,9 @@ class HealthMonitorNode(Node):
             )
 
             self.create_subscription(
-                NodeStatus,
+                String,
                 f'/mapping/{robot}/slam_status',
-                lambda msg, robot_id=robot: self.slam_status_callback(msg, robot_id),
+                lambda msg, robot_id=robot: self._on_slam_status(msg, robot_id),
                 10
             )
 
@@ -69,6 +70,10 @@ class HealthMonitorNode(Node):
         self.last_seen[robot_id] = self.get_clock().now()
 
     def slam_status_callback(self, _msg, robot_id):
+
+        self.last_seen[robot_id] = self.get_clock().now()
+
+    def _on_slam_status(self, msg: String, robot_id: str) -> None:
 
         self.last_seen[robot_id] = self.get_clock().now()
 

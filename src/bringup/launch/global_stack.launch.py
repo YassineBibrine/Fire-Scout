@@ -48,26 +48,6 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution([
-                    FindPackageShare('coordination'),
-                    'launch',
-                    'health_global.launch.py',
-                ])
-            ),
-            launch_arguments={'use_sim_time': use_sim_time}.items(),
-        ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                PathJoinSubstitution([
-                    FindPackageShare('coordination'),
-                    'launch',
-                    'mission_global.launch.py',
-                ])
-            ),
-            launch_arguments={'use_sim_time': use_sim_time}.items(),
-        ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                PathJoinSubstitution([
                     FindPackageShare('monitoring'),
                     'launch',
                     'monitoring.launch.py',

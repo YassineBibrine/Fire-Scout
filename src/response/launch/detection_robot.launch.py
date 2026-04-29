@@ -21,6 +21,12 @@ def generate_launch_description():
         'fire_detection.yaml'
     )
 
+    human_config_file = os.path.join(
+        pkg_share,
+        'config',
+        'human_detection.yaml'
+    )
+
     return LaunchDescription([
 
         DeclareLaunchArgument(
@@ -40,6 +46,50 @@ def generate_launch_description():
                 config_file,
                 {'robot_id': robot_id},
                 {'publish_demo_detections': False}
+            ],
+
+            output='screen'
+        ),
+
+        Node(
+            package='response',
+            executable='human_detection_node',
+            name='human_detection_node',
+
+            namespace=robot_id,
+
+            parameters=[
+                human_config_file,
+                {'robot_id': robot_id},
+                {'publish_demo_detections': False}
+            ],
+
+            output='screen'
+        ),
+
+        Node(
+            package='response',
+            executable='suppression_planning_node',
+            name='suppression_planning_node',
+
+            namespace=robot_id,
+
+            parameters=[
+                {'robot_id': robot_id}
+            ],
+
+            output='screen'
+        ),
+
+        Node(
+            package='response',
+            executable='rescue_planning_node',
+            name='rescue_planning_node',
+
+            namespace=robot_id,
+
+            parameters=[
+                {'robot_id': robot_id}
             ],
 
             output='screen'
