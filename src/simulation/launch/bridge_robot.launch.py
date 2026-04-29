@@ -24,6 +24,10 @@ def generate_launch_description():
             ['/model/', robot_id, '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist'],
             ['/model/', robot_id, '/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry'],
             ['/model/', robot_id, '/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V'],
+            ['/model/', robot_id, '/lidar@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan'],
+        ],
+        remappings=[
+            (['/model/', robot_id, '/lidar'], ['/', robot_id, '/scan']),
         ],
     )
 

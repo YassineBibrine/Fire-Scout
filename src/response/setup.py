@@ -39,6 +39,9 @@ setup(
     entry_points={
         'console_scripts': [
             'fire_detection_node = response.fire_detection_node:main',
+            'human_detection_node = response.human_detection_node:main',
+            'suppression_planning_node = response.suppression_planning_node:main',
+            'rescue_planning_node = response.rescue_planning_node:main',
         ],
     },
 )
