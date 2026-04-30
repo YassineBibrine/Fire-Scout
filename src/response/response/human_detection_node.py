@@ -34,7 +34,7 @@ class HumanDetectionNode(Node):
         if not self.has_parameter('use_sim_time'):
             self.declare_parameter(
                 'use_sim_time',
-                True
+                False
             )
 
         # Get parameters

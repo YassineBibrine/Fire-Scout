@@ -8,7 +8,19 @@ from nav_msgs.msg import Odometry
 from rclpy.node import Node
 
 
-def _wait_for_topic_type(node: Node, topic_name: str, expected_type: str, timeout_sec: float = 4.0) -> bool:
+@pytest.fixture(scope='module')
+def ros_node():
+    rclpy.init()
+    node = Node('test_spawn_namespaces_node')
+    try:
+        yield node
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
+
+
+def _wait_for_topic_type(node, topic_name, expected_type, timeout_sec=4.0):
     deadline = time.time() + timeout_sec
     while time.time() < deadline:
         rclpy.spin_once(node, timeout_sec=0.1)
@@ -18,20 +30,12 @@ def _wait_for_topic_type(node: Node, topic_name: str, expected_type: str, timeou
     return False
 
 
-def test_spawn_namespaces():
-    rclpy.init()
-    node = Node('test_spawn_namespaces_node')
-    try:
-        publishers = {
-            robot_id: node.create_publisher(Odometry, f'/{robot_id}/odom', 10)
-            for robot_id in ('robot1', 'robot2', 'robot3')
-        }
-        for publisher in publishers.values():
-            publisher.publish(Odometry())
-
-        for robot_id in ('robot1', 'robot2', 'robot3'):
-            assert _wait_for_topic_type(node, f'/{robot_id}/odom', 'nav_msgs/msg/Odometry')
-    finally:
-        node.destroy_node()
-        if rclpy.ok():
-            rclpy.shutdown()
+def test_spawn_namespaces(ros_node):
+    publishers = {
+        robot_id: ros_node.create_publisher(Odometry, f'/{robot_id}/odom', 10)
+        for robot_id in ('robot1', 'robot2', 'robot3')
+    }
+    for publisher in publishers.values():
+        publisher.publish(Odometry())
+    for robot_id in ('robot1', 'robot2', 'robot3'):
+        assert _wait_for_topic_type(ros_node, f'/{robot_id}/odom', 'nav_msgs/msg/Odometry')

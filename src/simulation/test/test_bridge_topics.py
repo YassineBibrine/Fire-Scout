@@ -12,7 +12,19 @@ from sensor_msgs.msg import LaserScan
 from tf2_msgs.msg import TFMessage
 
 
-def _wait_for_topic_type(node: Node, topic_name: str, expected_type: str, timeout_sec: float = 4.0) -> bool:
+@pytest.fixture(scope='module')
+def ros_node():
+    rclpy.init()
+    node = Node('test_bridge_topics_node')
+    try:
+        yield node
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
+
+
+def _wait_for_topic_type(node, topic_name, expected_type, timeout_sec=4.0):
     deadline = time.time() + timeout_sec
     while time.time() < deadline:
         rclpy.spin_once(node, timeout_sec=0.1)
@@ -22,22 +34,13 @@ def _wait_for_topic_type(node: Node, topic_name: str, expected_type: str, timeou
     return False
 
 
-def test_bridge_topics():
-    rclpy.init()
-    node = Node('test_bridge_topics_node')
-    try:
-        scan_pub = node.create_publisher(LaserScan, '/robot1/scan', 10)
-        odom_pub = node.create_publisher(Odometry, '/robot1/odom', 10)
-        tf_pub = node.create_publisher(TFMessage, '/tf', 10)
-
-        scan_pub.publish(LaserScan())
-        odom_pub.publish(Odometry())
-        tf_pub.publish(TFMessage())
-
-        assert _wait_for_topic_type(node, '/robot1/scan', 'sensor_msgs/msg/LaserScan')
-        assert _wait_for_topic_type(node, '/robot1/odom', 'nav_msgs/msg/Odometry')
-        assert _wait_for_topic_type(node, '/tf', 'tf2_msgs/msg/TFMessage')
-    finally:
-        node.destroy_node()
-        if rclpy.ok():
-            rclpy.shutdown()
+def test_bridge_topics(ros_node):
+    scan_pub = ros_node.create_publisher(LaserScan, '/robot1/scan', 10)
+    odom_pub = ros_node.create_publisher(Odometry, '/robot1/odom', 10)
+    tf_pub = ros_node.create_publisher(TFMessage, '/tf', 10)
+    scan_pub.publish(LaserScan())
+    odom_pub.publish(Odometry())
+    tf_pub.publish(TFMessage())
+    assert _wait_for_topic_type(ros_node, '/robot1/scan', 'sensor_msgs/msg/LaserScan')
+    assert _wait_for_topic_type(ros_node, '/robot1/odom', 'nav_msgs/msg/Odometry')
+    assert _wait_for_topic_type(ros_node, '/tf', 'tf2_msgs/msg/TFMessage')
