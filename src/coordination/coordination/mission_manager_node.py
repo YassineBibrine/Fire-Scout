@@ -16,10 +16,11 @@ class MissionManagerNode(Node):
 
         super().__init__('mission_manager_node')
 
-        self.declare_parameter(
-            'use_sim_time',
-            True
-        )
+        if not self.has_parameter('use_sim_time'):
+            self.declare_parameter(
+                'use_sim_time',
+                True
+            )
 
         self.current_state = 'INIT'
         self.start_time = self.get_clock().now()

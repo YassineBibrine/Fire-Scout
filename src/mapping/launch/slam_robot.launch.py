@@ -21,7 +21,14 @@ def generate_launch_description():
         executable='async_slam_toolbox_node',
         name='slam_toolbox',
         output='screen',
-        parameters=[slam_params, {'use_sim_time': use_sim_time}],
+        parameters=[
+            slam_params,
+            {'use_sim_time': use_sim_time},
+            {'odom_frame': [robot_id, '/odom']},
+            {'map_frame': [robot_id, '/map']},
+            {'base_frame': [robot_id, '/base_footprint']},
+            {'scan_topic': ['/', robot_id, '/scan']},
+        ],
         remappings=[
             ('/scan', ['/', robot_id, '/scan']),
             ('/odom', ['/', robot_id, '/odom']),

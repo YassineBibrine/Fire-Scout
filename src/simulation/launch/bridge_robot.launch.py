@@ -29,6 +29,7 @@ def generate_launch_description():
         remappings=[
             (['/model/', robot_id, '/lidar'], ['/', robot_id, '/scan']),
             (['/model/', robot_id, '/odometry'], ['/', robot_id, '/odom']),
+            (['/model/', robot_id, '/tf'], ['/tf']),
         ],
     )
 

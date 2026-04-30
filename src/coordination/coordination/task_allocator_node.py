@@ -17,10 +17,11 @@ class TaskAllocatorNode(Node):
 
         super().__init__('task_allocator_node')
 
-        self.declare_parameter(
-            'use_sim_time',
-            True
-        )
+        if not self.has_parameter('use_sim_time'):
+            self.declare_parameter(
+                'use_sim_time',
+                True
+            )
 
         self.publisher_ = self.create_publisher(
             TaskAssignment,

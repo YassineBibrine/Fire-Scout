@@ -7,7 +7,7 @@ from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import PushRosNamespace
+from launch_ros.actions import Node, PushRosNamespace
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -97,6 +97,16 @@ def generate_launch_description():
             )
         )
 
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', PathJoinSubstitution([
+            FindPackageShare('bringup'), 'config', 'firescout_viz.rviz'
+        ])],
+    )
+
     return LaunchDescription([
         simulation_arg,
         use_sim_time_arg,
@@ -105,4 +115,5 @@ def generate_launch_description():
         global_stack,
         *robot_groups,
         *auto_drive_publishers,
+        rviz_node,
     ])
