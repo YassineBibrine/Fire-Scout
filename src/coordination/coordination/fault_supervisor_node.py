@@ -23,10 +23,11 @@ class FaultSupervisorNode(Node):
             2.0
         )
 
-        self.declare_parameter(
-            'use_sim_time',
-            True
-        )
+        if not self.has_parameter('use_sim_time'):
+            self.declare_parameter(
+                'use_sim_time',
+                True
+            )
 
         self.heartbeat_timeout_sec = self.get_parameter(
             'heartbeat_timeout_sec'
