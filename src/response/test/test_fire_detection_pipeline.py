@@ -1,4 +1,5 @@
 from importlib import import_module
+import os
 import subprocess
 import sys
 import time
@@ -13,6 +14,8 @@ from rclpy.node import Node
 
 @pytest.fixture(scope='function')
 def ros_node():
+    original_domain = os.environ.get('ROS_DOMAIN_ID')
+    os.environ['ROS_DOMAIN_ID'] = '84'
     rclpy.init()
     node = Node('test_fire_detection_pipeline_node')
     process = subprocess.Popen([
@@ -45,6 +48,10 @@ def ros_node():
         node.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()
+        if original_domain is None:
+            os.environ.pop('ROS_DOMAIN_ID', None)
+        else:
+            os.environ['ROS_DOMAIN_ID'] = original_domain
 
 
 def _wait_for_detection(node: Node, received, timeout_sec: float = 8.0):
