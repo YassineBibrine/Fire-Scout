@@ -31,10 +31,11 @@ class HumanDetectionNode(Node):
             False
         )
 
-        self.declare_parameter(
-            'use_sim_time',
-            True
-        )
+        if not self.has_parameter('use_sim_time'):
+            self.declare_parameter(
+                'use_sim_time',
+                True
+            )
 
         # Get parameters
         self.robot_id = self.get_parameter(

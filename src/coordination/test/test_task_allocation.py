@@ -1,3 +1,5 @@
+from importlib import import_module
+from typing import Any
 import os
 import subprocess
 import sys
@@ -8,7 +10,8 @@ pytest.importorskip('rclpy')
 pytest.importorskip('firescout_interfaces.msg')
 pytest.importorskip('geometry_msgs.msg')
 import rclpy
-from firescout_interfaces.msg import AuctionResult, TaskAssignment
+AuctionResult = getattr(import_module('firescout_interfaces.msg'), 'AuctionResult')
+TaskAssignment = getattr(import_module('firescout_interfaces.msg'), 'TaskAssignment')
 from geometry_msgs.msg import PoseStamped
 from rclpy.node import Node
 
@@ -79,7 +82,7 @@ def _wait_for_assignment(node: Node, received, task_id: str, assigned_robot: str
     return None
 
 
-def _publish_auction_result(node: Node, publisher, auction: AuctionResult, duration_sec: float, hz: float = 2.0) -> None:
+def _publish_auction_result(node: Node, publisher, auction: Any, duration_sec: float, hz: float = 2.0) -> None:
     """Publish AuctionResult for duration_sec to ensure reception."""
     period = 1.0 / hz
     deadline = time.time() + duration_sec

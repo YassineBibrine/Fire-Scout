@@ -1,11 +1,16 @@
 from importlib import import_module
+from typing import Any, Dict, Optional
 
 import rclpy
 from rclpy.node import Node
+from rclpy.time import Time
 from std_msgs.msg import String
 
 # Resolve the generated ROS message classes dynamically to avoid static analyzer
 # false positives when interface stubs are not discoverable in the IDE env.
+NodeStatusMsg = Any
+RobotHealthMsg = Any
+
 RobotHealth = getattr(import_module('firescout_interfaces.msg'), 'RobotHealth')
 NodeStatus = getattr(import_module('firescout_interfaces.msg'), 'NodeStatus')
 
@@ -32,7 +37,7 @@ class HealthMonitorNode(Node):
         ).value
 
         self.robots = ['robot1', 'robot2', 'robot3']
-        self.last_seen = {robot: None for robot in self.robots}
+        self.last_seen: Dict[str, Optional[Time]] = {robot: None for robot in self.robots}
         self.degraded_robots = set()
         self.start_time = self.get_clock().now()
 
@@ -40,14 +45,14 @@ class HealthMonitorNode(Node):
             self.create_subscription(
                 RobotHealth,
                 f'/{robot}/robot_health',
-                lambda msg, robot_id=robot: self.robot_health_callback(msg, robot_id),
+                self._make_robot_health_callback(robot),
                 10
             )
 
             self.create_subscription(
                 String,
                 f'/mapping/{robot}/slam_status',
-                lambda msg, robot_id=robot: self._on_slam_status(msg, robot_id),
+                self._make_slam_status_callback(robot),
                 10
             )
 
@@ -66,11 +71,21 @@ class HealthMonitorNode(Node):
             'Health Monitor Node started'
         )
 
-    def robot_health_callback(self, _msg, robot_id):
+    def _make_robot_health_callback(self, robot_id: str):
 
-        self.last_seen[robot_id] = self.get_clock().now()
+        def _callback(msg: RobotHealthMsg) -> None:
+            self.robot_health_callback(msg, robot_id)
 
-    def slam_status_callback(self, _msg, robot_id):
+        return _callback
+
+    def _make_slam_status_callback(self, robot_id: str):
+
+        def _callback(msg: String) -> None:
+            self._on_slam_status(msg, robot_id)
+
+        return _callback
+
+    def robot_health_callback(self, _msg: RobotHealthMsg, robot_id: str) -> None:
 
         self.last_seen[robot_id] = self.get_clock().now()
 

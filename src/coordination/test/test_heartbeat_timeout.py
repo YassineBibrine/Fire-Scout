@@ -1,3 +1,4 @@
+from importlib import import_module
 import os
 import subprocess
 import sys
@@ -7,7 +8,8 @@ import pytest
 pytest.importorskip('rclpy')
 pytest.importorskip('firescout_interfaces.msg')
 import rclpy
-from firescout_interfaces.msg import NodeStatus, RobotHealth
+NodeStatus = getattr(import_module('firescout_interfaces.msg'), 'NodeStatus')
+RobotHealth = getattr(import_module('firescout_interfaces.msg'), 'RobotHealth')
 from rclpy.node import Node
 
 
