@@ -26,7 +26,7 @@ def generate_launch_description():
             {'use_sim_time': use_sim_time},
             {'odom_frame': [robot_id, '/odom']},
             {'map_frame': [robot_id, '/map']},
-            {'base_frame': [robot_id, '/base_footprint']},
+            {'base_frame': [robot_id, '/chassis']},
             {'scan_topic': ['/', robot_id, '/scan']},
         ],
         remappings=[
