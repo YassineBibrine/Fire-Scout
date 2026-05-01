@@ -20,10 +20,11 @@ class SuppressionPlanningNode(Node):
             'robot1'
         )
 
-        self.declare_parameter(
-            'use_sim_time',
-            True
-        )
+        if not self.has_parameter('use_sim_time'):
+            self.declare_parameter(
+                'use_sim_time',
+                True
+            )
 
         self.robot_id = self.get_parameter(
             'robot_id'

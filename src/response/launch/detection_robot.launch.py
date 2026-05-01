@@ -39,9 +39,6 @@ def generate_launch_description():
             package='response',
             executable='fire_detection_node',
             name='fire_detection_node',
-
-            namespace=robot_id,
-
             parameters=[
                 config_file,
                 {'robot_id': robot_id},
@@ -55,9 +52,6 @@ def generate_launch_description():
             package='response',
             executable='human_detection_node',
             name='human_detection_node',
-
-            namespace=robot_id,
-
             parameters=[
                 human_config_file,
                 {'robot_id': robot_id},
@@ -71,9 +65,6 @@ def generate_launch_description():
             package='response',
             executable='suppression_planning_node',
             name='suppression_planning_node',
-
-            namespace=robot_id,
-
             parameters=[
                 {'robot_id': robot_id}
             ],
@@ -85,9 +76,6 @@ def generate_launch_description():
             package='response',
             executable='rescue_planning_node',
             name='rescue_planning_node',
-
-            namespace=robot_id,
-
             parameters=[
                 {'robot_id': robot_id}
             ],
