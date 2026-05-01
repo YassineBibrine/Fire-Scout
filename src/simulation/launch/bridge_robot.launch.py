@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, LogInfo
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 
 
@@ -27,9 +27,18 @@ def generate_launch_description():
             ['/model/', robot_id, '/lidar@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan'],
         ],
         remappings=[
-            (['/model/', robot_id, '/lidar'], ['/', robot_id, '/scan']),
-            (['/model/', robot_id, '/odometry'], ['/', robot_id, '/odom']),
-            (['/model/', robot_id, '/tf'], ['/tf']),
+            (
+                PathJoinSubstitution(['/model', robot_id, 'lidar']),
+                PathJoinSubstitution(['/', robot_id, 'scan']),
+            ),
+            (
+                PathJoinSubstitution(['/model', robot_id, 'odometry']),
+                PathJoinSubstitution(['/', robot_id, 'odom']),
+            ),
+            (
+                PathJoinSubstitution(['/model', robot_id, 'tf']),
+                '/tf',
+            ),
         ],
     )
 
