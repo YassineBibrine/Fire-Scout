@@ -18,12 +18,12 @@ def ros_context():
     """Initialize ROS with deterministic latency thresholds for this test."""
     rclpy.init()
     process = subprocess.Popen([
-        sys.executable,
-        '-m',
-        'monitoring.latency_monitor_node',
-        '--ros-args',
-        '-p', 'monitored_topics:=[/monitoring/test/scan]',
-        '-p', 'scan_max_latency_ms:=200.0',
+    sys.executable,
+    '-m',
+    'monitoring.latency_monitor_node',
+    '--ros-args',
+    '-p', 'monitored_topics:=["/monitoring/test/scan"]',
+    '-p', 'scan_max_latency_ms:=200.0',
     ])
     # Allow monitor process to start and discover graph entities.
     time.sleep(1.5)
