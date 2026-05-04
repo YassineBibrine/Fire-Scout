@@ -27,7 +27,7 @@ def generate_launch_description():
             {'odom_frame': PathJoinSubstitution([robot_id, 'odom'])},
             {'map_frame': PathJoinSubstitution([robot_id, 'map'])},
             {'base_frame': PathJoinSubstitution([robot_id, 'chassis'])},
-            {'scan_topic': PathJoinSubstitution([robot_id, 'slam', 'scan'])},
+            {'scan_topic': PathJoinSubstitution(['/', robot_id, 'slam', 'scan'])},
         ],
         remappings=[
             ('/scan', PathJoinSubstitution(['/', robot_id, 'slam', 'scan'])),
