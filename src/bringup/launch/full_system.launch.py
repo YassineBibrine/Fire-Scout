@@ -94,7 +94,7 @@ def generate_launch_description():
 
         robot_groups.append(
             TimerAction(
-                period=3.0 * index,
+                period=8.0 + 4.0 * index,
                 actions=[robot_group],
             )
         )
@@ -117,23 +117,4 @@ def generate_launch_description():
         global_stack,
         *robot_groups,
         rviz_node,
-        # Temporary Static Transforms to bridge Map and Odom
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='link_r1_map_odom',
-            arguments=['0', '0', '0', '0', '0', '0', 'robot1/map', 'robot1/odom']
-        ),
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='link_r2_map_odom',
-            arguments=['0', '0', '0', '0', '0', '0', 'robot2/map', 'robot2/odom']
-        ),
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='link_r3_map_odom',
-            arguments=['0', '0', '0', '0', '0', '0', 'robot3/map', 'robot3/odom']
-        ),
     ])
