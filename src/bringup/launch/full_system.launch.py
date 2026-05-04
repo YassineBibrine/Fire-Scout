@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.actions import ExecuteProcess
+from launch.actions import ExecuteProcess, TimerAction
 from launch.actions import GroupAction
 from launch.actions import IncludeLaunchDescription
 from launch.conditions import IfCondition
@@ -57,11 +57,10 @@ def generate_launch_description():
     robot_groups = []
     robot_specs = (
         ('robot1', '-2.0', '-2.0', '0.20'),
-        ('robot2', '0.0', '-2.0', '0.00'),
+        ('robot2', '0.0', '-2.0', '0.15'),
         ('robot3', '2.0', '-2.0', '-0.20'),
     )
-    auto_drive_publishers = []
-    for robot_id, spawn_x, spawn_y, ang_z in robot_specs:
+    for index, (robot_id, spawn_x, spawn_y, ang_z) in enumerate(robot_specs):
         robot_stack = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution([
@@ -78,13 +77,9 @@ def generate_launch_description():
                 'use_sim_time': use_sim_time,
             }.items(),
         )
-        robot_groups.append(
-            GroupAction([
-                PushRosNamespace(robot_id),
-                robot_stack,
-            ])
-        )
-        auto_drive_publishers.append(
+        robot_group = GroupAction([
+            PushRosNamespace(robot_id),
+            robot_stack,
             ExecuteProcess(
                 condition=IfCondition(auto_drive),
                 cmd=[
@@ -94,6 +89,13 @@ def generate_launch_description():
                     f'{{linear: {{x: 0.35}}, angular: {{z: {ang_z}}}}}',
                 ],
                 output='log',
+            ),
+        ])
+
+        robot_groups.append(
+            TimerAction(
+                period=3.0 * index,
+                actions=[robot_group],
             )
         )
 
@@ -114,6 +116,24 @@ def generate_launch_description():
         simulation_world,
         global_stack,
         *robot_groups,
-        *auto_drive_publishers,
         rviz_node,
+        # Temporary Static Transforms to bridge Map and Odom
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='link_r1_map_odom',
+            arguments=['0', '0', '0', '0', '0', '0', 'robot1/map', 'robot1/odom']
+        ),
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='link_r2_map_odom',
+            arguments=['0', '0', '0', '0', '0', '0', 'robot2/map', 'robot2/odom']
+        ),
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='link_r3_map_odom',
+            arguments=['0', '0', '0', '0', '0', '0', 'robot3/map', 'robot3/odom']
+        ),
     ])
