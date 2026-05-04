@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -24,15 +24,15 @@ def generate_launch_description():
         parameters=[
             slam_params,
             {'use_sim_time': use_sim_time},
-            {'odom_frame': [robot_id, '/odom']},
-            {'map_frame': [robot_id, '/map']},
-            {'base_frame': [robot_id, '/chassis']},
-            {'scan_topic': ['/', robot_id, '/scan']},
+            {'odom_frame': PathJoinSubstitution([robot_id, 'odom'])},
+            {'map_frame': PathJoinSubstitution([robot_id, 'map'])},
+            {'base_frame': PathJoinSubstitution([robot_id, 'chassis'])},
+            {'scan_topic': PathJoinSubstitution([robot_id, 'slam', 'scan'])},
         ],
         remappings=[
-            ('/scan', ['/', robot_id, '/scan']),
-            ('/odom', ['/', robot_id, '/odom']),
-            ('/map', ['/', robot_id, '/map']),
+            ('/scan', PathJoinSubstitution(['/', robot_id, 'slam', 'scan'])),
+            ('/odom', PathJoinSubstitution(['/', robot_id, 'slam', 'odom'])),
+            ('/map', PathJoinSubstitution(['/', robot_id, 'map'])),
         ],
     )
 
