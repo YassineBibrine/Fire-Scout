@@ -27,11 +27,25 @@ def generate_launch_description():
             {'odom_frame': PathJoinSubstitution([robot_id, 'odom'])},
             {'map_frame': PathJoinSubstitution([robot_id, 'map'])},
             {'base_frame': PathJoinSubstitution([robot_id, 'chassis'])},
+            # Override the YAML's broken placeholder /robotX/scan with the
+            # real relay topic produced by slam_wrapper_node. This must come
+            # after slam_params so it wins the last-write-wins parameter merge.
+            {'scan_topic': PathJoinSubstitution(['/', robot_id, 'slam', 'scan'])},
         ],
         remappings=[
-            ('/scan', PathJoinSubstitution(['/', robot_id, 'slam', 'scan'])),
-            ('/odom', PathJoinSubstitution(['/', robot_id, 'slam', 'odom'])),
             ('/map', PathJoinSubstitution(['/', robot_id, 'map'])),
+        ],
+    )
+
+    lifecycle_manager = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='slam_lifecycle_manager',
+        output='screen',
+        parameters=[
+            {'use_sim_time': use_sim_time},
+            {'autostart': True},
+            {'node_names': ['slam_toolbox']},
         ],
     )
 
@@ -55,5 +69,6 @@ def generate_launch_description():
             description='Use simulated clock time.',
         ),
         slam_toolbox_node,
+        lifecycle_manager,
         slam_wrapper_node,
     ])
