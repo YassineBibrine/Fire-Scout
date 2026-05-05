@@ -73,20 +73,18 @@ class SlamWrapperNode(Node):
         )
 
     def _scan_callback(self, msg: LaserScan) -> None:
-        """Relay scan data, fix frame_id to namespaced form, and refresh watchdog."""
+        """Relay scan data with corrected frame_id and refresh watchdog timestamp."""
         self._last_scan_time = self.get_clock().now()
-        # Gazebo publishes the scan with frame_id="chassis" (unscoped from gz_frame_id).
-        # slam_toolbox requires the namespaced frame "robot1/chassis" to resolve TF.
-        # We rewrite the frame_id here so every downstream consumer sees the correct frame.
-        if msg.header.frame_id == 'chassis':
-            # Use copy to avoid mutating the original message in place.
-            import copy
-            fixed_msg = copy.copy(msg)
-            fixed_msg.header = copy.copy(msg.header)
-            fixed_msg.header.frame_id = f'{self._robot_id}/chassis'
-            self._scan_relay_pub.publish(fixed_msg)
-        else:
-            self._scan_relay_pub.publish(msg)
+        # Gazebo Ionic produces sensor frame_id in various formats depending on
+        # whether gz_frame_id is set: 'chassis', 'robot1/chassis', 'robot1::chassis'.
+        # slam_toolbox requires exactly '{robot_id}/chassis' to resolve TF lookups.
+        # We unconditionally force the correct namespaced frame_id here so the fix
+        # is robust to any Gazebo sensor naming behavior.
+        import copy
+        fixed_msg = copy.copy(msg)
+        fixed_msg.header = copy.copy(msg.header)
+        fixed_msg.header.frame_id = f'{self._robot_id}/chassis'
+        self._scan_relay_pub.publish(fixed_msg)
 
     def _odom_callback(self, msg: Odometry) -> None:
         """Relay odometry data for slam_toolbox odom input remapping."""
