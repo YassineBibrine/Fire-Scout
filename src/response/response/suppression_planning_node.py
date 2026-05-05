@@ -56,6 +56,11 @@ class SuppressionPlanningNode(Node):
         if detection.confidence <= 0.7:
             return
 
+        position = getattr(detection, 'position', None)
+        if position is None:
+            self.get_logger().warn('Fire detection missing position; ignoring message')
+            return
+
         self.seq += 1
         incident_id = f"fire_{self.robot_id}_{self.seq}"
 
@@ -63,7 +68,7 @@ class SuppressionPlanningNode(Node):
         incident.incident_id = incident_id
         incident.incident_type = 'FIRE'
         incident.robot_id = self.robot_id
-        incident.position = detection.position
+        incident.position = position
         incident.priority = detection.confidence
         incident.detection_time = (
             self.get_clock()

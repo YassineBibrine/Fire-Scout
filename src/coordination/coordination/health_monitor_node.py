@@ -36,7 +36,9 @@ class HealthMonitorNode(Node):
             'heartbeat_timeout_sec'
         ).value
 
-        self.robots = ['robot1', 'robot2', 'robot3']
+        self.declare_parameter('robot_ids', ['robot1', 'robot2', 'robot3'])
+        robot_ids = list(self.get_parameter('robot_ids').value)
+        self.robots = [str(robot) for robot in robot_ids if str(robot)] or ['robot1', 'robot2', 'robot3']
         self.last_seen: Dict[str, Optional[Time]] = {robot: None for robot in self.robots}
         self.degraded_robots = set()
         self.start_time = self.get_clock().now()

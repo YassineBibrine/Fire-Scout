@@ -22,13 +22,17 @@ class MissionManagerNode(Node):
                 True
             )
 
+        self.declare_parameter('robot_ids', ['robot1', 'robot2', 'robot3'])
+        self.declare_parameter('mission_duration_sec', 600.0)
+
         self.current_state = 'INIT'
         self.start_time = self.get_clock().now()
         self.last_incident_time = None
         self.last_incident = None
         self.degraded_override = False
 
-        self.robots = ['robot1', 'robot2', 'robot3']
+        robot_ids = list(self.get_parameter('robot_ids').value)
+        self.robots = [str(robot) for robot in robot_ids if str(robot)] or ['robot1', 'robot2', 'robot3']
 
         self.create_subscription(
             MissionState,
@@ -74,8 +78,8 @@ class MissionManagerNode(Node):
         )
 
     def mission_state_callback(self, _msg):
-
-        return
+        if _msg.state and _msg.state != self.current_state:
+            self.current_state = _msg.state
 
     def incident_callback(self, incident):
 
@@ -119,7 +123,7 @@ class MissionManagerNode(Node):
         mission_state.timestamp = now.to_msg()
 
         elapsed = (now - self.start_time).nanoseconds / 1e9
-        total = max(elapsed, 1.0)
+        total = max(float(self.get_parameter('mission_duration_sec').value), 1.0)
         mission_state.mission_progress = min(elapsed / total, 1.0)
 
         self.publisher_.publish(mission_state)

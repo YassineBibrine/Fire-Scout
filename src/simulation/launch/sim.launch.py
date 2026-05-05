@@ -1,7 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import os
 
@@ -10,7 +9,7 @@ def generate_launch_description():
     pkg_sim = get_package_share_directory('simulation')
     pkg_turtlebot3 = get_package_share_directory('turtlebot3_description')
 
-    world = os.path.join(pkg_sim, 'worlds', 'world_1.sdf')
+    world = os.path.join(pkg_sim, 'worlds', 'firescout_env.world')
 
     # 🔥 IMPORTANT : Tell Gazebo where to find resources (meshes, models, etc)
     ros_share_dir = os.path.dirname(pkg_sim)  # Get /opt/ros/kilted/share/
@@ -42,15 +41,7 @@ def generate_launch_description():
                 'gz_sim.launch.py'
             )
         ),
-        launch_arguments={'gz_args': world}.items()
-    )
-
-    lidar_bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        name='lidar_bridge',
-        output='screen',
-        arguments=['/lidar@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan'],
+        launch_arguments={'gz_args': ['-r ', world]}.items()
     )
 
     return LaunchDescription([
@@ -58,5 +49,4 @@ def generate_launch_description():
         set_gz_model_path,
         set_fastrtps_shm,
         gazebo,
-        lidar_bridge,
     ])

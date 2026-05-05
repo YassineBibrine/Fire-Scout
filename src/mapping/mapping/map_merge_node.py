@@ -29,6 +29,7 @@ class MapMergeNode(Node):
         # Parameters controlling output map characteristics and publish cadence.
         self.declare_parameter("map_resolution", 0.05)
         self.declare_parameter("merge_rate_hz", 1.0)
+        self.declare_parameter("robot_ids", ["robot1", "robot2", "robot3"])
 
         self._map_resolution = float(self.get_parameter("map_resolution").value)
         self._merge_rate_hz = float(self.get_parameter("merge_rate_hz").value)
@@ -40,17 +41,15 @@ class MapMergeNode(Node):
             self.get_logger().warn("merge_rate_hz must be > 0.0. Falling back to 1.0")
             self._merge_rate_hz = 1.0
 
+        robot_ids = list(self.get_parameter("robot_ids").value)
+        self._robot_ids = [str(robot_id) for robot_id in robot_ids if str(robot_id)] or ["robot1", "robot2", "robot3"]
+
         # Keep latest map per robot. Missing maps remain None until received.
-        self._latest_maps: Dict[str, Optional[OccupancyGrid]] = {
-            "robot1": None,
-            "robot2": None,
-            "robot3": None,
-        }
+        self._latest_maps: Dict[str, Optional[OccupancyGrid]] = {robot_id: None for robot_id in self._robot_ids}
 
         # Subscribe to per-robot maps.
-        self.create_subscription(OccupancyGrid, "/robot1/map", self._make_map_callback("robot1"), 10)
-        self.create_subscription(OccupancyGrid, "/robot2/map", self._make_map_callback("robot2"), 10)
-        self.create_subscription(OccupancyGrid, "/robot3/map", self._make_map_callback("robot3"), 10)
+        for robot_id in self._robot_ids:
+            self.create_subscription(OccupancyGrid, f"/{robot_id}/map", self._make_map_callback(robot_id), 10)
 
         # Global merged outputs.
         self._merged_map_pub = self.create_publisher(OccupancyGrid, "/map", 10)

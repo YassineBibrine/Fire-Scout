@@ -1,3 +1,7 @@
+import pytest
+
+pytest.importorskip('rclpy')
+
 from testing_tools import dummy_heartbeat_pub, dummy_odom_pub, dummy_scan_pub
 
 

@@ -1,6 +1,7 @@
 from importlib import import_module
 
 import rclpy
+from geometry_msgs.msg import Pose
 from rclpy.node import Node
 
 # Resolve the generated ROS message class dynamically to avoid static analyzer
@@ -69,6 +70,15 @@ class HumanDetectionNode(Node):
             f"Human Detection Node started for {self.robot_id}"
         )
 
+    def _build_demo_pose(self) -> Pose:
+
+        pose = Pose()
+        pose.position.x = 0.5
+        pose.position.y = 1.0
+        pose.position.z = 0.0
+        pose.orientation.w = 1.0
+        return pose
+
     def timer_callback(self):
 
         if not self.publish_demo_detections:
@@ -84,6 +94,7 @@ class HumanDetectionNode(Node):
             msg.confidence = fake_confidence
             msg.is_moving = True
             msg.needs_rescue = False
+            msg.position = self._build_demo_pose()
             msg.bounding_box = [0.0, 0.0, 1.0, 1.0]
 
             msg.detection_time = (

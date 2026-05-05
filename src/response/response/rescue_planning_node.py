@@ -56,6 +56,11 @@ class RescuePlanningNode(Node):
         if not detection.needs_rescue and detection.confidence <= 0.6:
             return
 
+        position = getattr(detection, 'position', None)
+        if position is None:
+            self.get_logger().warn('Human detection missing position; ignoring message')
+            return
+
         self.seq += 1
         incident_id = f"rescue_{self.robot_id}_{self.seq}"
 
@@ -63,7 +68,7 @@ class RescuePlanningNode(Node):
         incident.incident_id = incident_id
         incident.incident_type = 'HUMAN'
         incident.robot_id = self.robot_id
-        incident.position = detection.position
+        incident.position = position
         incident.priority = min(detection.confidence * 1.5, 1.0)
         incident.detection_time = (
             self.get_clock()

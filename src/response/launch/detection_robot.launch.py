@@ -59,28 +59,6 @@ def generate_launch_description():
             ],
 
             output='screen'
-        ),
-
-        Node(
-            package='response',
-            executable='suppression_planning_node',
-            name='suppression_planning_node',
-            parameters=[
-                {'robot_id': robot_id}
-            ],
-
-            output='screen'
-        ),
-
-        Node(
-            package='response',
-            executable='rescue_planning_node',
-            name='rescue_planning_node',
-            parameters=[
-                {'robot_id': robot_id}
-            ],
-
-            output='screen'
         )
 
     ])
