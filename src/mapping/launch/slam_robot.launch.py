@@ -31,6 +31,7 @@ def generate_launch_description():
             # real relay topic produced by slam_wrapper_node. This must come
             # after slam_params so it wins the last-write-wins parameter merge.
             {'scan_topic': PathJoinSubstitution(['/', robot_id, 'slam', 'scan'])},
+            {'odom_topic': PathJoinSubstitution(['/', robot_id, 'slam', 'odom'])},
         ],
         remappings=[
             ('/map', PathJoinSubstitution(['/', robot_id, 'map'])),
