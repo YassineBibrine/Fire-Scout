@@ -33,7 +33,23 @@ def main() -> None:
 
         def _extract_frontiers(self) -> List[FrontierCandidate]:
             if self._latest_map is None:
-                return []
+                # Publish exploration targets to bootstrap mapping
+                # These targets encourage robots to explore and build maps
+                import random
+                random.seed(self.robot_id)
+                return [
+                    FrontierCandidate(
+                        frontier_id=f'{self.robot_id}_explore_{i}',
+                        robot_id=self.robot_id,
+                        area_m2=1.0,
+                        info_gain=10.0,
+                        travel_cost=5.0 * (i + 1),
+                        reachable=True,
+                        centroid_x=random.uniform(-5.0, 5.0),
+                        centroid_y=random.uniform(-5.0, 5.0),
+                    )
+                    for i in range(3)
+                ]
 
             grid = self._latest_map
             width = int(grid.info.width)

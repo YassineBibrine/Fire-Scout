@@ -14,6 +14,7 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     simulation = LaunchConfiguration('simulation')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    world_name = LaunchConfiguration('world_name')
 
     simulation_arg = DeclareLaunchArgument(
         'simulation',
@@ -25,6 +26,11 @@ def generate_launch_description():
         default_value='true',
         description='Use simulated clock.',
     )
+    world_name_arg = DeclareLaunchArgument(
+        'world_name',
+        default_value='villa_world',
+        description='Gazebo world name used by spawn/bridge nodes.',
+    )
     global_stack = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -33,7 +39,10 @@ def generate_launch_description():
                 'global_stack.launch.py',
             ])
         ),
-        launch_arguments={'use_sim_time': use_sim_time}.items(),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+            'simulation': simulation,
+        }.items(),
     )
 
     simulation_world = IncludeLaunchDescription(
@@ -68,6 +77,7 @@ def generate_launch_description():
                 'spawn_x': spawn_x,
                 'spawn_y': spawn_y,
                 'use_sim_time': use_sim_time,
+                'world_name': world_name,
             }.items(),
         )
         robot_group = GroupAction([
@@ -87,6 +97,7 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         output='screen',
+        parameters=[{'use_sim_time': use_sim_time}],
         arguments=['-d', PathJoinSubstitution([
             FindPackageShare('bringup'), 'config', 'firescout_viz.rviz'
         ])],
@@ -95,6 +106,7 @@ def generate_launch_description():
     return LaunchDescription([
         simulation_arg,
         use_sim_time_arg,
+        world_name_arg,
         simulation_world,
         global_stack,
         *robot_groups,

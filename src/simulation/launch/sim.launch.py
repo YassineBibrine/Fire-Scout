@@ -9,7 +9,8 @@ def generate_launch_description():
     pkg_sim = get_package_share_directory('simulation')
     pkg_turtlebot3 = get_package_share_directory('turtlebot3_description')
 
-    world = os.path.join(pkg_sim, 'worlds', 'firescout_env.world')
+    # Use the provided world file `world_1.sdf` from the simulation/worlds dir.
+    world = os.path.join(pkg_sim, 'worlds', 'world_1.sdf')
 
     # 🔥 IMPORTANT : Tell Gazebo where to find resources (meshes, models, etc)
     ros_share_dir = os.path.dirname(pkg_sim)  # Get /opt/ros/kilted/share/
@@ -22,9 +23,11 @@ def generate_launch_description():
     )
     
     # Set GZ_MODEL_PATH for model/mesh resolution
+    # Include the simulation package and the ROS share dir so Gazebo can
+    # resolve local `models/` and package-installed models.
     set_gz_model_path = SetEnvironmentVariable(
         name='GZ_MODEL_PATH',
-        value=ros_share_dir
+        value=f'{pkg_sim}{os.pathsep}{ros_share_dir}'
     )
 
     # Disable FastDDS shared memory transport for this launch to reduce port-lock spam.
@@ -33,6 +36,8 @@ def generate_launch_description():
         value='UDPv4'
     )
 
+    # Pass gz_args as a single string (not a list) so the underlying
+    # Gazebo launch accepts the run argument and world path correctly.
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -41,7 +46,7 @@ def generate_launch_description():
                 'gz_sim.launch.py'
             )
         ),
-        launch_arguments={'gz_args': ['-r ', world]}.items()
+        launch_arguments={'gz_args': f"-r {world}"}.items()
     )
 
     return LaunchDescription([

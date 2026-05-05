@@ -4,7 +4,7 @@
   <model name="firescout_bot">
     <static>false</static>
 
-    <link name="chassis">
+    <link name="base_link">
       <pose>0 0 0.10 0 0 0</pose>
       <inertial>
         <mass>3.0</mass>
@@ -159,7 +159,7 @@
     </link>
 
     <joint name="left_wheel_joint" type="revolute">
-      <parent>chassis</parent>
+      <parent>base_link</parent>
       <child>left_wheel</child>
       <axis>
         <xyz>0 1 0</xyz>
@@ -171,7 +171,7 @@
     </joint>
 
     <joint name="right_wheel_joint" type="revolute">
-      <parent>chassis</parent>
+      <parent>base_link</parent>
       <child>right_wheel</child>
       <axis>
         <xyz>0 1 0</xyz>
@@ -183,7 +183,7 @@
     </joint>
 
     <joint name="caster_joint" type="ball">
-      <parent>chassis</parent>
+      <parent>base_link</parent>
       <child>caster</child>
     </joint>
 
