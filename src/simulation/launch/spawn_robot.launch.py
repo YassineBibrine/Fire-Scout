@@ -11,6 +11,7 @@ def generate_launch_description():
     spawn_x = LaunchConfiguration('spawn_x')
     spawn_y = LaunchConfiguration('spawn_y')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    world_name = LaunchConfiguration('world_name')
 
     robot_id_arg = DeclareLaunchArgument(
         'robot_id',
@@ -32,6 +33,11 @@ def generate_launch_description():
         default_value='true',
         description='Use simulated clock.',
     )
+    world_name_arg = DeclareLaunchArgument(
+        'world_name',
+        default_value='villa_world',
+        description='Gazebo world name that hosts the robot models.',
+    )
 
     # Use local Fire-Scout diff-drive model with moderate size for this world.
     pkg_sim = get_package_share_directory('simulation')
@@ -47,7 +53,7 @@ def generate_launch_description():
         name='spawn_entity',
         output='screen',
         arguments=[
-            '-world', 'firescout_env',
+            '-world', world_name,
             '-name', robot_id,
             '-file', model_file,
             '-x', spawn_x,
@@ -62,5 +68,6 @@ def generate_launch_description():
         spawn_x_arg,
         spawn_y_arg,
         use_sim_time_arg,
+        world_name_arg,
         spawn,
     ])

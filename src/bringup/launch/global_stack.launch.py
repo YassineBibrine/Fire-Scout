@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
@@ -7,8 +8,14 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
+    simulation = LaunchConfiguration('simulation')
     use_sim_time = LaunchConfiguration('use_sim_time')
 
+    simulation_arg = DeclareLaunchArgument(
+        'simulation',
+        default_value='true',
+        description='Run simulation-specific nodes when true.',
+    )
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
         default_value='true',
@@ -16,6 +23,16 @@ def generate_launch_description():
     )
 
     includes = [
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('simulation'),
+                    'launch',
+                    'bridge_global.launch.py',
+                ])
+            ),
+            condition=IfCondition(simulation),
+        ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution([
@@ -68,6 +85,7 @@ def generate_launch_description():
     ]
 
     return LaunchDescription([
+        simulation_arg,
         use_sim_time_arg,
         *includes,
     ])

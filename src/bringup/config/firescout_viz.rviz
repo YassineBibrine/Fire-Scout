@@ -25,17 +25,17 @@ Visualization Manager:
   - Class: rviz_default_plugins/LaserScan
     Name: Robot1 Scan
     Enabled: true
-    Topic: /robot1/scan
+    Topic: /robot1/slam/scan
     Size (m): 0.03
   - Class: rviz_default_plugins/LaserScan
     Name: Robot2 Scan
     Enabled: true
-    Topic: /robot2/scan
+    Topic: /robot2/slam/scan
     Size (m): 0.03
   - Class: rviz_default_plugins/LaserScan
     Name: Robot3 Scan
     Enabled: true
-    Topic: /robot3/scan
+    Topic: /robot3/slam/scan
     Size (m): 0.03
   - Class: rviz_default_plugins/TF
     Name: TF

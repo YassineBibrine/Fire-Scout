@@ -26,13 +26,15 @@ def generate_launch_description():
             {'use_sim_time': use_sim_time},
             {'odom_frame': PathJoinSubstitution([robot_id, 'odom'])},
             {'map_frame': PathJoinSubstitution([robot_id, 'map'])},
-            {'base_frame': PathJoinSubstitution([robot_id, 'chassis'])},
+            {'base_frame': PathJoinSubstitution([robot_id, 'base_link'])},
             # Override the YAML's broken placeholder /robotX/scan with the
             # real relay topic produced by slam_wrapper_node. This must come
             # after slam_params so it wins the last-write-wins parameter merge.
             {'scan_topic': PathJoinSubstitution(['/', robot_id, 'slam', 'scan'])},
         ],
         remappings=[
+            ('/scan', PathJoinSubstitution(['/', robot_id, 'slam', 'scan'])),
+            ('/odom', PathJoinSubstitution(['/', robot_id, 'slam', 'odom'])),
             ('/map', PathJoinSubstitution(['/', robot_id, 'map'])),
         ],
     )
@@ -55,7 +57,11 @@ def generate_launch_description():
         executable='slam_wrapper_node',
         name='slam_wrapper_node',
         output='screen',
-        parameters=[{'robot_id': robot_id, 'use_sim_time': use_sim_time}],
+        parameters=[
+            {'robot_id': robot_id, 'use_sim_time': use_sim_time},
+            {'use_global_lidar': True},
+            {'global_lidar_topic': '/lidar'},
+        ],
     )
 
     return LaunchDescription([

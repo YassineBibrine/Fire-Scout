@@ -47,9 +47,14 @@ class MapMergeNode(Node):
         # Keep latest map per robot. Missing maps remain None until received.
         self._latest_maps: Dict[str, Optional[OccupancyGrid]] = {robot_id: None for robot_id in self._robot_ids}
 
-        # Subscribe to per-robot maps.
+        # Subscribe to per-robot maps. Subscribe to both absolute and
+        # relative topic names to be robust against different remapping/namespace
+        # arrangements (e.g. some launch files publish 'robot1/map' while others
+        # publish '/robot1/map'). Both subscriptions share the same callback
+        # which stores the latest map per robot_id.
         for robot_id in self._robot_ids:
             self.create_subscription(OccupancyGrid, f"/{robot_id}/map", self._make_map_callback(robot_id), 10)
+            self.create_subscription(OccupancyGrid, f"{robot_id}/map", self._make_map_callback(robot_id), 10)
 
         # Global merged outputs.
         self._merged_map_pub = self.create_publisher(OccupancyGrid, "/map", 10)
@@ -67,6 +72,12 @@ class MapMergeNode(Node):
         """Factory producing callbacks that store each robot's latest map."""
 
         def _callback(msg: OccupancyGrid) -> None:
+            # Log receipt of a robot-local map for debugging and store it.
+            try:
+                self.get_logger().debug(f"Received map for {robot_id}: "
+                                        f"width={msg.info.width}, height={msg.info.height}")
+            except Exception:
+                pass
             self._latest_maps[robot_id] = msg
 
         return _callback

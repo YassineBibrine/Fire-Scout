@@ -21,7 +21,7 @@ slam_toolbox:
     # Frame policy placeholders (replace robotX at runtime).
     odom_frame: robotX/odom          # Robot-local odometry frame.
     map_frame: robotX/map            # Robot-local map frame.
-    base_frame: robotX/chassis         # Robot base frame used for SLAM pose.
+    base_frame: robotX/base_link       # Robot base frame used for SLAM pose.
 
     # Topic policy placeholder. Runtime launch remapping should bind /scan,
     # /odom, and /map to the specific robot namespace.
