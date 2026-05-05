@@ -21,6 +21,7 @@ def generate_launch_description():
         parameters=[{'use_sim_time': use_sim_time}],
     )
 
+
     # multirobot_map_merge backend configured from YAML.
     # NOTE: multirobot_map_merge package not installed in system, commenting out for now.
     # To enable, install: sudo apt install ros-kilted-multirobot-map-merge
