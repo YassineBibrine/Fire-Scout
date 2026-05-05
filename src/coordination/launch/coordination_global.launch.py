@@ -7,6 +7,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
+    robot_ids = ['robot1', 'robot2', 'robot3']
 
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
@@ -24,7 +25,7 @@ def generate_launch_description():
         name='mission_manager',
         namespace='coordination',
         output='screen',
-        parameters=[mission_policy_yaml, {'use_sim_time': use_sim_time}],
+        parameters=[mission_policy_yaml, {'use_sim_time': use_sim_time}, {'robot_ids': robot_ids}],
     )
 
     health_monitor = Node(
@@ -33,7 +34,7 @@ def generate_launch_description():
         name='health_monitor',
         namespace='coordination',
         output='screen',
-        parameters=[fault_policy_yaml, {'use_sim_time': use_sim_time}],
+        parameters=[fault_policy_yaml, {'use_sim_time': use_sim_time}, {'robot_ids': robot_ids}],
     )
 
     fault_supervisor = Node(
@@ -42,7 +43,7 @@ def generate_launch_description():
         name='fault_supervisor',
         namespace='coordination',
         output='screen',
-        parameters=[fault_policy_yaml, {'use_sim_time': use_sim_time}],
+        parameters=[fault_policy_yaml, {'use_sim_time': use_sim_time}, {'robot_ids': robot_ids}],
     )
 
     task_allocator = Node(
@@ -54,10 +55,20 @@ def generate_launch_description():
         parameters=[allocator_yaml, {'use_sim_time': use_sim_time}],
     )
 
+    task_executor = Node(
+        package='coordination',
+        executable='task_executor_node',
+        name='task_executor',
+        namespace='coordination',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time}, {'robot_ids': robot_ids}],
+    )
+
     return LaunchDescription([
         use_sim_time_arg,
         mission_manager,
         health_monitor,
         fault_supervisor,
         task_allocator,
+        task_executor,
     ])

@@ -4,4 +4,5 @@ string candidate_frontier_id
 float32 utility_score
 float32 eta_sec
 float32 energy_cost
+geometry_msgs/PoseStamped target_pose
 builtin_interfaces/Time timestamp

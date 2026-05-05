@@ -31,22 +31,25 @@ def main() -> None:
             if not msg.frontiers:
                 return
 
-            frontier = msg.frontiers[0]
-            score = score_frontier(
-                info_gain=float(frontier.info_gain),
-                travel_cost=float(frontier.travel_cost),
-                speed_mps=float(self.get_parameter('speed_mps').value),
-                energy_rate=float(self.get_parameter('energy_rate').value),
-            )
+            now = self.get_clock().now().to_msg()
+            for frontier in msg.frontiers:
+                score = score_frontier(
+                    info_gain=float(frontier.info_gain),
+                    travel_cost=float(frontier.travel_cost),
+                    speed_mps=float(self.get_parameter('speed_mps').value),
+                    energy_rate=float(self.get_parameter('energy_rate').value),
+                )
 
-            bid = AuctionBid()
-            bid.auction_id = f'auction:{frontier.frontier_id}'
-            bid.robot_id = self.robot_id
-            bid.candidate_frontier_id = frontier.frontier_id
-            bid.utility_score = float(score.utility_score)
-            bid.eta_sec = float(score.eta_sec)
-            bid.energy_cost = float(score.energy_cost)
-            self.publisher.publish(bid)
+                bid = AuctionBid()
+                bid.auction_id = f'auction:{frontier.frontier_id}'
+                bid.robot_id = self.robot_id
+                bid.candidate_frontier_id = frontier.frontier_id
+                bid.utility_score = float(score.utility_score)
+                bid.eta_sec = float(score.eta_sec)
+                bid.energy_cost = float(score.energy_cost)
+                bid.target_pose = frontier.centroid
+                bid.timestamp = now
+                self.publisher.publish(bid)
 
     rclpy.init()
     node = BidderNode()

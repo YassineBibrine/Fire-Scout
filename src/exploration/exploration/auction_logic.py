@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, List, Optional, Set
+from typing import Any, Iterable, List, Optional, Set
 
 
 @dataclass(frozen=True)
@@ -10,6 +10,8 @@ class AuctionBid:
     utility_score: float
     eta_sec: float
     energy_cost: float
+    target_pose: Optional[Any] = None
+    timestamp: Optional[Any] = None
 
 
 @dataclass(frozen=True)

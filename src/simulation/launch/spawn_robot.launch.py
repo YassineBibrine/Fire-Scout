@@ -47,7 +47,7 @@ def generate_launch_description():
         name='spawn_entity',
         output='screen',
         arguments=[
-            '-world', 'villa_world',
+            '-world', 'firescout_env',
             '-name', robot_id,
             '-file', model_file,
             '-x', spawn_x,

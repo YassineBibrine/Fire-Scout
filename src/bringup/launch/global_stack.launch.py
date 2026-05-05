@@ -16,17 +16,6 @@ def generate_launch_description():
     )
 
     includes = [
-        Node(
-            package='mapping',
-            executable='lidar_demux_node',
-            name='lidar_demux_node',
-            output='screen',
-            parameters=[
-                {'use_sim_time': use_sim_time},
-                {'robot_ids': ['robot1', 'robot2', 'robot3']},
-                {'input_topic': '/lidar'},
-            ],
-        ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution([

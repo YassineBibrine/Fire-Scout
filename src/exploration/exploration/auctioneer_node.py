@@ -40,6 +40,7 @@ def main() -> None:
                     utility_score=float(msg.utility_score),
                     eta_sec=float(msg.eta_sec),
                     energy_cost=float(msg.energy_cost),
+                        target_pose=msg.target_pose,
                 )
             )
 
@@ -56,11 +57,14 @@ def main() -> None:
                 result.task_id = selection.winner.candidate_frontier_id
                 result.task_type = int(self.get_parameter('task_type').value)
 
-                pose = PoseStamped()
-                pose.header.stamp = self.get_clock().now().to_msg()
-                pose.header.frame_id = 'map'
-                pose.pose.orientation.w = 1.0
-                result.target_pose = pose
+                if selection.winner.target_pose is not None:
+                    result.target_pose = selection.winner.target_pose
+                else:
+                    pose = PoseStamped()
+                    pose.header.stamp = self.get_clock().now().to_msg()
+                    pose.header.frame_id = 'map'
+                    pose.pose.orientation.w = 1.0
+                    result.target_pose = pose
 
                 self.publisher.publish(result)
                 del self.bid_cache[auction_id]
