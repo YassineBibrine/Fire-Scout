@@ -29,8 +29,8 @@ def _normalize_angle(angle: float) -> float:
 
 
 class TaskExecutorNode(Node):
-    def __init__(self) -> None:
-        super().__init__('task_executor_node')
+    def __init__(self, **kwargs) -> None:
+        super().__init__('task_executor_node', **kwargs)
 
         self.declare_parameter('robot_ids', ['robot1', 'robot2', 'robot3'])
         self.declare_parameter('control_rate_hz', 10.0)
@@ -40,6 +40,8 @@ class TaskExecutorNode(Node):
         self.declare_parameter('max_angular_speed', 1.25)
         self.declare_parameter('goal_tolerance_m', 0.25)
         self.declare_parameter('heading_tolerance_rad', 0.2)
+        self.declare_parameter('allow_identity_map_to_odom_fallback', True)
+        self.declare_parameter('tf_listener_spin_thread', True)
 
         robot_ids = list(self.get_parameter('robot_ids').value)
         self._robot_ids = [str(robot_id) for robot_id in robot_ids if str(robot_id)] or ['robot1', 'robot2', 'robot3']
@@ -51,6 +53,10 @@ class TaskExecutorNode(Node):
         self._max_angular_speed = max(float(self.get_parameter('max_angular_speed').value), 0.0)
         self._goal_tolerance_m = max(float(self.get_parameter('goal_tolerance_m').value), 0.0)
         self._heading_tolerance_rad = max(float(self.get_parameter('heading_tolerance_rad').value), 0.0)
+        self._allow_identity_map_to_odom_fallback = bool(
+            self.get_parameter('allow_identity_map_to_odom_fallback').value
+        )
+        self._tf_listener_spin_thread = bool(self.get_parameter('tf_listener_spin_thread').value)
 
         self._latest_odom: Dict[str, Optional[Odometry]] = {robot_id: None for robot_id in self._robot_ids}
         self._active_task: Dict[str, Optional[Any]] = {robot_id: None for robot_id in self._robot_ids}
@@ -64,7 +70,11 @@ class TaskExecutorNode(Node):
             self.create_subscription(Odometry, f'/{robot_id}/odom', self._make_odom_callback(robot_id), 10)
 
         self._tf_buffer = Buffer()
-        self._tf_listener = TransformListener(self._tf_buffer, self, spin_thread=True)
+        self._tf_listener = TransformListener(
+            self._tf_buffer,
+            self,
+            spin_thread=self._tf_listener_spin_thread,
+        )
         self.create_timer(1.0 / self._control_rate_hz, self._control_loop)
 
         self.get_logger().info(f'Task Executor Node started for robots: {", ".join(self._robot_ids)}')
@@ -78,7 +88,7 @@ class TaskExecutorNode(Node):
     def _task_assignment_callback(self, msg: Any) -> None:
         robot_id = str(msg.assigned_robot)
         if robot_id not in self._active_task:
-            self.get_logger().warn(f'Ignoring task {msg.task_id} for unknown robot {robot_id}')
+            self.get_logger().warning(f'Ignoring task {msg.task_id} for unknown robot {robot_id}')
             return
 
         self._active_task[robot_id] = msg
@@ -140,7 +150,15 @@ class TaskExecutorNode(Node):
         try:
             transform = self._tf_buffer.lookup_transform(target_frame, 'map', Time())
         except Exception as exc:
-            self.get_logger().warn(f'Waiting for TF {target_frame} <- map: {exc}')
+            if self._allow_identity_map_to_odom_fallback:
+                self.get_logger().warning(
+                    f'Using startup identity transform for {target_frame} <- map until SLAM TF is available: {exc}'
+                )
+                goal = Pose()
+                goal.position = target_pose.position
+                goal.orientation = target_pose.orientation
+                return goal
+            self.get_logger().warning(f'Waiting for TF {target_frame} <- map: {exc}')
             return None
 
         translation = transform.transform.translation

@@ -4,7 +4,7 @@
 # Example runtime substitution:
 #   robotX/odom -> robot1/odom
 #   robotX/map -> robot1/map
-#   robotX/base_footprint -> robot1/base_footprint
+#   robotX/base_link -> robot1/base_link
 
 /**:
   ros__parameters:

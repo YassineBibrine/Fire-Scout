@@ -111,6 +111,7 @@ def generate_launch_description():
         launch_arguments={
             'use_sim_time': use_sim_time,
             'simulation': simulation,
+            'world_name': world_name,
         }.items(),
     )
 

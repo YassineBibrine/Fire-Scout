@@ -32,6 +32,12 @@ class FireDetectionNode(Node):
             False
         )
 
+        if not self.has_parameter('use_sim_time'):
+            self.declare_parameter(
+                'use_sim_time',
+                False
+            )
+
         # Get parameters
         self.threshold = self.get_parameter(
             'fire_confidence_threshold'

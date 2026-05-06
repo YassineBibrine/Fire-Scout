@@ -18,10 +18,52 @@ Visualization Manager:
     Name: Grid
     Enabled: true
   - Class: rviz_default_plugins/Map
-    Name: Map
+    Name: Global Map
     Enabled: true
-    Topic: /map
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /map
+    Alpha: 0.8
     Color Scheme: costmap
+    Draw Behind: true
+  - Class: rviz_default_plugins/Map
+    Name: Robot1 Map
+    Enabled: true
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /robot1/map
+    Alpha: 0.45
+    Color Scheme: map
+    Draw Behind: true
+  - Class: rviz_default_plugins/Map
+    Name: Robot2 Map
+    Enabled: true
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /robot2/map
+    Alpha: 0.45
+    Color Scheme: map
+    Draw Behind: true
+  - Class: rviz_default_plugins/Map
+    Name: Robot3 Map
+    Enabled: true
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /robot3/map
+    Alpha: 0.45
+    Color Scheme: map
     Draw Behind: true
   - Class: rviz_default_plugins/LaserScan
     Name: Robot1 Scan

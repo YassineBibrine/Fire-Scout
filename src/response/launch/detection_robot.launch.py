@@ -11,6 +11,7 @@ import os
 def generate_launch_description():
 
     robot_id = LaunchConfiguration('robot_id')
+    use_sim_time = LaunchConfiguration('use_sim_time')
 
     # Get config file path correctly
     pkg_share = get_package_share_directory('response')
@@ -34,6 +35,11 @@ def generate_launch_description():
             default_value='robot1',
             description='Robot namespace'
         ),
+        DeclareLaunchArgument(
+            'use_sim_time',
+            default_value='true',
+            description='Use simulated clock.'
+        ),
 
         Node(
             package='response',
@@ -42,6 +48,7 @@ def generate_launch_description():
             parameters=[
                 config_file,
                 {'robot_id': robot_id},
+                {'use_sim_time': use_sim_time},
                 {'publish_demo_detections': False}
             ],
 
@@ -55,6 +62,7 @@ def generate_launch_description():
             parameters=[
                 human_config_file,
                 {'robot_id': robot_id},
+                {'use_sim_time': use_sim_time},
                 {'publish_demo_detections': False}
             ],
 

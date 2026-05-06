@@ -47,14 +47,9 @@ class MapMergeNode(Node):
         # Keep latest map per robot. Missing maps remain None until received.
         self._latest_maps: Dict[str, Optional[OccupancyGrid]] = {robot_id: None for robot_id in self._robot_ids}
 
-        # Subscribe to per-robot maps. Subscribe to both absolute and
-        # relative topic names to be robust against different remapping/namespace
-        # arrangements (e.g. some launch files publish 'robot1/map' while others
-        # publish '/robot1/map'). Both subscriptions share the same callback
-        # which stores the latest map per robot_id.
+        # Subscribe to the canonical absolute per-robot map topics.
         for robot_id in self._robot_ids:
             self.create_subscription(OccupancyGrid, f"/{robot_id}/map", self._make_map_callback(robot_id), 10)
-            self.create_subscription(OccupancyGrid, f"{robot_id}/map", self._make_map_callback(robot_id), 10)
 
         # Global merged outputs.
         self._merged_map_pub = self.create_publisher(OccupancyGrid, "/map", 10)
@@ -84,7 +79,7 @@ class MapMergeNode(Node):
 
     def _publish_timer_callback(self) -> None:
         """Compute status, merge available maps, and publish outputs."""
-        available_maps = [m for m in self._latest_maps.values() if m is not None]
+        available_maps = [m for m in self._latest_maps.values() if self._is_valid_map(m)]
         num_available = len(available_maps)
 
         # Status follows strict required values.
@@ -173,6 +168,20 @@ class MapMergeNode(Node):
 
         merged_msg.data = merged_data
         return merged_msg
+
+    @staticmethod
+    def _is_valid_map(msg: Optional[OccupancyGrid]) -> bool:
+        if msg is None:
+            return False
+
+        width = int(msg.info.width)
+        height = int(msg.info.height)
+        resolution = float(msg.info.resolution)
+
+        if width <= 0 or height <= 0 or resolution <= 0.0:
+            return False
+
+        return len(msg.data) >= width * height
 
     def _overlay_map(
         self,
