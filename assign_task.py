@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
-import rclpy
-from rclpy.node import Node
-from firescout_interfaces.srv import AssignTask
-from geometry_msgs.msg import PoseStamped
 import sys
+from importlib import import_module
+
+import rclpy
+from geometry_msgs.msg import Pose
+from rclpy.node import Node
+
+# Resolve interface dynamically to avoid IDE env mismatch.
+AssignTask = getattr(import_module('firescout_interfaces.srv'), 'AssignTask')
 
 class TaskAssigner(Node):
     def __init__(self):
@@ -16,14 +20,13 @@ class TaskAssigner(Node):
 
     def send_request(self, robot_id, x, y):
         self.req.task_id = f'manual_task_{robot_id}'
-        self.req.task_type = 1  # Assume 1 is navigation/exploration
+        self.req.task_type = 'navigation'
         self.req.target_robot = robot_id
-        self.req.target_pose = PoseStamped()
-        self.req.target_pose.header.frame_id = 'map'
-        self.req.target_pose.pose.position.x = float(x)
-        self.req.target_pose.pose.position.y = float(y)
-        self.req.target_pose.pose.position.z = 0.0
-        self.req.target_pose.pose.orientation.w = 1.0
+        self.req.target_pose = Pose()
+        self.req.target_pose.position.x = float(x)
+        self.req.target_pose.position.y = float(y)
+        self.req.target_pose.position.z = 0.0
+        self.req.target_pose.orientation.w = 1.0
         self.req.priority = 1.0
 
         future = self.cli.call_async(self.req)
@@ -44,7 +47,10 @@ def main():
     y = sys.argv[3]
 
     response = node.send_request(robot_id, x, y)
-    node.get_logger().info(f'Result: success={response.success}, message="{response.message}"')
+    if response is None:
+        node.get_logger().error('AssignTask service returned no response')
+    else:
+        node.get_logger().info(f'Result: success={response.success}, message="{response.message}"')
 
     node.destroy_node()
     rclpy.shutdown()

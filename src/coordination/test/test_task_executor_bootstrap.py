@@ -3,6 +3,7 @@ pytest.importorskip('geometry_msgs.msg')
 pytest.importorskip('rclpy')
 
 import rclpy
+from rclpy.parameter import Parameter
 from geometry_msgs.msg import Pose
 
 from coordination.task_executor_node import TaskExecutorNode
@@ -11,7 +12,7 @@ from coordination.task_executor_node import TaskExecutorNode
 def test_task_executor_uses_identity_goal_before_slam_tf():
     rclpy.init()
     node = TaskExecutorNode(parameter_overrides=[
-        rclpy.parameter.Parameter('tf_listener_spin_thread', rclpy.Parameter.Type.BOOL, False),
+        Parameter('tf_listener_spin_thread', Parameter.Type.BOOL, False),
     ])
 
     try:

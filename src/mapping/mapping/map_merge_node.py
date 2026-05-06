@@ -12,7 +12,7 @@ Unknown cells remain -1 when no map contributes data for those locations.
 """
 
 import math
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TypeGuard
 
 import rclpy
 from nav_msgs.msg import OccupancyGrid
@@ -170,7 +170,7 @@ class MapMergeNode(Node):
         return merged_msg
 
     @staticmethod
-    def _is_valid_map(msg: Optional[OccupancyGrid]) -> bool:
+    def _is_valid_map(msg: Optional[OccupancyGrid]) -> TypeGuard[OccupancyGrid]:
         if msg is None:
             return False
 

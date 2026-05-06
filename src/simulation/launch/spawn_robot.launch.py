@@ -1,8 +1,9 @@
+from pathlib import Path
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-import os
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -39,29 +40,45 @@ def generate_launch_description():
         description='Gazebo world name that hosts the robot models.',
     )
 
-    # Use local Fire-Scout diff-drive model with moderate size for this world.
-    pkg_sim = get_package_share_directory('simulation')
-    model_file = os.path.join(
-        pkg_sim,
-        'models',
-        'model.sdf',
-    )
+    def _spawn_robot(context, *args, **kwargs):
+        robot_id_value = robot_id.perform(context)
 
-    spawn = Node(
-        package='ros_gz_sim',
-        executable='create',
-        name='spawn_entity',
-        output='screen',
-        arguments=[
-            '-world', world_name,
-            '-name', robot_id,
-            '-file', model_file,
-            '-x', spawn_x,
-            '-y', spawn_y,
-            '-z', '0.1',
-        ],
-        parameters=[{'use_sim_time': use_sim_time}],
-    )
+        # Use local Fire-Scout diff-drive model with robot-specific sensor
+        # topics. Gazebo's expansion of ~/sensor topics varies by context, so
+        # make the LaserScan transport path explicit for each spawned robot.
+        pkg_sim = get_package_share_directory('simulation')
+        source_model = Path(pkg_sim) / 'models' / 'model.sdf'
+        model_text = source_model.read_text(encoding='utf-8')
+        model_text = model_text.replace(
+            '<topic>~/lidar</topic>',
+            (
+                f'<topic>/{robot_id_value}/scan</topic>\n'
+                f'        <gz_frame_id>{robot_id_value}/lidar</gz_frame_id>'
+            ),
+        )
+
+        generated_dir = Path('/tmp') / 'firescout_models'
+        generated_dir.mkdir(parents=True, exist_ok=True)
+        generated_model = generated_dir / f'{robot_id_value}.sdf'
+        generated_model.write_text(model_text, encoding='utf-8')
+
+        return [
+            Node(
+                package='ros_gz_sim',
+                executable='create',
+                name='spawn_entity',
+                output='screen',
+                arguments=[
+                    '-world', world_name,
+                    '-name', robot_id,
+                    '-file', str(generated_model),
+                    '-x', spawn_x,
+                    '-y', spawn_y,
+                    '-z', '0.1',
+                ],
+                parameters=[{'use_sim_time': use_sim_time}],
+            )
+        ]
 
     return LaunchDescription([
         robot_id_arg,
@@ -69,5 +86,5 @@ def generate_launch_description():
         spawn_y_arg,
         use_sim_time_arg,
         world_name_arg,
-        spawn,
+        OpaqueFunction(function=_spawn_robot),
     ])

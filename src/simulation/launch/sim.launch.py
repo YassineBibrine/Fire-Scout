@@ -39,7 +39,7 @@ def generate_launch_description():
 
     start_paused_arg = DeclareLaunchArgument(
         'start_paused',
-        default_value='true',
+        default_value='false',
         description='Open Gazebo paused so models and bridges settle before physics runs.',
     )
 

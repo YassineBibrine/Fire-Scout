@@ -99,15 +99,15 @@ class SlamWrapperNode(Node):
         now = self.get_clock().now()
         self._last_scan_time = now
         # Gazebo produces sensor frame_id in various formats depending on
-        # whether gz_frame_id is set: 'base_link', 'robot1/base_link', 'robot1::base_link'.
-        # slam_toolbox requires exactly '{robot_id}/base_link' to resolve TF lookups.
-        # We unconditionally force the correct namespaced frame_id here so the fix
-        # is robust to any Gazebo sensor naming behavior.
+        # whether gz_frame_id is set: 'base_link', 'robot1/base_link',
+        # 'robot1::base_link', or a full sensor-scoped frame. Normalize scans
+        # to the robot-local lidar frame; slam_robot.launch.py publishes the
+        # corresponding base_link -> lidar static transform.
         import copy
         fixed_msg = copy.copy(msg)
         fixed_msg.header = copy.copy(msg.header)
         fixed_msg.header.stamp = now.to_msg()
-        fixed_msg.header.frame_id = f'{self._robot_id}/base_link'
+        fixed_msg.header.frame_id = f'{self._robot_id}/lidar'
         self._scan_relay_pub.publish(fixed_msg)
 
     def _odom_callback(self, msg: Odometry) -> None:

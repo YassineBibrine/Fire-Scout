@@ -110,7 +110,7 @@ def test_slam_wrapper_restamps_relayed_scan_and_odom():
             if relayed_scans and relayed_odoms:
                 relayed_scan = relayed_scans[-1]
                 relayed_odom = relayed_odoms[-1]
-                assert relayed_scan.header.frame_id == 'robot1/base_link'
+                assert relayed_scan.header.frame_id == 'robot1/lidar'
                 assert relayed_odom.header.frame_id == 'robot1/odom'
                 assert relayed_odom.child_frame_id == 'robot1/base_link'
                 assert relayed_scan.header.stamp.sec != 0 or relayed_scan.header.stamp.nanosec != 0
