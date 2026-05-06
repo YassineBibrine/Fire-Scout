@@ -6,7 +6,7 @@
 #   robotX/map -> robot1/map
 #   robotX/base_footprint -> robot1/base_footprint
 
-slam_toolbox:
+/**:
   ros__parameters:
     # Clock source for simulation environments (Gazebo).
     use_sim_time: true

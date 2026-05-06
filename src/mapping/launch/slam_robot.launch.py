@@ -27,6 +27,9 @@ def generate_launch_description():
             {'odom_frame': PathJoinSubstitution([robot_id, 'odom'])},
             {'map_frame': PathJoinSubstitution([robot_id, 'map'])},
             {'base_frame': PathJoinSubstitution([robot_id, 'base_link'])},
+            {'transform_publish_period': 0.02},
+            {'transform_timeout': 0.2},
+            {'tf_buffer_duration': 30.0},
             # Override the YAML's broken placeholder /robotX/scan with the
             # real relay topic produced by slam_wrapper_node. This must come
             # after slam_params so it wins the last-write-wins parameter merge.
@@ -39,17 +42,7 @@ def generate_launch_description():
         ],
     )
 
-    lifecycle_manager = Node(
-        package='nav2_lifecycle_manager',
-        executable='lifecycle_manager',
-        name='slam_lifecycle_manager',
-        output='screen',
-        parameters=[
-            {'use_sim_time': use_sim_time},
-            {'autostart': True},
-            {'node_names': ['slam_toolbox']},
-        ],
-    )
+
 
     # Launch the wrapper node that relays topics and publishes health status.
     slam_wrapper_node = Node(
@@ -59,8 +52,7 @@ def generate_launch_description():
         output='screen',
         parameters=[
             {'robot_id': robot_id, 'use_sim_time': use_sim_time},
-            {'use_global_lidar': True},
-            {'global_lidar_topic': '/lidar'},
+            {'use_global_lidar': False},
         ],
     )
 
@@ -75,6 +67,5 @@ def generate_launch_description():
             description='Use simulated clock time.',
         ),
         slam_toolbox_node,
-        lifecycle_manager,
         slam_wrapper_node,
     ])
