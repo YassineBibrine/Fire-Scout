@@ -1,39 +1,46 @@
-# Member 2: Simulation Lead (Gazebo Ionic + TurtleBot3)
+# Member 2: Simulation Lead
 
-## Package Ownership
-- `src/simulation`
+## Scope
 
-## Responsibility
-Own simulation assets, multi-robot spawning, and Gazebo bridge definitions for `/robot1`, `/robot2`, `/robot3`.
+- Own the simulation assets, multi-robot spawning, and Gazebo bridge definitions for `/robot1`, `/robot2`, and `/robot3`.
 
-## Files and Folders
+## Package Surface
+
 - `src/simulation/worlds/`
 - `src/simulation/models/`
 - `src/simulation/launch/`
 - `src/simulation/config/`
 - `src/simulation/test/`
-- `src/simulation/CMakeLists.txt`
-- `src/simulation/package.xml`
 
-## Implementation Tasks
-- [ ] Maintain Gazebo world files and robot model assets
-- [ ] Maintain spawn launch with deterministic namespace behavior
-- [ ] Maintain bridge launch with explicit per-robot topic mapping
-- [ ] Keep `gazebo_ionic.launch.py`, `gz_world.launch.py`, and `spawn_robot.launch.py` aligned
-- [ ] Ensure clock and simulation settings support all other stacks
+## Implemented
 
-## Configuration Tasks
-- [ ] Maintain `config/bridge_topics_robot.yaml`
-- [ ] Maintain `config/robot_spawn_poses.yaml`
-- [ ] Maintain `config/sim_physics.yaml`
+- The simulation package includes the launch entry points for `sim.launch.py`, `gazebo_ionic.launch.py`, `gz_world.launch.py`, `spawn_robot.launch.py`, `spawn_tb3.launch.py`, `bridge_global.launch.py`, and `bridge_robot.launch.py`.
+- Configuration files for bridge topics, robot spawn poses, and physics settings are present.
+- The package includes launch and integration tests for namespace handling, bridge topics, clock availability, and spawn behavior.
+- The package is focused on assets and launch orchestration rather than a standalone runtime node module.
 
-## Testing Tasks
-- [ ] Maintain `test/test_spawn_namespaces.py`
-- [ ] Maintain `test/test_bridge_topics.py`
-- [ ] Maintain `test/test_clock_available.py`
+## Tests Present
 
-## Done Criteria
-- [ ] 3 robots spawn with clean namespaces
-- [ ] Bridged topics are available for all robots
-- [ ] Simulation tests pass in CI
-- [ ] No TF/topic collisions caused by simulation assets
+- `src/simulation/test/test_bridge_topics.py`
+- `src/simulation/test/test_clock_available.py`
+- `src/simulation/test/test_lidar_sensor_model.py`
+- `src/simulation/test/test_spawn_namespaces.py`
+- `src/simulation/test/test_spawn_robot_launch.py`
+
+## Current Status
+
+- [x] Three-robot spawn flow is implemented.
+- [x] Per-robot bridge definitions are present.
+- [x] Simulation config files are in place.
+- [x] Simulation test coverage exists for the main launch behavior.
+
+## Phase 2 - Simulation Tasks
+
+Primary objective: upgrade simulation world and robot models for hybrid fire/human scenarios.
+
+- Add fire entities in world files (`src/simulation/worlds/*.sdf`) with realistic placement and ignition zones for repeatable test scenes.
+- Add human entities in world files (`src/simulation/worlds/*.sdf`) with multiple rescue scenarios (single victim, multiple victims, blocked path).
+- Enhance robot model `.sdf` design in `src/simulation/models/` to improve sensor mounting realism (camera frame, lidar frame, optional thermal mount points).
+- Improve visual/material and collision models in `.sdf` assets so obstacle boundaries and fire zones are more realistic for avoidance testing.
+- Add simulation launch arguments to enable or disable fire and human scenario packs for CI and demos.
+- Add/extend tests to validate that fire and human entities are spawned correctly and namespaced topics remain collision-free.

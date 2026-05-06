@@ -1,17 +1,24 @@
-# Fire-Scout Team Coordination (Optimized)
+# Fire-Scout Team Coordination
 
-## Package Ownership Matrix
+## Ownership Matrix
 
 | Team | Owner | Packages |
 |---|---|---|
-| Team 1 | Interfaces Lead | `firescout_interfaces` |
-| Team 2 | Simulation Lead | `simulation` |
-| Team 3 | Mapping+Monitoring Lead | `mapping`, `monitoring` |
-| Team 4 | Exploration+Utils Lead | `exploration`, `common_utils` |
-| Team 5 | Response Lead | `response` |
-| Team 6 | Coordination+Bringup Lead | `coordination`, `bringup`, `testing_tools` |
+| Team 1 | Interfaces Lead | firescout_interfaces |
+| Team 2 | Simulation Lead | simulation |
+| Team 3 | Mapping + Monitoring Lead | mapping, monitoring |
+| Team 4 | Exploration + Utils Lead | exploration, common_utils |
+| Team 5 | Response Lead | response |
+| Team 6 | Coordination + Bringup Lead | coordination, bringup, testing_tools |
 
-## Single-Owner Critical Artifacts
+## Current Project Status
+
+- The interface contract is defined in `src/firescout_interfaces/config/interface_contract.yaml` and all msg/srv/action trees are present.
+- Simulation, mapping, monitoring, exploration, response, coordination, bringup, and testing_tools all have implemented launch/config/test surfaces in place.
+- `src/bringup/launch/full_system.launch.py` is the top-level orchestration entrypoint for the full stack.
+- `testing_tools` provides the dummy publishers and fault injection helpers used for integration runs.
+
+## Single-Owner Artifacts
 
 | Artifact | Primary Owner |
 |---|---|
@@ -25,32 +32,12 @@
 ## Engineering Rules
 
 1. No direct imports between runtime packages.
-2. Communication only through topics/services/actions defined in `firescout_interfaces`.
+2. Communication only through topics, services, and actions defined in `firescout_interfaces`.
 3. Per-robot entities must be namespaced (`/robot1`, `/robot2`, `/robot3`).
 4. Any global topic must use a global prefix (`/mapping`, `/mission`, `/coordination`, `/incidents`).
-5. Interface changes require Team 1 approval and version update in `interface_contract.yaml`.
+5. Interface changes require Team 1 approval and a version update in `interface_contract.yaml`.
 
-## Git Workflow
+## Coverage Notes
 
-1. `main` stays releasable.
-2. Team branches map to ownership matrix.
-3. PR merge requires:
-   - tests added/updated
-   - launch smoke success
-   - no namespace violations
-   - interface impact declaration
-
-## Weekly Integration Procedure
-
-1. Monday: interface freeze for the week.
-2. Midweek: integration dry-run with `testing_tools` dummy stack.
-3. Friday: full 3-robot integration run and report.
-
-## Definition of Done (All Teams)
-
-- [ ] Node logic implemented
-- [ ] Launch integrated
-- [ ] Config added/updated
-- [ ] Unit tests pass
-- [ ] Integration tests pass
-- [ ] Docs updated
+- Most packages have focused unit or launch tests already present.
+- Known gaps: `monitoring` does not have a dedicated exporter test file, `response` does not have a dedicated planning-node test file, and `bringup` does not include a namespace-isolation test file.

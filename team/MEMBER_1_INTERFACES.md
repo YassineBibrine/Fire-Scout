@@ -103,4 +103,17 @@ colcon build --packages-select firescout_interfaces
 # Lister toutes les interfaces
 ros2 interface list | grep firescout_interfaces
 
+## Phase 2 - Hybrid System Tasks 
+
+Hybrid target: Jetson + fire sensors + ROS 2 fusion.
+
+- Define and freeze new hybrid interface contract for sensor-driven fire alerts and vision detections:
+	- `FireSensorAlert.msg` (flame/smoke/gas/temp raw + normalized + timestamp + source id)
+	- `VisionDetectionArray.msg` (class, confidence, bbox, camera id, frame id)
+	- `FusionDecision.msg` (`fire_confirmed`, `human_confirmed`, `risk_level`, `recommended_action`)
+- Add strict versioning rules in `src/firescout_interfaces/config/interface_contract.yaml` for backward compatibility across microcontroller gateway, Jetson AI node, and fusion node.
+- Add schema validation tests for all hybrid messages/services and reject invalid payload ranges (NaN, out-of-range confidence, invalid namespace).
+- Define QoS profiles and reliability rules for critical topics (`/fire_sensor_alert`, `/camera_detections`, `/fusion_decision`, `/emergency_stop`) and document required publish rates.
+- Provide migration notes from Phase 1 interfaces to Phase 2 hybrid interfaces so all teams can upgrade without breaking runtime nodes.
+
 

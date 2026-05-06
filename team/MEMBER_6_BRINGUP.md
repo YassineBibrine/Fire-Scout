@@ -1,14 +1,11 @@
 # Member 6: Coordination, Bringup, and Testing Tools Lead
 
-## Package Ownership
-- `src/coordination`
-- `src/bringup`
-- `src/testing_tools`
+## Scope
 
-## Responsibility
-Own full-system orchestration, mission/fault coordination, and dummy tooling that enables parallel development and integration safety.
+- Own full-system orchestration, mission and fault coordination, and dummy tooling for integration safety.
 
-## Files and Folders
+## Package Surface
+
 - `src/coordination/coordination/`
 - `src/coordination/launch/`
 - `src/coordination/config/`
@@ -21,34 +18,63 @@ Own full-system orchestration, mission/fault coordination, and dummy tooling tha
 - `src/testing_tools/config/`
 - `src/testing_tools/test/`
 
-## Implementation Tasks (Coordination)
-- [ ] Implement mission manager runtime node
-- [ ] Implement health monitor runtime node
-- [ ] Implement fault supervisor runtime node
-- [ ] Implement task allocator runtime node
+## Implemented
 
-## Implementation Tasks (Bringup)
-- [ ] Maintain `full_system.launch.py` as the single orchestration entrypoint
-- [ ] Maintain global and per-robot stack launch composition
-- [ ] Maintain namespace mapping and bringup parameters
+- Coordination runtime entry points exist for mission management, health monitoring, fault supervision, task allocation, task execution, and cmd_vel safety.
+- Bringup launch files are present for the full system, global stack, and robot stack composition.
+- Bringup config files are present for parameters, namespace mapping, Nav2, and RViz.
+- Testing tools provide dummy publishers, a fault injector, a frontier dummy publisher, and a namespace lint node.
+- Testing tools launchers and configs are present for integration and fault scenarios.
 
-## Implementation Tasks (Testing Tools)
-- [ ] Maintain dummy publishers (`scan`, `odom`, `camera`, `heartbeat`)
-- [ ] Maintain fault injector and frontier dummy publisher
-- [ ] Maintain namespace lint node and integration dummy launchers
+## Tests Present
 
-## Configuration Tasks
-- [ ] Maintain coordination policies (`mission_policy.yaml`, `fault_policy.yaml`, `allocator.yaml`)
-- [ ] Maintain bringup configs (`params.yaml`, `namespace_map.yaml`, `firescout_viz.rviz`)
-- [ ] Maintain testing_tools configs (`dummy_rates.yaml`, `fault_scenarios.yaml`)
+- `src/coordination/test/test_heartbeat_timeout.py`
+- `src/coordination/test/test_fault_reassignment.py`
+- `src/coordination/test/test_task_allocation.py`
+- `src/coordination/test/test_task_executor_bootstrap.py`
+- `src/coordination/test/test_cmd_vel_safety.py`
+- `src/bringup/test/test_full_launch_smoke.py`
+- `src/bringup/test/test_robot_stack_launch_args.py`
+- `src/bringup/test/test_rviz_config.py`
+- `src/testing_tools/test/test_dummy_interfaces.py`
 
-## Testing Tasks
-- [ ] Maintain coordination tests (`test_heartbeat_timeout.py`, `test_fault_reassignment.py`, `test_task_allocation.py`)
-- [ ] Maintain bringup tests (`test_full_launch_smoke.py`, `test_namespace_isolation.py`)
-- [ ] Maintain testing_tools tests (`test_dummy_interfaces.py`)
+## Current Status
 
-## Done Criteria
-- [ ] Full system launch is stable with 3 robots
-- [ ] Weekly integration tests can run with dummy tools
-- [ ] Fault handling and reassignment behavior is test-backed
-- [ ] Coordination/bringup/testing tools tests pass in CI
+- [x] Full system launch entry point is in place.
+- [x] Coordination logic and safety nodes are implemented.
+- [x] Dummy integration tooling is implemented.
+- [x] Core bringup and testing tools configs are present.
+- [ ] There is no dedicated bringup namespace-isolation test file yet.
+
+## Phase 2 — Obstacle Handling Improvements 
+
+Problem: robots detect obstacles but often stop and remain stopped for a long time (or never resume). We need faster, more reliable obstacle detection-to-avoidance behavior so robots avoid obstacles rather than blocking indefinitely.
+
+Planned tasks (owner: Member 6)
+
+- Reproduce obstacle stop: script a deterministic simulation scenario (use `testing_tools` dummy publishers and `simulation` spawn) that reliably triggers the stop-and-stall behavior.
+- Add `cmd_vel` decision logging: instrument `src/coordination/coordination/cmd_vel_safety_node.py` (or equivalent node) to emit structured logs and metrics when obstacle detections occur and when the node chooses to stop, wait, or override commands.
+- Create integration test: add a CI-style integration test that reproduces the failure case in-simulation and asserts recovery within a bounded time.
+- Implement non-blocking avoidance: change the safety logic to prefer short avoidance maneuvers (temporary lateral/backwards + rotate) or delegate to a local planner (DWA/local_planner) rather than full stop-and-wait. Prefer reactive, bounded maneuvers with a clear timeout before entering a hold state.
+- Tune safety thresholds: reduce stop timeouts, add a max-hold counter, and expose parameters for distance/time thresholds in `src/bringup/config/namespace_map.yaml` or a `coordination` params file so teams can iterate quickly.
+- Add monitoring metrics & alerts: track obstacle-handling latency and stop durations in `monitoring/metrics_exporter_node.py` and raise alarms for long-held stops so CI/ops notice regressions.
+- Update bringup configs & docs: add a `phase2` section in `src/bringup/config/params.yaml` and update this `MEMBER_6_BRINGUP.md` with run instructions and the integration test location.
+
+## Phase 2 - Hybrid System Tasks 
+
+Hybrid target: production-grade orchestration for Jetson + sensors + ROS 2 fusion.
+
+- Integrate full hybrid bringup flow in `full_system.launch.py`:
+	- sensor gateway node
+	- Jetson camera inference node
+	- fusion/decision node
+	- response and coordination hooks
+- Add launch profiles for `hybrid_sim`, `hybrid_robot`, and `hybrid_debug` with clear parameter sets.
+- Implement system-level failover rules in coordination:
+	- camera timeout -> sensor-only degraded mode
+	- sensor timeout -> vision-only caution mode
+	- both unavailable -> safe-stop and alert escalation
+- Extend `cmd_vel` safety behavior to consume fusion risk levels and perform faster obstacle avoidance without long deadlock.
+- Add end-to-end integration tests proving bounded decision latency from detection to task assignment/emergency action.
+- Add operational observability: structured logs and metrics for fusion delay, stop duration, avoidance attempts, and incident confirmation path.
+
