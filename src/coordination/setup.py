@@ -27,6 +27,7 @@ setup(
             'mission_manager_node = coordination.mission_manager_node:main',
             'task_allocator_node = coordination.task_allocator_node:main',
             'task_executor_node = coordination.task_executor_node:main',
+            'cmd_vel_safety_node = coordination.cmd_vel_safety_node:main',
         ]
     },
 )
