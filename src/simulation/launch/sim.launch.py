@@ -1,13 +1,14 @@
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 import os
 
 def generate_launch_description():
+    start_paused = LaunchConfiguration('start_paused')
 
     pkg_sim = get_package_share_directory('simulation')
-    pkg_turtlebot3 = get_package_share_directory('turtlebot3_description')
 
     # Use the provided world file `world_1.sdf` from the simulation/worlds dir.
     world = os.path.join(pkg_sim, 'worlds', 'world_1.sdf')
@@ -36,22 +37,30 @@ def generate_launch_description():
         value='UDPv4'
     )
 
-    # Pass gz_args as a single string (not a list) so the underlying
-    # Gazebo launch accepts the run argument and world path correctly.
-    gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(
-                get_package_share_directory('ros_gz_sim'),
-                'launch',
-                'gz_sim.launch.py'
-            )
-        ),
-        launch_arguments={'gz_args': f"-r {world}"}.items()
+    start_paused_arg = DeclareLaunchArgument(
+        'start_paused',
+        default_value='true',
+        description='Open Gazebo paused so models and bridges settle before physics runs.',
     )
 
+    def _gazebo_args(context):
+        paused = start_paused.perform(context).lower() in ('true', '1', 'yes')
+        run_flag = '' if paused else '-r '
+        return [IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(
+                    get_package_share_directory('ros_gz_sim'),
+                    'launch',
+                    'gz_sim.launch.py'
+                )
+            ),
+            launch_arguments={'gz_args': f"{run_flag}{world}"}.items()
+        )]
+
     return LaunchDescription([
+        start_paused_arg,
         set_gz_resource_path,
         set_gz_model_path,
         set_fastrtps_shm,
-        gazebo,
+        OpaqueFunction(function=_gazebo_args),
     ])

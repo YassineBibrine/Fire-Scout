@@ -10,6 +10,7 @@ def main() -> None:
     rclpy = importlib.import_module('rclpy')
     PoseStamped = importlib.import_module('geometry_msgs.msg').PoseStamped
     OccupancyGrid = importlib.import_module('nav_msgs.msg').OccupancyGrid
+    Odometry = importlib.import_module('nav_msgs.msg').Odometry
     Node = importlib.import_module('rclpy.node').Node
 
     msg_module = importlib.import_module('firescout_interfaces.msg')
@@ -24,15 +25,22 @@ def main() -> None:
             self.declare_parameter('frontier_max_travel_cost', 100.0)
             self.robot_id = str(self.get_parameter('robot_id').value)
             self._latest_map = None
+            self._odom_seen = False
             self.create_subscription(OccupancyGrid, f'/{self.robot_id}/map', self._on_map, 10)
+            self.create_subscription(Odometry, f'/{self.robot_id}/odom', self._on_odom, 10)
             self.publisher = self.create_publisher(FrontierArray, '/coordination/frontiers', 10)
             self.timer = self.create_timer(1.0, self._publish_frontiers)
 
         def _on_map(self, msg) -> None:
             self._latest_map = msg
 
+        def _on_odom(self, _msg) -> None:
+            self._odom_seen = True
+
         def _extract_frontiers(self) -> List[FrontierCandidate]:
             if self._latest_map is None:
+                if not self._odom_seen:
+                    return []
                 # Publish exploration targets to bootstrap mapping
                 # These targets encourage robots to explore and build maps
                 import random

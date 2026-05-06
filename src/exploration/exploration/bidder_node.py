@@ -33,6 +33,9 @@ def main() -> None:
 
             now = self.get_clock().now().to_msg()
             for frontier in msg.frontiers:
+                if frontier.robot_id and frontier.robot_id != self.robot_id:
+                    continue
+
                 score = score_frontier(
                     info_gain=float(frontier.info_gain),
                     travel_cost=float(frontier.travel_cost),
