@@ -34,7 +34,7 @@ def generate_launch_description():
         parameters=[
             {'bridge_names': ['cmd_vel', 'odometry', 'lidar']},
             {
-                'bridges.cmd_vel.ros_topic_name': PathJoinSubstitution(['/', robot_id, 'cmd_vel']),
+                'bridges.cmd_vel.ros_topic_name': PathJoinSubstitution(['/', robot_id, 'cmd_vel_safe']),
                 'bridges.cmd_vel.gz_topic_name': PathJoinSubstitution(['/model', robot_id, 'cmd_vel']),
                 'bridges.cmd_vel.ros_type_name': 'geometry_msgs/msg/Twist',
                 'bridges.cmd_vel.gz_type_name': 'gz.msgs.Twist',
