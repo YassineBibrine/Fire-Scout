@@ -1,38 +1,47 @@
 # Member 5: Response and Incident Handling Lead
 
-## Package Ownership
-- `src/response`
+## Scope
 
-## Responsibility
-Own fire/human detection and incident prioritization pipelines, including rescue/suppression planning interfaces.
+- Own fire and human detection plus incident prioritization, including rescue and suppression planning interfaces.
 
-## Files and Folders
+## Package Surface
+
 - `src/response/response/`
 - `src/response/launch/`
 - `src/response/config/`
 - `src/response/test/`
-- `src/response/package.xml`
-- `src/response/setup.py`
 
-## Implementation Tasks
-- [ ] Implement fire detection runtime node
-- [ ] Implement human detection runtime node
-- [ ] Implement suppression planning node
-- [ ] Implement rescue planning node
-- [ ] Maintain global incident fusion/prioritization behavior
+## Implemented
 
-## Configuration Tasks
-- [ ] Maintain `config/fire_detection.yaml`
-- [ ] Maintain `config/human_detection.yaml`
-- [ ] Maintain `config/prioritization.yaml`
+- Runtime entry points exist for `fire_detection_node`, `human_detection_node`, `suppression_planning_node`, and `rescue_planning_node`.
+- Launch files are present for per-robot detection and global incident handling.
+- Config files are present for fire detection, human detection, and prioritization behavior.
+- Test coverage exists for the detection pipelines and incident priority logic.
 
-## Testing Tasks
-- [ ] Maintain `test/test_fire_detection_pipeline.py`
-- [ ] Maintain `test/test_human_detection_pipeline.py`
-- [ ] Maintain `test/test_incident_priority.py`
+## Tests Present
 
-## Done Criteria
-- [ ] Detection topics publish valid outputs per robot namespace
-- [ ] Prioritization behavior is deterministic and documented
-- [ ] No direct dependency on non-interface runtime packages
-- [ ] Response tests pass in CI
+- `src/response/test/test_fire_detection_pipeline.py`
+- `src/response/test/test_human_detection_pipeline.py`
+- `src/response/test/test_incident_priority.py`
+- `src/response/test/test_smoke_unittest.py`
+
+## Current Status
+
+- [x] Fire detection is implemented.
+- [x] Human detection is implemented.
+- [x] Suppression and rescue planning entry points are implemented.
+- [x] Priority and pipeline tests are present.
+- [ ] There is no dedicated test file yet for the planning nodes themselves.
+
+## Phase 2 - Hybrid System Tasks 
+
+Hybrid target: high-confidence fire/human confirmation and mission-priority decisions.
+
+- Implement robust fusion-side response gating:
+	- sensor-only fire alert -> preliminary incident
+	- sensor+vision agreement -> confirmed incident
+	- human+confirmed fire -> highest-priority rescue task
+- Add temporal and confidence filters to reduce false positives from camera-only detections.
+- Add dedicated planning-node tests for rescue/suppression branching under hybrid inputs.
+- Add conflict-resolution logic for simultaneous incidents across robots and ensure deterministic priority output.
+- Integrate with `coordination` task assignment so hybrid-confirmed incidents trigger actionable `TaskAssignment` outputs with bounded response latency.

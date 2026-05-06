@@ -4,9 +4,9 @@
 # Example runtime substitution:
 #   robotX/odom -> robot1/odom
 #   robotX/map -> robot1/map
-#   robotX/base_footprint -> robot1/base_footprint
+#   robotX/base_link -> robot1/base_link
 
-slam_toolbox:
+/**:
   ros__parameters:
     # Clock source for simulation environments (Gazebo).
     use_sim_time: true
@@ -21,12 +21,10 @@ slam_toolbox:
     # Frame policy placeholders (replace robotX at runtime).
     odom_frame: robotX/odom          # Robot-local odometry frame.
     map_frame: robotX/map            # Robot-local map frame.
-    base_frame: robotX/base_footprint  # Robot base frame used for SLAM pose.
+    base_frame: robotX/base_link       # Robot base frame used for SLAM pose.
 
     # Topic policy placeholder. Runtime launch remapping should bind /scan,
     # /odom, and /map to the specific robot namespace.
-    scan_topic: /robotX/scan
-
     # TF and execution behavior.
     transform_publish_period: 0.02   # Publish map->odom transform at 50 Hz.
     transform_timeout: 0.2           # TF lookup timeout in seconds.

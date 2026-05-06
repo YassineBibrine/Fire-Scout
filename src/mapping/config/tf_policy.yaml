@@ -37,11 +37,11 @@ tf_policy:
           authority: mapping/launch/slam_robot.launch.py
           notes: SLAM correction transform from map to odometry drift frame.
         - parent: robot1/odom
-          child: robot1/base_footprint
+          child: robot1/base_link
           frame_type: base
-          published_by: robot_state_publisher / localization stack
-          update_rate_hz: 30.0
-          authority: platform bringup
+          published_by: mapping/slam_wrapper_node.py from bridged odometry
+          update_rate_hz: 10.0
+          authority: mapping/launch/slam_robot.launch.py
           notes: Robot body pose in local odom frame.
 
     - robot_id: robot2
@@ -61,11 +61,11 @@ tf_policy:
           authority: mapping/launch/slam_robot.launch.py
           notes: SLAM correction transform from map to odometry drift frame.
         - parent: robot2/odom
-          child: robot2/base_footprint
+          child: robot2/base_link
           frame_type: base
-          published_by: robot_state_publisher / localization stack
-          update_rate_hz: 30.0
-          authority: platform bringup
+          published_by: mapping/slam_wrapper_node.py from bridged odometry
+          update_rate_hz: 10.0
+          authority: mapping/launch/slam_robot.launch.py
           notes: Robot body pose in local odom frame.
 
     - robot_id: robot3
@@ -85,20 +85,20 @@ tf_policy:
           authority: mapping/launch/slam_robot.launch.py
           notes: SLAM correction transform from map to odometry drift frame.
         - parent: robot3/odom
-          child: robot3/base_footprint
+          child: robot3/base_link
           frame_type: base
-          published_by: robot_state_publisher / localization stack
-          update_rate_hz: 30.0
-          authority: platform bringup
+          published_by: mapping/slam_wrapper_node.py from bridged odometry
+          update_rate_hz: 10.0
+          authority: mapping/launch/slam_robot.launch.py
           notes: Robot body pose in local odom frame.
 
   frame_naming_rules:
-    - Use fully namespaced robot frames: robotX/map, robotX/odom, robotX/base_footprint.
+    - Use fully namespaced robot frames: robotX/map, robotX/odom, robotX/base_link.
     - Never publish un-namespaced odom/base frames in multi-robot runtime.
     - Keep global root frame fixed as map.
 
   verification_checks:
     - Transform availability: map -> robotX/map for X in {1,2,3}
     - Transform availability: robotX/map -> robotX/odom for X in {1,2,3}
-    - Transform availability: robotX/odom -> robotX/base_footprint for X in {1,2,3}
+    - Transform availability: robotX/odom -> robotX/base_link for X in {1,2,3}
     - No disconnected TF subtrees during nominal operation.

@@ -13,12 +13,14 @@ The node does not implement SLAM; it only forwards data and reports health.
 from typing import Optional
 
 import rclpy
+from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from rclpy.time import Time
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
+from tf2_msgs.msg import TFMessage
 
 
 class SlamWrapperNode(Node):
@@ -29,7 +31,11 @@ class SlamWrapperNode(Node):
 
         # Declare the robot namespace identifier used to build topic names.
         self.declare_parameter("robot_id", "robot1")
+        self.declare_parameter("use_global_lidar", False)
+        self.declare_parameter("global_lidar_topic", "/lidar")
         self._robot_id = self.get_parameter("robot_id").get_parameter_value().string_value
+        self._use_global_lidar = self.get_parameter("use_global_lidar").get_parameter_value().bool_value
+        self._global_lidar_topic = self.get_parameter("global_lidar_topic").get_parameter_value().string_value
 
         # Build all topic names from the robot_id so the node can be reused
         # for robot1, robot2, and robot3 without code changes.
@@ -52,14 +58,18 @@ class SlamWrapperNode(Node):
         self._scan_timeout_sec = 2.0
 
         # Publishers for relayed sensor streams consumed by slam_toolbox.
-        self._scan_relay_pub = self.create_publisher(LaserScan, relay_scan_topic, qos_profile_sensor_data)
-        self._odom_relay_pub = self.create_publisher(Odometry, relay_odom_topic, qos_profile_sensor_data)
+        reliable_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE)
+        self._scan_relay_pub = self.create_publisher(LaserScan, relay_scan_topic, reliable_qos)
+        self._odom_relay_pub = self.create_publisher(Odometry, relay_odom_topic, reliable_qos)
+        self._tf_pub = self.create_publisher(TFMessage, "/tf", 100)
 
         # Publisher for per-robot SLAM heartbeat status.
         self._status_pub = self.create_publisher(String, self._status_topic, 10)
 
-        # Subscribe to incoming namespaced robot topics.
-        self.create_subscription(LaserScan, scan_topic, self._scan_callback, qos_profile_sensor_data)
+        # Subscribe to incoming scan topics. Prefer a single global lidar topic
+        # (from Gazebo) when enabled, and filter by frame_id per robot.
+        scan_sub_topic = self._global_lidar_topic if self._use_global_lidar else scan_topic
+        self.create_subscription(LaserScan, scan_sub_topic, self._scan_callback, qos_profile_sensor_data)
         self.create_subscription(Odometry, odom_topic, self._odom_callback, qos_profile_sensor_data)
 
         # Publish heartbeat at 1 Hz as required.
@@ -67,19 +77,57 @@ class SlamWrapperNode(Node):
 
         self.get_logger().info(
             f"SlamWrapperNode started for {self._robot_id}: "
-            f"in(scan={scan_topic}, odom={odom_topic}) "
+            f"in(scan={scan_sub_topic}, odom={odom_topic}) "
             f"relay(scan={relay_scan_topic}, odom={relay_odom_topic}) "
             f"status={self._status_topic}"
         )
 
+    def _is_robot_scan(self, frame_id: str) -> bool:
+        """Return true if frame_id likely belongs to this robot."""
+        if not frame_id:
+            return False
+        if frame_id.startswith(f"{self._robot_id}:"):
+            return True
+        if frame_id.startswith(f"{self._robot_id}/"):
+            return True
+        return f"{self._robot_id}::" in frame_id
+
     def _scan_callback(self, msg: LaserScan) -> None:
-        """Relay scan data and refresh watchdog timestamp."""
-        self._last_scan_time = self.get_clock().now()
-        self._scan_relay_pub.publish(msg)
+        """Relay scan data with corrected frame_id and refresh watchdog timestamp."""
+        if self._use_global_lidar and not self._is_robot_scan(msg.header.frame_id):
+            return
+        now = self.get_clock().now()
+        self._last_scan_time = now
+        # Gazebo produces sensor frame_id in various formats depending on
+        # whether gz_frame_id is set: 'base_link', 'robot1/base_link',
+        # 'robot1::base_link', or a full sensor-scoped frame. Normalize scans
+        # to the robot-local lidar frame; slam_robot.launch.py publishes the
+        # corresponding base_link -> lidar static transform.
+        import copy
+        fixed_msg = copy.copy(msg)
+        fixed_msg.header = copy.copy(msg.header)
+        fixed_msg.header.stamp = now.to_msg()
+        fixed_msg.header.frame_id = f'{self._robot_id}/lidar'
+        self._scan_relay_pub.publish(fixed_msg)
 
     def _odom_callback(self, msg: Odometry) -> None:
         """Relay odometry data for slam_toolbox odom input remapping."""
+        now = self.get_clock().now()
+        # Set correct frame_id for slam_toolbox (expects robotX/odom)
+        msg.header.frame_id = f'{self._robot_id}/odom'
+        msg.header.stamp = now.to_msg()
+        # Also set child_frame_id for base_link
+        msg.child_frame_id = f'{self._robot_id}/base_link'
         self._odom_relay_pub.publish(msg)
+
+        transform = TransformStamped()
+        transform.header = msg.header
+        transform.child_frame_id = msg.child_frame_id
+        transform.transform.translation.x = msg.pose.pose.position.x
+        transform.transform.translation.y = msg.pose.pose.position.y
+        transform.transform.translation.z = msg.pose.pose.position.z
+        transform.transform.rotation = msg.pose.pose.orientation
+        self._tf_pub.publish(TFMessage(transforms=[transform]))
 
     def _heartbeat_timer_callback(self) -> None:
         """Publish ACTIVE/DEGRADED based on scan watchdog timeout."""

@@ -1,6 +1,7 @@
 from importlib import import_module
 
 import rclpy
+from geometry_msgs.msg import Pose
 from rclpy.node import Node
 
 # Resolve the generated ROS message class dynamically to avoid static analyzer
@@ -30,6 +31,12 @@ class FireDetectionNode(Node):
             'publish_demo_detections',
             False
         )
+
+        if not self.has_parameter('use_sim_time'):
+            self.declare_parameter(
+                'use_sim_time',
+                False
+            )
 
         # Get parameters
         self.threshold = self.get_parameter(
@@ -63,6 +70,15 @@ class FireDetectionNode(Node):
             f"Fire Detection Node started for {self.robot_id}"
         )
 
+    def _build_demo_pose(self) -> Pose:
+
+        pose = Pose()
+        pose.position.x = 1.0
+        pose.position.y = 2.0
+        pose.position.z = 0.0
+        pose.orientation.w = 1.0
+        return pose
+
     def timer_callback(self):
 
         if not self.publish_demo_detections:
@@ -80,6 +96,7 @@ class FireDetectionNode(Node):
             msg.confidence = fake_confidence
             msg.intensity = 0.6
             msg.temperature = 120.0
+            msg.position = self._build_demo_pose()
 
             msg.flame_coordinates = [1.0, 2.0]
 

@@ -10,6 +10,8 @@ class FrontierCandidate:
     info_gain: float
     travel_cost: float
     reachable: bool = True
+    centroid_x: float = 0.0
+    centroid_y: float = 0.0
 
 
 def select_frontiers(

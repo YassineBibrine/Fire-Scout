@@ -12,7 +12,7 @@ Unknown cells remain -1 when no map contributes data for those locations.
 """
 
 import math
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TypeGuard
 
 import rclpy
 from nav_msgs.msg import OccupancyGrid
@@ -29,6 +29,7 @@ class MapMergeNode(Node):
         # Parameters controlling output map characteristics and publish cadence.
         self.declare_parameter("map_resolution", 0.05)
         self.declare_parameter("merge_rate_hz", 1.0)
+        self.declare_parameter("robot_ids", ["robot1", "robot2", "robot3"])
 
         self._map_resolution = float(self.get_parameter("map_resolution").value)
         self._merge_rate_hz = float(self.get_parameter("merge_rate_hz").value)
@@ -40,17 +41,15 @@ class MapMergeNode(Node):
             self.get_logger().warn("merge_rate_hz must be > 0.0. Falling back to 1.0")
             self._merge_rate_hz = 1.0
 
-        # Keep latest map per robot. Missing maps remain None until received.
-        self._latest_maps: Dict[str, Optional[OccupancyGrid]] = {
-            "robot1": None,
-            "robot2": None,
-            "robot3": None,
-        }
+        robot_ids = list(self.get_parameter("robot_ids").value)
+        self._robot_ids = [str(robot_id) for robot_id in robot_ids if str(robot_id)] or ["robot1", "robot2", "robot3"]
 
-        # Subscribe to per-robot maps.
-        self.create_subscription(OccupancyGrid, "/robot1/map", self._make_map_callback("robot1"), 10)
-        self.create_subscription(OccupancyGrid, "/robot2/map", self._make_map_callback("robot2"), 10)
-        self.create_subscription(OccupancyGrid, "/robot3/map", self._make_map_callback("robot3"), 10)
+        # Keep latest map per robot. Missing maps remain None until received.
+        self._latest_maps: Dict[str, Optional[OccupancyGrid]] = {robot_id: None for robot_id in self._robot_ids}
+
+        # Subscribe to the canonical absolute per-robot map topics.
+        for robot_id in self._robot_ids:
+            self.create_subscription(OccupancyGrid, f"/{robot_id}/map", self._make_map_callback(robot_id), 10)
 
         # Global merged outputs.
         self._merged_map_pub = self.create_publisher(OccupancyGrid, "/map", 10)
@@ -68,13 +67,19 @@ class MapMergeNode(Node):
         """Factory producing callbacks that store each robot's latest map."""
 
         def _callback(msg: OccupancyGrid) -> None:
+            # Log receipt of a robot-local map for debugging and store it.
+            try:
+                self.get_logger().debug(f"Received map for {robot_id}: "
+                                        f"width={msg.info.width}, height={msg.info.height}")
+            except Exception:
+                pass
             self._latest_maps[robot_id] = msg
 
         return _callback
 
     def _publish_timer_callback(self) -> None:
         """Compute status, merge available maps, and publish outputs."""
-        available_maps = [m for m in self._latest_maps.values() if m is not None]
+        available_maps = [m for m in self._latest_maps.values() if self._is_valid_map(m)]
         num_available = len(available_maps)
 
         # Status follows strict required values.
@@ -163,6 +168,20 @@ class MapMergeNode(Node):
 
         merged_msg.data = merged_data
         return merged_msg
+
+    @staticmethod
+    def _is_valid_map(msg: Optional[OccupancyGrid]) -> TypeGuard[OccupancyGrid]:
+        if msg is None:
+            return False
+
+        width = int(msg.info.width)
+        height = int(msg.info.height)
+        resolution = float(msg.info.resolution)
+
+        if width <= 0 or height <= 0 or resolution <= 0.0:
+            return False
+
+        return len(msg.data) >= width * height
 
     def _overlay_map(
         self,

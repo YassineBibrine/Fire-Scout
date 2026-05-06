@@ -3,6 +3,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -12,6 +13,8 @@ def generate_launch_description():
     spawn_x = LaunchConfiguration('spawn_x')
     spawn_y = LaunchConfiguration('spawn_y')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    world_name = LaunchConfiguration('world_name')
+    lidar_gz_topic = LaunchConfiguration('lidar_gz_topic')
 
     simulation_arg = DeclareLaunchArgument(
         'simulation',
@@ -38,6 +41,16 @@ def generate_launch_description():
         default_value='true',
         description='Use simulated clock.',
     )
+    world_name_arg = DeclareLaunchArgument(
+        'world_name',
+        default_value='villa_world',
+        description='Gazebo world name used by spawn/bridge nodes.',
+    )
+    lidar_gz_topic_arg = DeclareLaunchArgument(
+        'lidar_gz_topic',
+        default_value=PathJoinSubstitution(['/', robot_id, 'scan']),
+        description='Gazebo LaserScan topic to bridge into /<robot_id>/scan.',
+    )
 
     includes = [
         IncludeLaunchDescription(
@@ -54,6 +67,7 @@ def generate_launch_description():
                 'spawn_x': spawn_x,
                 'spawn_y': spawn_y,
                 'use_sim_time': use_sim_time,
+                'world_name': world_name,
             }.items(),
         ),
         IncludeLaunchDescription(
@@ -68,6 +82,8 @@ def generate_launch_description():
             launch_arguments={
                 'robot_id': robot_id,
                 'use_sim_time': use_sim_time,
+                'world_name': world_name,
+                'lidar_gz_topic': lidar_gz_topic,
             }.items(),
         ),
         IncludeLaunchDescription(
@@ -82,6 +98,16 @@ def generate_launch_description():
                 'robot_id': robot_id,
                 'use_sim_time': use_sim_time,
             }.items(),
+        ),
+        Node(
+            package='coordination',
+            executable='cmd_vel_safety_node',
+            name=['cmd_vel_safety_', robot_id],
+            output='screen',
+            parameters=[
+                {'robot_id': robot_id},
+                {'use_sim_time': use_sim_time},
+            ],
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -117,5 +143,7 @@ def generate_launch_description():
         spawn_x_arg,
         spawn_y_arg,
         use_sim_time_arg,
+        world_name_arg,
+        lidar_gz_topic_arg,
         *includes,
     ])
