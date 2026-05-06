@@ -5,7 +5,6 @@ from pathlib import Path
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.actions import GroupAction
 from launch.actions import IncludeLaunchDescription
 from launch.actions import OpaqueFunction
 from launch.actions import TimerAction
@@ -14,7 +13,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.logging import get_logger
 from launch.substitutions import PathJoinSubstitution
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node, PushRosNamespace
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -150,15 +149,10 @@ def generate_launch_description():
                 'world_name': world_name,
             }.items(),
         )
-        robot_group = GroupAction([
-            PushRosNamespace(robot_id),
-            robot_stack,
-        ])
-
         robot_groups.append(
             TimerAction(
                 period=8.0 + 4.0 * index,
-                actions=[robot_group],
+                actions=[robot_stack],
             )
         )
 

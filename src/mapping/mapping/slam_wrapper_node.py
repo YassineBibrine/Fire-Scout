@@ -96,7 +96,8 @@ class SlamWrapperNode(Node):
         """Relay scan data with corrected frame_id and refresh watchdog timestamp."""
         if self._use_global_lidar and not self._is_robot_scan(msg.header.frame_id):
             return
-        self._last_scan_time = self.get_clock().now()
+        now = self.get_clock().now()
+        self._last_scan_time = now
         # Gazebo produces sensor frame_id in various formats depending on
         # whether gz_frame_id is set: 'base_link', 'robot1/base_link', 'robot1::base_link'.
         # slam_toolbox requires exactly '{robot_id}/base_link' to resolve TF lookups.
@@ -105,13 +106,16 @@ class SlamWrapperNode(Node):
         import copy
         fixed_msg = copy.copy(msg)
         fixed_msg.header = copy.copy(msg.header)
+        fixed_msg.header.stamp = now.to_msg()
         fixed_msg.header.frame_id = f'{self._robot_id}/base_link'
         self._scan_relay_pub.publish(fixed_msg)
 
     def _odom_callback(self, msg: Odometry) -> None:
         """Relay odometry data for slam_toolbox odom input remapping."""
+        now = self.get_clock().now()
         # Set correct frame_id for slam_toolbox (expects robotX/odom)
         msg.header.frame_id = f'{self._robot_id}/odom'
+        msg.header.stamp = now.to_msg()
         # Also set child_frame_id for base_link
         msg.child_frame_id = f'{self._robot_id}/base_link'
         self._odom_relay_pub.publish(msg)

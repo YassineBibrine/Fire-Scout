@@ -60,6 +60,7 @@ class TaskExecutorNode(Node):
 
         self._latest_odom: Dict[str, Optional[Odometry]] = {robot_id: None for robot_id in self._robot_ids}
         self._active_task: Dict[str, Optional[Any]] = {robot_id: None for robot_id in self._robot_ids}
+        self._reported_identity_fallback = set()
         self._cmd_vel_publishers = {
             robot_id: self.create_publisher(Twist, f'/{robot_id}/cmd_vel', 10)
             for robot_id in self._robot_ids
@@ -103,7 +104,10 @@ class TaskExecutorNode(Node):
             odom = self._latest_odom.get(robot_id)
 
             twist = Twist()
-            if assignment is None or odom is None:
+            if odom is None:
+                continue
+
+            if assignment is None:
                 self._cmd_vel_publishers[robot_id].publish(twist)
                 continue
 
@@ -151,9 +155,11 @@ class TaskExecutorNode(Node):
             transform = self._tf_buffer.lookup_transform(target_frame, 'map', Time())
         except Exception as exc:
             if self._allow_identity_map_to_odom_fallback:
-                self.get_logger().warning(
-                    f'Using startup identity transform for {target_frame} <- map until SLAM TF is available: {exc}'
-                )
+                if robot_id not in self._reported_identity_fallback:
+                    self.get_logger().warning(
+                        f'Using startup identity transform for {target_frame} <- map until SLAM TF is available: {exc}'
+                    )
+                    self._reported_identity_fallback.add(robot_id)
                 goal = Pose()
                 goal.position = target_pose.position
                 goal.orientation = target_pose.orientation
