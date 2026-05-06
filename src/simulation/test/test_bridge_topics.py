@@ -4,12 +4,10 @@ import pytest
 pytest.importorskip('rclpy')
 pytest.importorskip('sensor_msgs.msg')
 pytest.importorskip('nav_msgs.msg')
-pytest.importorskip('tf2_msgs.msg')
 import rclpy
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
-from tf2_msgs.msg import TFMessage
 
 
 @pytest.fixture(scope='module')
@@ -37,10 +35,7 @@ def _wait_for_topic_type(node, topic_name, expected_type, timeout_sec=4.0):
 def test_bridge_topics(ros_node):
     scan_pub = ros_node.create_publisher(LaserScan, '/robot1/scan', 10)
     odom_pub = ros_node.create_publisher(Odometry, '/robot1/odom', 10)
-    tf_pub = ros_node.create_publisher(TFMessage, '/tf', 10)
     scan_pub.publish(LaserScan())
     odom_pub.publish(Odometry())
-    tf_pub.publish(TFMessage())
     assert _wait_for_topic_type(ros_node, '/robot1/scan', 'sensor_msgs/msg/LaserScan')
     assert _wait_for_topic_type(ros_node, '/robot1/odom', 'nav_msgs/msg/Odometry')
-    assert _wait_for_topic_type(ros_node, '/tf', 'tf2_msgs/msg/TFMessage')

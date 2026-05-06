@@ -1,4 +1,4 @@
-auctioneer:
+/**:
   ros__parameters:
-    auction_timeout_sec: 1.0
+    auction_timeout_sec: 30.0
     task_type: 1

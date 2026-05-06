@@ -13,12 +13,14 @@ The node does not implement SLAM; it only forwards data and reports health.
 from typing import Optional
 
 import rclpy
+from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from rclpy.time import Time
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
+from tf2_msgs.msg import TFMessage
 
 
 class SlamWrapperNode(Node):
@@ -59,6 +61,7 @@ class SlamWrapperNode(Node):
         reliable_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE)
         self._scan_relay_pub = self.create_publisher(LaserScan, relay_scan_topic, reliable_qos)
         self._odom_relay_pub = self.create_publisher(Odometry, relay_odom_topic, reliable_qos)
+        self._tf_pub = self.create_publisher(TFMessage, "/tf", 100)
 
         # Publisher for per-robot SLAM heartbeat status.
         self._status_pub = self.create_publisher(String, self._status_topic, 10)
@@ -112,6 +115,15 @@ class SlamWrapperNode(Node):
         # Also set child_frame_id for base_link
         msg.child_frame_id = f'{self._robot_id}/base_link'
         self._odom_relay_pub.publish(msg)
+
+        transform = TransformStamped()
+        transform.header = msg.header
+        transform.child_frame_id = msg.child_frame_id
+        transform.transform.translation.x = msg.pose.pose.position.x
+        transform.transform.translation.y = msg.pose.pose.position.y
+        transform.transform.translation.z = msg.pose.pose.position.z
+        transform.transform.rotation = msg.pose.pose.orientation
+        self._tf_pub.publish(TFMessage(transforms=[transform]))
 
     def _heartbeat_timer_callback(self) -> None:
         """Publish ACTIVE/DEGRADED based on scan watchdog timeout."""

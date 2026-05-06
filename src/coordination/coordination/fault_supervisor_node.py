@@ -36,6 +36,7 @@ class FaultSupervisorNode(Node):
         self.declare_parameter('robot_ids', ['robot1', 'robot2', 'robot3'])
         robot_ids = list(self.get_parameter('robot_ids').value)
         self.robots = [str(robot) for robot in robot_ids if str(robot)] or ['robot1', 'robot2', 'robot3']
+        self._last_degraded_set = set()
 
         self.report_fault_service = self.create_service(
             ReportFault,
@@ -88,10 +89,6 @@ class FaultSupervisorNode(Node):
         if status.status != 'DEGRADED':
             return
 
-        self.get_logger().warning(
-            f"System degraded: {status.error_message} - fault supervisor active"
-        )
-
         degraded = []
         if status.error_message:
             degraded = [
@@ -99,6 +96,13 @@ class FaultSupervisorNode(Node):
                 for robot in status.error_message.split(',')
                 if robot.strip()
             ]
+        degraded_set = set(degraded)
+
+        if degraded_set != self._last_degraded_set:
+            self.get_logger().warning(
+                f"System degraded: {status.error_message} - fault supervisor active"
+            )
+            self._last_degraded_set = degraded_set
 
         active_robots = [
             robot

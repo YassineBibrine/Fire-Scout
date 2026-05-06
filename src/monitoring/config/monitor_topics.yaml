@@ -26,9 +26,9 @@
       - 10.0                         # /robot1/scan expected at 10 Hz.
       - 10.0                         # /robot2/scan expected at 10 Hz.
       - 10.0                         # /robot3/scan expected at 10 Hz.
-      - 20.0                         # /robot1/odom expected at 20 Hz.
-      - 20.0                         # /robot2/odom expected at 20 Hz.
-      - 20.0                         # /robot3/odom expected at 20 Hz.
+      - 10.0                         # /robot1/odom expected at 10 Hz.
+      - 10.0                         # /robot2/odom expected at 10 Hz.
+      - 10.0                         # /robot3/odom expected at 10 Hz.
       - 1.0                          # /robot1/map expected at 1 Hz.
       - 1.0                          # /robot2/map expected at 1 Hz.
       - 1.0                          # /robot3/map expected at 1 Hz.

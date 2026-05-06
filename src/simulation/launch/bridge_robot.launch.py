@@ -21,7 +21,7 @@ def generate_launch_description():
         name='robot_bridge',
         output='screen',
         parameters=[
-            {'bridge_names': ['cmd_vel', 'odometry', 'tf', 'lidar']},
+            {'bridge_names': ['cmd_vel', 'odometry', 'lidar']},
             {
                 'bridges.cmd_vel.ros_topic_name': PathJoinSubstitution(['/', robot_id, 'cmd_vel']),
                 'bridges.cmd_vel.gz_topic_name': PathJoinSubstitution(['/model', robot_id, 'cmd_vel']),
@@ -35,13 +35,6 @@ def generate_launch_description():
                 'bridges.odometry.ros_type_name': 'nav_msgs/msg/Odometry',
                 'bridges.odometry.gz_type_name': 'gz.msgs.Odometry',
                 'bridges.odometry.direction': 'GZ_TO_ROS',
-            },
-            {
-                'bridges.tf.ros_topic_name': '/tf',
-                'bridges.tf.gz_topic_name': PathJoinSubstitution(['/model', robot_id, 'tf']),
-                'bridges.tf.ros_type_name': 'tf2_msgs/msg/TFMessage',
-                'bridges.tf.gz_type_name': 'gz.msgs.Pose_V',
-                'bridges.tf.direction': 'GZ_TO_ROS',
             },
             {
                 'bridges.lidar.ros_topic_name': PathJoinSubstitution(['/', robot_id, 'scan']),

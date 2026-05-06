@@ -10,6 +10,7 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     simulation = LaunchConfiguration('simulation')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    world_name = LaunchConfiguration('world_name')
 
     simulation_arg = DeclareLaunchArgument(
         'simulation',
@@ -20,6 +21,11 @@ def generate_launch_description():
         'use_sim_time',
         default_value='true',
         description='Use simulated clock.',
+    )
+    world_name_arg = DeclareLaunchArgument(
+        'world_name',
+        default_value='villa_world',
+        description='Gazebo world name used by global bridges.',
     )
 
     includes = [
@@ -32,6 +38,7 @@ def generate_launch_description():
                 ])
             ),
             condition=IfCondition(simulation),
+            launch_arguments={'world_name': world_name}.items(),
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -87,5 +94,6 @@ def generate_launch_description():
     return LaunchDescription([
         simulation_arg,
         use_sim_time_arg,
+        world_name_arg,
         *includes,
     ])
