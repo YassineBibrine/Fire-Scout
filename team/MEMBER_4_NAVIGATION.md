@@ -1,13 +1,11 @@
 # Member 4: Exploration + Common Utilities Lead
 
-## Package Ownership
-- `src/exploration`
-- `src/common_utils`
+## Scope
 
-## Responsibility
-Own frontier exploration and auction logic, plus shared helper utilities used by teams without cross-importing runtime packages.
+- Own frontier exploration and auction logic, plus shared helper utilities used by the runtime packages.
 
-## Files and Folders
+## Package Surface
+
 - `src/exploration/exploration/`
 - `src/exploration/launch/`
 - `src/exploration/config/`
@@ -16,29 +14,37 @@ Own frontier exploration and auction logic, plus shared helper utilities used by
 - `src/common_utils/config/`
 - `src/common_utils/test/`
 
-## Implementation Tasks (Exploration)
-- [ ] Implement frontier detector runtime node
-- [ ] Implement auctioneer runtime node
-- [ ] Implement bidder runtime node for per-robot participation
-- [ ] Keep global and per-robot exploration launch files aligned
+## Implemented
 
-## Implementation Tasks (Common Utils)
-- [ ] Maintain shared geometry/math helper functions
-- [ ] Maintain namespace helper utilities
-- [ ] Maintain QoS profile helper definitions
-- [ ] Ensure package contains no ROS runtime nodes
+- Exploration runtime entry points exist for `frontier_detector_node`, `auctioneer_node`, and `bidder_node`.
+- Exploration launch files and configs are present for frontier detection and auction coordination.
+- `common_utils` provides shared math, geometry, namespace, and QoS helper modules.
+- `common_utils` remains a utility-only package with no runtime nodes.
+- Both packages include focused test coverage.
 
-## Configuration Tasks
-- [ ] Maintain `exploration/config/frontier.yaml`
-- [ ] Maintain `exploration/config/auction.yaml`
-- [ ] Maintain `common_utils/config/defaults.yaml`
+## Tests Present
 
-## Testing Tasks
-- [ ] Maintain exploration tests (`test_frontier_output.py`, `test_auction_single_winner.py`, `test_bid_timeout.py`)
-- [ ] Maintain common_utils tests (`test_math_utils.py`, `test_geometry_utils.py`, `test_namespace_utils.py`)
+- `src/exploration/test/test_frontier_startup_gate.py`
+- `src/exploration/test/test_frontier_output.py`
+- `src/exploration/test/test_auction_single_winner.py`
+- `src/exploration/test/test_bid_timeout.py`
+- `src/common_utils/test/test_math_utils.py`
+- `src/common_utils/test/test_geometry_utils.py`
+- `src/common_utils/test/test_namespace_utils.py`
 
-## Done Criteria
-- [ ] Exploration produces deterministic assignments
-- [ ] Auction rules are documented and tested
-- [ ] common_utils remains dependency-safe and reusable
-- [ ] Exploration/common_utils tests pass in CI
+## Current Status
+
+- [x] Frontier detection and auction flow are implemented.
+- [x] Common utility helpers are implemented and reusable.
+- [x] Exploration and common_utils config files are present.
+- [x] Test coverage exists for both packages.
+
+## Phase 2 - Hybrid System Tasks 
+
+Hybrid support scope: exploration behavior adapts to fire/human confirmations.
+
+- Update exploration scoring logic so confirmed fire zones are deprioritized for normal exploration and escalated for response workflows.
+- Add helper utilities in `common_utils` for hybrid confidence weighting (sensor confidence + vision confidence).
+- Add normal-priority tests verifying auction/frontier behavior when fusion decisions mark zones as hazardous.
+- Ensure exploration nodes subscribe safely to fusion outputs without creating hard dependencies on response internals.
+- Document fallback behavior when camera detections are unavailable but fire sensors still trigger alerts.
