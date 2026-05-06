@@ -16,6 +16,8 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_bridge_topics test/test_bridge_topics.py)
   ament_add_pytest_test(test_clock_available test/test_clock_available.py)
+  ament_add_pytest_test(test_lidar_sensor_model test/test_lidar_sensor_model.py)
+  ament_add_pytest_test(test_spawn_robot_launch test/test_spawn_robot_launch.py)
   ament_add_pytest_test(test_spawn_namespaces test/test_spawn_namespaces.py)
 endif()
 

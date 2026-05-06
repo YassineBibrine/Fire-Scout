@@ -13,6 +13,7 @@ def generate_launch_description():
     spawn_y = LaunchConfiguration('spawn_y')
     use_sim_time = LaunchConfiguration('use_sim_time')
     world_name = LaunchConfiguration('world_name')
+    lidar_gz_topic = LaunchConfiguration('lidar_gz_topic')
 
     simulation_arg = DeclareLaunchArgument(
         'simulation',
@@ -43,6 +44,11 @@ def generate_launch_description():
         'world_name',
         default_value='villa_world',
         description='Gazebo world name used by spawn/bridge nodes.',
+    )
+    lidar_gz_topic_arg = DeclareLaunchArgument(
+        'lidar_gz_topic',
+        default_value=PathJoinSubstitution(['/', robot_id, 'scan']),
+        description='Gazebo LaserScan topic to bridge into /<robot_id>/scan.',
     )
 
     includes = [
@@ -75,6 +81,8 @@ def generate_launch_description():
             launch_arguments={
                 'robot_id': robot_id,
                 'use_sim_time': use_sim_time,
+                'world_name': world_name,
+                'lidar_gz_topic': lidar_gz_topic,
             }.items(),
         ),
         IncludeLaunchDescription(
@@ -125,5 +133,6 @@ def generate_launch_description():
         spawn_y_arg,
         use_sim_time_arg,
         world_name_arg,
+        lidar_gz_topic_arg,
         *includes,
     ])

@@ -1,4 +1,6 @@
 import time
+import importlib.util
+from pathlib import Path
 
 import pytest
 pytest.importorskip('rclpy')
@@ -39,3 +41,24 @@ def test_bridge_topics(ros_node):
     odom_pub.publish(Odometry())
     assert _wait_for_topic_type(ros_node, '/robot1/scan', 'sensor_msgs/msg/LaserScan')
     assert _wait_for_topic_type(ros_node, '/robot1/odom', 'nav_msgs/msg/Odometry')
+
+
+def _load_launch_module(path: Path):
+    module_name = f"_launch_{path.name.replace('.', '_')}"
+    spec = importlib.util.spec_from_file_location(module_name, str(path))
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_robot_bridge_uses_robot_specific_lidar_topic():
+    launch_path = Path(__file__).resolve().parents[1] / 'launch' / 'bridge_robot.launch.py'
+    module = _load_launch_module(launch_path)
+    source = launch_path.read_text(encoding='utf-8')
+
+    assert module.generate_launch_description().entities
+    assert "'bridge_names': ['cmd_vel', 'odometry', 'lidar']" in source
+    assert 'lidar_world' not in source
+    assert "PathJoinSubstitution(['/', robot_id, 'scan'])" in source
+    assert 'bridges.lidar.gz_topic_name' in source

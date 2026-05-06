@@ -22,6 +22,7 @@ def generate_launch_description():
     simulation = LaunchConfiguration('simulation')
     use_sim_time = LaunchConfiguration('use_sim_time')
     world_name = LaunchConfiguration('world_name')
+    start_paused = LaunchConfiguration('start_paused')
     rviz_config = LaunchConfiguration('rviz_config')
     rviz_config_out = LaunchConfiguration('rviz_config_out')
 
@@ -87,6 +88,11 @@ def generate_launch_description():
         default_value='villa_world',
         description='Gazebo world name used by spawn/bridge nodes.',
     )
+    start_paused_arg = DeclareLaunchArgument(
+        'start_paused',
+        default_value='false',
+        description='Start Gazebo paused. Use false for live sensor streams.',
+    )
     rviz_config_arg = DeclareLaunchArgument(
         'rviz_config',
         default_value=PathJoinSubstitution([
@@ -123,6 +129,9 @@ def generate_launch_description():
             ])
         ),
         condition=IfCondition(simulation),
+        launch_arguments={
+            'start_paused': start_paused,
+        }.items(),
     )
 
     robot_groups = []
@@ -172,6 +181,7 @@ def generate_launch_description():
         simulation_arg,
         use_sim_time_arg,
         world_name_arg,
+        start_paused_arg,
         rviz_config_arg,
         rviz_config_out_arg,
         simulation_world,

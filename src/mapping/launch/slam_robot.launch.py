@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -12,14 +12,18 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
 
     # Centralized slam_toolbox YAML shared by all robots.
-    slam_params = [FindPackageShare('mapping'), '/config/slam_toolbox_robot.yaml']
+    slam_params = PathJoinSubstitution([
+        FindPackageShare('mapping'),
+        'config',
+        'slam_toolbox_robot.yaml',
+    ])
 
     # Launch slam_toolbox in online async mode and remap canonical topics to
     # this specific robot namespace.
     slam_toolbox_node = Node(
         package='slam_toolbox',
         executable='async_slam_toolbox_node',
-        name='slam_toolbox',
+        name=['slam_toolbox_', robot_id],
         output='screen',
         parameters=[
             slam_params,
@@ -48,13 +52,47 @@ def generate_launch_description():
     slam_wrapper_node = Node(
         package='mapping',
         executable='slam_wrapper_node',
-        name='slam_wrapper_node',
+        name=['slam_wrapper_', robot_id],
         output='screen',
         parameters=[
             {'robot_id': robot_id, 'use_sim_time': use_sim_time},
             {'use_global_lidar': False},
         ],
     )
+
+    lidar_static_tf_node = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name=['static_tf_', robot_id, '_base_link_to_lidar'],
+        output='screen',
+        arguments=[
+            '0',
+            '0',
+            '0.2',
+            '0',
+            '0',
+            '0',
+            PathJoinSubstitution([robot_id, 'base_link']),
+            PathJoinSubstitution([robot_id, 'lidar']),
+        ],
+        parameters=[{'use_sim_time': use_sim_time}],
+    )
+
+    def _launch_lifecycle_manager(context, *args, **kwargs):
+        robot_id_value = robot_id.perform(context)
+        return [
+            Node(
+                package='nav2_lifecycle_manager',
+                executable='lifecycle_manager',
+                name=f'slam_toolbox_manager_{robot_id_value}',
+                output='screen',
+                parameters=[
+                    {'use_sim_time': use_sim_time},
+                    {'autostart': True},
+                    {'node_names': [f'slam_toolbox_{robot_id_value}']},
+                ],
+            )
+        ]
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -68,4 +106,6 @@ def generate_launch_description():
         ),
         slam_toolbox_node,
         slam_wrapper_node,
+        lidar_static_tf_node,
+        OpaqueFunction(function=_launch_lifecycle_manager),
     ])
