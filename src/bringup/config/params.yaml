@@ -1,3 +1,18 @@
 /**:
   ros__parameters:
     use_sim_time: true
+
+# Obstacle avoidance tuning (cmd_vel_safety_node)
+cmd_vel_safety_node:
+  ros__parameters:
+    stop_distance_m: 0.55
+    slow_distance_m: 1.1
+    front_angle_deg: 45.0
+    avoidance_turn_speed: 1.15
+    escape_reverse_speed: 0.25
+    min_avoid_duration_sec: 0.8
+    max_avoid_duration_sec: 3.0
+    max_recovery_duration_sec: 5.0
+    max_stuck_rotations: 4
+    stuck_position_threshold: 0.02
+    stuck_check_period_sec: 1.5

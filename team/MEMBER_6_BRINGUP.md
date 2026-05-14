@@ -64,17 +64,11 @@ Planned tasks (owner: Member 6)
 
 Hybrid target: production-grade orchestration for Jetson + sensors + ROS 2 fusion.
 
-- Integrate full hybrid bringup flow in `full_system.launch.py`:
-	- sensor gateway node
-	- Jetson camera inference node
-	- fusion/decision node
-	- response and coordination hooks
-- Add launch profiles for `hybrid_sim`, `hybrid_robot`, and `hybrid_debug` with clear parameter sets.
-- Implement system-level failover rules in coordination:
-	- camera timeout -> sensor-only degraded mode
-	- sensor timeout -> vision-only caution mode
-	- both unavailable -> safe-stop and alert escalation
-- Extend `cmd_vel` safety behavior to consume fusion risk levels and perform faster obstacle avoidance without long deadlock.
-- Add end-to-end integration tests proving bounded decision latency from detection to task assignment/emergency action.
-- Add operational observability: structured logs and metrics for fusion delay, stop duration, avoidance attempts, and incident confirmation path.
+- [ ] Add `sensor_gateway_node`, `camera_inference_node`, and `fusion_decision_node` per robot in `full_system.launch.py` (TimerAction 8s offset consistent with robots).
+- [ ] Add `launch_profile` arg in `full_system.launch.py` (`sim`, `robot`, `debug`) with sim using `mock_camera_inference_node` and robot using real inference node.
+- [ ] In `health_monitor_node.py`, track `/robotX/fusion_decision` liveness; emit NodeStatus DEGRADED when silent > 5s with error `camera_sensor_timeout:robotX`.
+- [ ] If all three robots are in `camera_sensor_timeout`, transition `mission_manager` to SAFE_STOP state.
+- [ ] Extend `cmd_vel_safety_node.py` to subscribe to `/robotX/fusion_decision` and reduce max_linear_speed to 0.1 when `risk_level > 0.8`.
+- [ ] Allow cmd_vel passthrough without obstacle slow-down when `recommended_action` is `SUPPRESS` or `RESCUE`.
+- [ ] Add tests: `test_hybrid_failover_camera_timeout.py`, `test_hybrid_failover_both_timeout.py`, `test_cmd_vel_safety_risk_level.py`, `test_full_launch_hybrid_sim_profile.py`.
 

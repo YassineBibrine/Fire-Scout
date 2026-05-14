@@ -9,6 +9,7 @@ from geometry_msgs.msg import Pose, Twist
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.time import Time
+from std_msgs.msg import String
 from tf2_ros import Buffer, TransformListener
 
 TaskAssignment = getattr(import_module('firescout_interfaces.msg'), 'TaskAssignment')
@@ -60,6 +61,7 @@ class TaskExecutorNode(Node):
 
         self._latest_odom: Dict[str, Optional[Odometry]] = {robot_id: None for robot_id in self._robot_ids}
         self._active_task: Dict[str, Optional[Any]] = {robot_id: None for robot_id in self._robot_ids}
+        self._avoidance_state: Dict[str, str] = {robot_id: 'FREE' for robot_id in self._robot_ids}
         self._reported_identity_fallback = set()
         self._cmd_vel_publishers = {
             robot_id: self.create_publisher(Twist, f'/{robot_id}/cmd_vel', 10)
@@ -69,6 +71,12 @@ class TaskExecutorNode(Node):
         self.create_subscription(TaskAssignment, '/coordination/task_assignments', self._task_assignment_callback, 10)
         for robot_id in self._robot_ids:
             self.create_subscription(Odometry, f'/{robot_id}/odom', self._make_odom_callback(robot_id), 10)
+            self.create_subscription(
+                String,
+                f'/{robot_id}/avoidance_state',
+                self._make_avoidance_state_callback(robot_id),
+                10,
+            )
 
         self._tf_buffer = Buffer()
         self._tf_listener = TransformListener(
@@ -86,6 +94,12 @@ class TaskExecutorNode(Node):
 
         return _callback
 
+    def _make_avoidance_state_callback(self, robot_id: str):
+        def _cb(msg: String) -> None:
+            self._avoidance_state[robot_id] = msg.data
+
+        return _cb
+
     def _task_assignment_callback(self, msg: Any) -> None:
         robot_id = str(msg.assigned_robot)
         if robot_id not in self._active_task:
@@ -100,6 +114,10 @@ class TaskExecutorNode(Node):
 
     def _control_loop(self) -> None:
         for robot_id in self._robot_ids:
+            if self._avoidance_state.get(robot_id, 'FREE') in ('AVOIDING', 'RECOVERING', 'STUCK'):
+                # Safety node is in control — do not publish cmd_vel
+                continue
+
             assignment = self._active_task.get(robot_id)
             odom = self._latest_odom.get(robot_id)
 
