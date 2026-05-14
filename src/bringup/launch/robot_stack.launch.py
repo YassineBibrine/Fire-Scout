@@ -15,6 +15,11 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     world_name = LaunchConfiguration('world_name')
     lidar_gz_topic = LaunchConfiguration('lidar_gz_topic')
+    safety_params = PathJoinSubstitution([
+        FindPackageShare('bringup'),
+        'config',
+        'params.yaml',
+    ])
 
     simulation_arg = DeclareLaunchArgument(
         'simulation',
@@ -99,12 +104,26 @@ def generate_launch_description():
                 'use_sim_time': use_sim_time,
             }.items(),
         ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('bringup'),
+                    'launch',
+                    'nav2_robot.launch.py',
+                ])
+            ),
+            launch_arguments={
+                'robot_id': robot_id,
+                'use_sim_time': use_sim_time,
+            }.items(),
+        ),
         Node(
             package='coordination',
             executable='cmd_vel_safety_node',
             name=['cmd_vel_safety_', robot_id],
             output='screen',
             parameters=[
+                safety_params,
                 {'robot_id': robot_id},
                 {'use_sim_time': use_sim_time},
             ],

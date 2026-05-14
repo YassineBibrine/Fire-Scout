@@ -160,13 +160,13 @@ def generate_launch_description():
         )
         robot_groups.append(
             TimerAction(
-                period=8.0 + 4.0 * index,
+                period=12.0 + 4.0 * index,
                 actions=[robot_stack],
             )
         )
 
     rviz_node = TimerAction(
-        period=22.0,   # last robot spawns at 8+4*2=16 s; allow extra margin
+        period=26.0,   # last robot spawns at 12+4*2=20 s; allow extra margin
         actions=[Node(
             package='rviz2',
             executable='rviz2',

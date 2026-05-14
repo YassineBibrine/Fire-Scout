@@ -7,12 +7,18 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
+    use_nav2 = LaunchConfiguration('use_nav2')
     robot_ids = ['robot1', 'robot2', 'robot3']
 
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
         default_value='true',
         description='Use simulated clock time.'
+    )
+    use_nav2_arg = DeclareLaunchArgument(
+        'use_nav2',
+        default_value='true',
+        description='Use Nav2 NavigateToPose for task execution when true.'
     )
 
     mission_policy_yaml = [FindPackageShare('coordination'), '/config/mission_policy.yaml']
@@ -61,11 +67,16 @@ def generate_launch_description():
         name='task_executor',
         namespace='coordination',
         output='screen',
-        parameters=[{'use_sim_time': use_sim_time}, {'robot_ids': robot_ids}],
+        parameters=[
+            {'use_sim_time': use_sim_time},
+            {'robot_ids': robot_ids},
+            {'use_nav2': use_nav2},
+        ],
     )
 
     return LaunchDescription([
         use_sim_time_arg,
+        use_nav2_arg,
         mission_manager,
         health_monitor,
         fault_supervisor,
