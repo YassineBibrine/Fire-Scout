@@ -42,13 +42,13 @@
       <sensor type="gpu_lidar" name="lidar">
         <pose>0 0 0.2 0 0 0</pose>
         <topic>~/lidar</topic>
-        <update_rate>10</update_rate>
+        <update_rate>5</update_rate>
         <always_on>true</always_on>
         <visualize>true</visualize>
         <lidar>
           <scan>
             <horizontal>
-              <samples>360</samples>
+              <samples>180</samples>
               <resolution>1.0</resolution>
               <min_angle>0.0</min_angle>
               <max_angle>6.28</max_angle>
@@ -200,12 +200,12 @@
       <wheel_separation>0.36</wheel_separation>
       <wheel_radius>0.08</wheel_radius>
       <odom_publish_frequency>10</odom_publish_frequency>
-      <max_linear_velocity>0.6</max_linear_velocity>
-      <min_linear_velocity>-0.6</min_linear_velocity>
-      <max_angular_velocity>1.5</max_angular_velocity>
-      <min_angular_velocity>-1.5</min_angular_velocity>
-      <max_linear_acceleration>1.0</max_linear_acceleration>
-      <max_angular_acceleration>2.0</max_angular_acceleration>
+      <max_linear_velocity>1.0</max_linear_velocity>
+      <min_linear_velocity>-1.0</min_linear_velocity>
+      <max_angular_velocity>2.2</max_angular_velocity>
+      <min_angular_velocity>-2.2</min_angular_velocity>
+      <max_linear_acceleration>1.5</max_linear_acceleration>
+      <max_angular_acceleration>3.0</max_angular_acceleration>
       <publish_tf>true</publish_tf>
       <publish_odom>true</publish_odom>
     </plugin>

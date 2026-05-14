@@ -31,9 +31,10 @@ def generate_launch_description():
             {'odom_frame': PathJoinSubstitution([robot_id, 'odom'])},
             {'map_frame': PathJoinSubstitution([robot_id, 'map'])},
             {'base_frame': PathJoinSubstitution([robot_id, 'base_link'])},
-            {'transform_publish_period': 0.02},
-            {'transform_timeout': 0.2},
+            {'transform_publish_period': 0.05},
+            {'transform_timeout': 0.4},
             {'tf_buffer_duration': 30.0},
+            {'scan_queue_size': 100},
             # Override the YAML's broken placeholder /robotX/scan with the
             # real relay topic produced by slam_wrapper_node. This must come
             # after slam_params so it wins the last-write-wins parameter merge.
@@ -57,6 +58,7 @@ def generate_launch_description():
         parameters=[
             {'robot_id': robot_id, 'use_sim_time': use_sim_time},
             {'use_global_lidar': False},
+            {'scan_relay_min_period_sec': 0.15},
         ],
     )
 

@@ -75,7 +75,7 @@ def generate_launch_description():
 
     simulation_arg = DeclareLaunchArgument(
         'simulation',
-        default_value='false',
+        default_value='true',
         description='Run simulation stack when true.',
     )
     use_sim_time_arg = DeclareLaunchArgument(

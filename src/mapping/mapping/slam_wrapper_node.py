@@ -10,6 +10,7 @@ This node performs three responsibilities:
 The node does not implement SLAM; it only forwards data and reports health.
 """
 
+import copy
 from typing import Optional
 
 import rclpy
@@ -33,9 +34,14 @@ class SlamWrapperNode(Node):
         self.declare_parameter("robot_id", "robot1")
         self.declare_parameter("use_global_lidar", False)
         self.declare_parameter("global_lidar_topic", "/lidar")
+        self.declare_parameter("scan_relay_min_period_sec", 0.15)
         self._robot_id = self.get_parameter("robot_id").get_parameter_value().string_value
         self._use_global_lidar = self.get_parameter("use_global_lidar").get_parameter_value().bool_value
         self._global_lidar_topic = self.get_parameter("global_lidar_topic").get_parameter_value().string_value
+        self._scan_relay_min_period_sec = max(
+            float(self.get_parameter("scan_relay_min_period_sec").value),
+            0.0,
+        )
 
         # Build all topic names from the robot_id so the node can be reused
         # for robot1, robot2, and robot3 without code changes.
@@ -55,6 +61,7 @@ class SlamWrapperNode(Node):
 
         # Track last scan timestamp for watchdog-based health classification.
         self._last_scan_time: Optional[Time] = None
+        self._last_relayed_scan_time: Optional[Time] = None
         self._scan_timeout_sec = 2.0
 
         # Publishers for relayed sensor streams consumed by slam_toolbox.
@@ -98,12 +105,16 @@ class SlamWrapperNode(Node):
             return
         now = self.get_clock().now()
         self._last_scan_time = now
+        if self._last_relayed_scan_time is not None and self._scan_relay_min_period_sec > 0.0:
+            elapsed_sec = (now - self._last_relayed_scan_time).nanoseconds / 1e9
+            if elapsed_sec < self._scan_relay_min_period_sec:
+                return
+        self._last_relayed_scan_time = now
         # Gazebo produces sensor frame_id in various formats depending on
         # whether gz_frame_id is set: 'base_link', 'robot1/base_link',
         # 'robot1::base_link', or a full sensor-scoped frame. Normalize scans
         # to the robot-local lidar frame; slam_robot.launch.py publishes the
         # corresponding base_link -> lidar static transform.
-        import copy
         fixed_msg = copy.copy(msg)
         fixed_msg.header = copy.copy(msg.header)
         fixed_msg.header.stamp = now.to_msg()

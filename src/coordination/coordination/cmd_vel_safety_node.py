@@ -118,6 +118,7 @@ class CmdVelSafetyNode(Node):
         self.declare_parameter('max_avoid_duration_sec', 3.0)
         self.declare_parameter('max_recovery_duration_sec', 5.0)
         self.declare_parameter('max_stuck_rotations', 4)
+        self.declare_parameter('stuck_escape_reverse_speed', 0.18)
         self.declare_parameter('stuck_position_threshold', 0.02)
         self.declare_parameter('stuck_check_period_sec', 1.5)
         self.declare_parameter('all_robot_ids', ['robot1', 'robot2', 'robot3'])
@@ -134,6 +135,7 @@ class CmdVelSafetyNode(Node):
         self._max_avoid_duration_sec = max(float(self.get_parameter('max_avoid_duration_sec').value), 0.0)
         self._max_recovery_duration_sec = max(float(self.get_parameter('max_recovery_duration_sec').value), 0.0)
         self._max_stuck_rotations = max(int(self.get_parameter('max_stuck_rotations').value), 0)
+        self._stuck_escape_reverse_speed = max(float(self.get_parameter('stuck_escape_reverse_speed').value), 0.0)
         self._stuck_position_threshold = max(float(self.get_parameter('stuck_position_threshold').value), 0.0)
         self._stuck_check_period_sec = max(float(self.get_parameter('stuck_check_period_sec').value), 0.1)
 
@@ -361,8 +363,10 @@ class CmdVelSafetyNode(Node):
         twist = Twist()
         if self._stuck_rotation_count >= self._max_stuck_rotations:
             if not self._stuck_error_logged:
-                self.get_logger().error('Max stuck rotations exceeded; holding position.')
+                self.get_logger().error('Max stuck rotations exceeded; continuing reverse-turn recovery.')
                 self._stuck_error_logged = True
+            twist.linear.x = -abs(self._stuck_escape_reverse_speed)
+            twist.angular.z = self._stuck_rotation_direction * self._avoidance_turn_speed
             return twist
 
         phase_elapsed = self._elapsed_sec(now, self._stuck_phase_start)

@@ -15,8 +15,8 @@
     mode: mapping                    # Explicitly run in mapping mode.
     resolution: 0.05                 # Output grid resolution in meters/cell.
     max_laser_range: 12.0            # Ignore scan returns beyond this range.
-    minimum_time_interval: 0.2       # Minimum time between accepted scans.
-    map_update_interval: 1.0         # Seconds between map publication updates.
+    minimum_time_interval: 0.35      # Minimum time between accepted scans.
+    map_update_interval: 2.0         # Seconds between map publication updates.
 
     # Frame policy placeholders (replace robotX at runtime).
     odom_frame: robotX/odom          # Robot-local odometry frame.
@@ -26,12 +26,13 @@
     # Topic policy placeholder. Runtime launch remapping should bind /scan,
     # /odom, and /map to the specific robot namespace.
     # TF and execution behavior.
-    transform_publish_period: 0.02   # Publish map->odom transform at 50 Hz.
-    transform_timeout: 0.2           # TF lookup timeout in seconds.
+    transform_publish_period: 0.05   # Publish map->odom transform at 20 Hz.
+    transform_timeout: 0.4           # TF lookup timeout in seconds.
     tf_buffer_duration: 30.0         # TF history length used by slam_toolbox.
     stack_size_to_use: 40000000      # Larger stack for heavy graph operations.
-    throttle_scans: 1                # Use every scan (no decimation).
-    enable_interactive_mode: true    # Enable marker/manual interaction tools.
+    throttle_scans: 2                # Decimate scans to avoid long-run backlog.
+    scan_queue_size: 100             # Buffer temporary TF/processing delays.
+    enable_interactive_mode: false   # Disable marker/manual tools during runs.
 
     # Solver backend settings (Ceres + SPA).
     solver_plugin: solver_plugins::CeresSolver
@@ -46,12 +47,12 @@
     use_scan_barycenter: true
     minimum_travel_distance: 0.1
     minimum_travel_heading: 0.1
-    scan_buffer_size: 10
+    scan_buffer_size: 5
     scan_buffer_maximum_scan_distance: 12.0
     link_match_minimum_response: 0.1
     link_scan_maximum_distance: 1.5
     loop_search_maximum_distance: 3.0
-    do_loop_closing: true
+    do_loop_closing: false
     loop_match_minimum_chain_size: 10
     loop_match_maximum_variance_coarse: 3.0
     loop_match_minimum_response_coarse: 0.35

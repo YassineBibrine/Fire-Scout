@@ -17,8 +17,8 @@
   </light>
 
   <physics type="ode">
-    <max_step_size>0.001</max_step_size>
-    <real_time_factor>1</real_time_factor>
+    <max_step_size>0.005</max_step_size>
+    <real_time_factor>2</real_time_factor>
   </physics>
 
   <plugin name="gz::sim::systems::Physics" filename="gz-sim-physics-system"/>
