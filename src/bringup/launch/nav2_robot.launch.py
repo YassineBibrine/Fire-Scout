@@ -3,7 +3,6 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
@@ -27,22 +26,13 @@ def generate_launch_description():
         'navigate_through_poses_w_replanning_and_recovery.xml',
     ])
 
-    configured_params = RewrittenYaml(
-        source_file=nav2_params,
-        root_key=robot_id,
-        param_rewrites={
-            'use_sim_time': use_sim_time,
-        },
-        convert_types=True,
-    )
-
     controller_server = Node(
         package='nav2_controller',
         executable='controller_server',
         name='controller_server',
         namespace=robot_id,
         output='screen',
-        parameters=[configured_params],
+        parameters=[nav2_params, {'use_sim_time': use_sim_time}],
     )
 
     planner_server = Node(
@@ -51,7 +41,7 @@ def generate_launch_description():
         name='planner_server',
         namespace=robot_id,
         output='screen',
-        parameters=[configured_params],
+        parameters=[nav2_params, {'use_sim_time': use_sim_time}],
     )
 
     bt_navigator = Node(
@@ -61,7 +51,8 @@ def generate_launch_description():
         namespace=robot_id,
         output='screen',
         parameters=[
-            configured_params,
+            nav2_params,
+            {'use_sim_time': use_sim_time},
             {
                 'default_nav_to_pose_bt_xml': bt_nav_to_pose,
                 'default_nav_through_poses_bt_xml': bt_nav_through_poses,
@@ -75,7 +66,7 @@ def generate_launch_description():
         name='behavior_server',
         namespace=robot_id,
         output='screen',
-        parameters=[configured_params],
+        parameters=[nav2_params, {'use_sim_time': use_sim_time}],
     )
 
     waypoint_follower = Node(
@@ -84,7 +75,7 @@ def generate_launch_description():
         name='waypoint_follower',
         namespace=robot_id,
         output='screen',
-        parameters=[configured_params],
+        parameters=[nav2_params, {'use_sim_time': use_sim_time}],
     )
 
     velocity_smoother = Node(
@@ -93,7 +84,7 @@ def generate_launch_description():
         name='velocity_smoother',
         namespace=robot_id,
         output='screen',
-        parameters=[configured_params],
+        parameters=[nav2_params, {'use_sim_time': use_sim_time}],
     )
 
     lifecycle_manager = Node(
