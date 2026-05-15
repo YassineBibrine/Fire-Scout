@@ -62,6 +62,7 @@ class SlamWrapperNode(Node):
         # Track last scan timestamp for watchdog-based health classification.
         self._last_scan_time: Optional[Time] = None
         self._last_relayed_scan_time: Optional[Time] = None
+        self._latest_odom: Optional[Odometry] = None
         self._scan_timeout_sec = 2.0
 
         # Publishers for relayed sensor streams consumed by slam_toolbox.
@@ -81,6 +82,10 @@ class SlamWrapperNode(Node):
 
         # Publish heartbeat at 1 Hz as required.
         self.create_timer(1.0, self._heartbeat_timer_callback)
+        # Keep the local odom TF available even before the first bridged odom
+        # message arrives. Nav2 costmaps require this transform during
+        # lifecycle activation.
+        self.create_timer(0.05, self._publish_odom_tf)
 
         self.get_logger().info(
             f"SlamWrapperNode started for {self._robot_id}: "
@@ -124,20 +129,31 @@ class SlamWrapperNode(Node):
     def _odom_callback(self, msg: Odometry) -> None:
         """Relay odometry data for slam_toolbox odom input remapping."""
         now = self.get_clock().now()
+        fixed_msg = copy.copy(msg)
+        fixed_msg.header = copy.copy(msg.header)
         # Set correct frame_id for slam_toolbox (expects robotX/odom)
-        msg.header.frame_id = f'{self._robot_id}/odom'
-        msg.header.stamp = now.to_msg()
+        fixed_msg.header.frame_id = f'{self._robot_id}/odom'
+        fixed_msg.header.stamp = now.to_msg()
         # Also set child_frame_id for base_link
-        msg.child_frame_id = f'{self._robot_id}/base_link'
-        self._odom_relay_pub.publish(msg)
+        fixed_msg.child_frame_id = f'{self._robot_id}/base_link'
+        self._latest_odom = fixed_msg
+        self._odom_relay_pub.publish(fixed_msg)
+        self._publish_odom_tf()
 
+    def _publish_odom_tf(self) -> None:
+        """Publish robot-local odom -> base_link TF from latest odom or startup identity."""
+        odom = self._latest_odom
         transform = TransformStamped()
-        transform.header = msg.header
-        transform.child_frame_id = msg.child_frame_id
-        transform.transform.translation.x = msg.pose.pose.position.x
-        transform.transform.translation.y = msg.pose.pose.position.y
-        transform.transform.translation.z = msg.pose.pose.position.z
-        transform.transform.rotation = msg.pose.pose.orientation
+        transform.header.stamp = self.get_clock().now().to_msg()
+        transform.header.frame_id = f'{self._robot_id}/odom'
+        transform.child_frame_id = f'{self._robot_id}/base_link'
+        if odom is not None:
+            transform.transform.translation.x = odom.pose.pose.position.x
+            transform.transform.translation.y = odom.pose.pose.position.y
+            transform.transform.translation.z = odom.pose.pose.position.z
+            transform.transform.rotation = odom.pose.pose.orientation
+        else:
+            transform.transform.rotation.w = 1.0
         self._tf_pub.publish(TFMessage(transforms=[transform]))
 
     def _heartbeat_timer_callback(self) -> None:

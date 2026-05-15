@@ -33,6 +33,9 @@ def generate_launch_description():
         namespace=robot_id,
         output='screen',
         parameters=[nav2_params, {'use_sim_time': use_sim_time}],
+        remappings=[
+            ('cmd_vel', 'cmd_vel_nav'),
+        ],
     )
 
     planner_server = Node(
@@ -85,6 +88,10 @@ def generate_launch_description():
         namespace=robot_id,
         output='screen',
         parameters=[nav2_params, {'use_sim_time': use_sim_time}],
+        remappings=[
+            ('cmd_vel', 'cmd_vel_nav'),
+            ('cmd_vel_smoothed', 'cmd_vel'),
+        ],
     )
 
     lifecycle_manager = Node(
@@ -97,6 +104,8 @@ def generate_launch_description():
             {'use_sim_time': use_sim_time},
             {
                 'autostart': True,
+                'service_timeout': 30.0,
+                'bond_timeout': 10.0,
                 'node_names': [
                     'controller_server',
                     'planner_server',

@@ -83,7 +83,7 @@ robot1:
       robot_base_frame: robot1/base_link
       odom_topic: /robot1/odom
       bt_loop_duration: 10
-      default_server_timeout: 20.0
+      default_server_timeout: 20
       navigators: ["navigate_to_pose", "navigate_through_poses"]
       navigate_to_pose:
         plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
@@ -280,7 +280,7 @@ robot2:
       robot_base_frame: robot2/base_link
       odom_topic: /robot2/odom
       bt_loop_duration: 10
-      default_server_timeout: 20.0
+      default_server_timeout: 20
       navigators: ["navigate_to_pose", "navigate_through_poses"]
       navigate_to_pose:
         plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
@@ -477,7 +477,7 @@ robot3:
       robot_base_frame: robot3/base_link
       odom_topic: /robot3/odom
       bt_loop_duration: 10
-      default_server_timeout: 20.0
+      default_server_timeout: 20
       navigators: ["navigate_to_pose", "navigate_through_poses"]
       navigate_to_pose:
         plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
