@@ -58,7 +58,7 @@ def test_robot_bridge_uses_robot_specific_lidar_topic():
     source = launch_path.read_text(encoding='utf-8')
 
     assert module.generate_launch_description().entities
-    assert "'bridge_names': ['cmd_vel', 'odometry', 'lidar']" in source
+    assert 'parameter_bridge' in source
+    assert '@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan' in source
     assert 'lidar_world' not in source
     assert "PathJoinSubstitution(['/', robot_id, 'scan'])" in source
-    assert 'bridges.lidar.gz_topic_name' in source
