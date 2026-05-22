@@ -1,11 +1,11 @@
 # Interface Contract for FireScout Project
-# Version: 1.0.0
+# Version: 2.0.0
 # Owner: Member 1 "Ali" (Interfaces Contract Lead)
 
-version: "1.0.0"
-last_updated: "2026-04-01"
+version: "2.0.0"
+last_updated: "2026-05-23"
 
-# Naming conventions
+# ─── Naming conventions ───────────────────────────────────────────────────────
 naming:
   message_suffix: ".msg"
   service_suffix: ".srv"
@@ -14,7 +14,39 @@ naming:
   service_naming: "/{namespace}/services/{service_name}"
   action_naming: "/{namespace}/actions/{action_name}"
 
-# Message specifications
+# ─── QoS policies ─────────────────────────────────────────────────────────────
+qos_policies:
+  fire_sensor_alert:
+    profile: RELIABLE
+    history: KEEP_LAST
+    depth: 5
+    rationale: "Safety-critical; no drop acceptable from sensor_gateway_node."
+  fusion_decision:
+    profile: RELIABLE
+    history: KEEP_LAST
+    depth: 5
+    rationale: "Consumed by coord/exploration/bringup; must be lossless."
+  camera_detections:
+    profile: BEST_EFFORT
+    history: KEEP_LAST
+    depth: 1
+    rationale: "High-rate camera stream; stale frames are worthless. Use sensor_data QoS."
+
+# ─── Phase 2 migration notes ──────────────────────────────────────────────────
+migration:
+  FireDetection_v1_to_v2:
+    note: >
+      From Phase 2 onwards, FireDetection.msg is populated exclusively by
+      fusion_decision_node output (fire_confirmed == true).
+      It is NO LONGER published from raw sensor stubs or directly from
+      fire_detection_node without a confirmed FusionDecision.
+    breaking: false
+    action_required: >
+      Nodes that previously subscribed to /incidents/fire directly and expected
+      raw-sensor-triggered events must now subscribe to /robotX/fusion_decision
+      and filter on fire_confirmed. See Member 5 (Response) for fusion_decision_node spec.
+
+# ─── Message specifications ───────────────────────────────────────────────────
 messages:
   RobotHealth:
     description: "Robot health and status information"
@@ -22,7 +54,7 @@ messages:
       battery_percentage: "float32 [0-100]"
       cpu_load: "float32 [0-100]"
       memory_usage: "float32 [0-100]"
-    
+
   Frontier:
     description: "Exploration frontier representation"
     fields:
@@ -32,12 +64,65 @@ messages:
       gain: "float32 >0"
 
   FireDetection:
-    description: "Fire detection with confidence"
+    description: "Fire detection event — Phase 2: published only on fusion_decision.fire_confirmed"
     fields:
       confidence: "float32 [0-1]"
       intensity: "float32 [0-10]"
 
-# Service specifications
+  # ── Phase 2 hybrid messages ────────────────────────────────────────────────
+  FireSensorAlert:
+    description: "Raw physical sensor alert from sensor_gateway_node"
+    phase: 2
+    topic: "/robotX/fire_sensor_alert"
+    qos: fire_sensor_alert
+    fields:
+      robot_id: "string  — robot namespace"
+      flame_detected: "bool"
+      smoke_level: "float32 [0.0-1.0]"
+      gas_level: "float32 [0.0-1.0]"
+      temperature: "float32  Celsius"
+      normalized_risk: "float32 [0.0-1.0]"
+      source_id: "string  hardware ID"
+      timestamp: "builtin_interfaces/Time"
+
+  Detection:
+    description: "Single object detection from camera inference (nested in VisionDetectionArray)"
+    phase: 2
+    fields:
+      class_label: "string  fire | human | smoke"
+      confidence: "float32 [0.0-1.0]"
+      bounding_box: "float32[4]  [x_min, y_min, x_max, y_max] pixels"
+      estimated_pose: "geometry_msgs/Pose  in robot frame"
+
+  VisionDetectionArray:
+    description: "Camera inference detections published by camera_inference_node"
+    phase: 2
+    topic: "/robotX/camera_detections"
+    qos: camera_detections
+    fields:
+      robot_id: "string"
+      camera_id: "string"
+      detections: "Detection[]"
+      timestamp: "builtin_interfaces/Time"
+
+  FusionDecision:
+    description: "Fused sensor+vision decision from fusion_decision_node"
+    phase: 2
+    topic: "/robotX/fusion_decision"
+    qos: fusion_decision
+    confirmation_window_seconds: 3
+    fields:
+      robot_id: "string"
+      fire_confirmed: "bool  true when 2-of-2 sources agree within 3 s"
+      human_confirmed: "bool  true when 2-of-2 sources agree within 3 s"
+      risk_level: "float32 [0.0-1.0]"
+      recommended_action: "string  SUPPRESS | RESCUE | MONITOR | NONE"
+      contributing_sources: "string[]"
+      sensor_confidence: "float32 [0.0-1.0]"
+      vision_confidence: "float32 [0.0-1.0]"
+      timestamp: "builtin_interfaces/Time"
+
+# ─── Service specifications ───────────────────────────────────────────────────
 services:
   AssignTask:
     description: "Assign task to robot"
@@ -49,7 +134,7 @@ services:
       success: "bool"
       message: "string"
 
-# Action specifications
+# ─── Action specifications ────────────────────────────────────────────────────
 actions:
   SuppressFire:
     description: "Long-running fire suppression"
@@ -61,17 +146,35 @@ actions:
     feedback:
       progress: "float32 [0-100]"
 
-# Versioning policy
+# ─── Versioning policy ────────────────────────────────────────────────────────
 versioning:
   policy: "Semantic Versioning (MAJOR.MINOR.PATCH)"
   major_change: "Breaking changes (field removal, type change)"
   minor_change: "Backward compatible additions (new fields with defaults)"
   patch_change: "Bug fixes, documentation updates"
+  changelog:
+    "2.0.0":
+      date: "2026-05-23"
+      changes:
+        - "Add FireSensorAlert.msg (Phase 2 sensor gateway output)"
+        - "Add Detection.msg (nested struct for VisionDetectionArray)"
+        - "Add VisionDetectionArray.msg (Phase 2 camera inference output)"
+        - "Add FusionDecision.msg (Phase 2 fusion node output)"
+        - "Add QoS policy section"
+        - "Add migration note: FireDetection now fusion_decision_node output only"
+    "1.0.0":
+      date: "2026-04-01"
+      changes:
+        - "Initial Phase 1 interface contract"
 
-# Validation rules
+# ─── Validation rules ─────────────────────────────────────────────────────────
 validation:
   required_fields: true
   field_naming: "snake_case"
   message_size_limit: "10 MB"
   array_size_limit: 1000
   string_length_limit: 255
+  confidence_range: "[0.0, 1.0]"
+  risk_level_range: "[0.0, 1.0]"
+  reject_nan: true
+  reject_empty_robot_id: true
