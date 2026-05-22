@@ -84,19 +84,15 @@ def test_slam_wrapper_restamps_relayed_scan_and_odom():
     odom_pub = node.create_publisher(Odometry, '/robot1/odom', 10)
     relayed_scans = []
     relayed_odoms = []
+    received_tf = []
 
     scan_sub = node.create_subscription(LaserScan, '/robot1/slam/scan', lambda msg: relayed_scans.append(msg), 10)
     odom_sub = node.create_subscription(Odometry, '/robot1/slam/odom', lambda msg: relayed_odoms.append(msg), 10)
+    tf_sub = node.create_subscription(TFMessage, '/tf', lambda msg: received_tf.extend(msg.transforms), 100)
 
     try:
         deadline = time.time() + 8.0
         while time.time() < deadline:
-            scan = LaserScan()
-            scan.header.frame_id = 'base_link'
-            scan.header.stamp.sec = 0
-            scan.header.stamp.nanosec = 0
-            scan_pub.publish(scan)
-
             odom = Odometry()
             odom.header.frame_id = 'odom'
             odom.header.stamp.sec = 0
@@ -104,6 +100,13 @@ def test_slam_wrapper_restamps_relayed_scan_and_odom():
             odom.child_frame_id = 'base_link'
             odom.pose.pose.orientation.w = 1.0
             odom_pub.publish(odom)
+            rclpy.spin_once(node, timeout_sec=0.05)
+
+            scan = LaserScan()
+            scan.header.frame_id = 'base_link'
+            scan.header.stamp.sec = 0
+            scan.header.stamp.nanosec = 0
+            scan_pub.publish(scan)
 
             rclpy.spin_once(node, timeout_sec=0.1)
 
@@ -115,12 +118,19 @@ def test_slam_wrapper_restamps_relayed_scan_and_odom():
                 assert relayed_odom.child_frame_id == 'robot1/base_link'
                 assert relayed_scan.header.stamp.sec != 0 or relayed_scan.header.stamp.nanosec != 0
                 assert relayed_odom.header.stamp.sec != 0 or relayed_odom.header.stamp.nanosec != 0
-                return
+                if any(
+                    transform.header.frame_id == 'robot1/odom'
+                    and transform.child_frame_id == 'robot1/base_link'
+                    and transform.header.stamp == relayed_scan.header.stamp
+                    for transform in received_tf
+                ):
+                    return
 
-        assert False, 'slam_wrapper_node did not relay restamped scan and odom messages'
+        assert False, 'slam_wrapper_node did not relay scan-time odom TF with restamped scan and odom messages'
     finally:
         node.destroy_subscription(scan_sub)
         node.destroy_subscription(odom_sub)
+        node.destroy_subscription(tf_sub)
         node.destroy_node()
         process.terminate()
         try:

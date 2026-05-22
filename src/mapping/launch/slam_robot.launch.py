@@ -88,6 +88,8 @@ def generate_launch_description():
                 parameters=[
                     {'use_sim_time': use_sim_time},
                     {'autostart': True},
+                    {'bond_timeout': 15.0},
+                    {'service_timeout': 20.0},
                     {'node_names': [f'slam_toolbox_{robot_id_value}']},
                 ],
             )

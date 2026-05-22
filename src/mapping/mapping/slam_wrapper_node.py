@@ -85,7 +85,7 @@ class SlamWrapperNode(Node):
         # (from Gazebo) when enabled, and filter by frame_id per robot.
         scan_sub_topic = self._global_lidar_topic if self._use_global_lidar else scan_topic
         self.create_subscription(LaserScan, scan_sub_topic, self._scan_callback, qos_profile_sensor_data)
-        # Odom from ros_gz_bridge is reliable; match it so we do not miss data.
+        # Odom from ros_gz_bridge is best-effort; match it so we do not miss data.
         self.create_subscription(Odometry, odom_topic, self._odom_callback, odom_sub_qos)
 
         # Publish heartbeat at 1 Hz as required.
@@ -129,6 +129,11 @@ class SlamWrapperNode(Node):
         fixed_msg.header = copy.copy(msg.header)
         fixed_msg.header.stamp = now.to_msg()
         fixed_msg.header.frame_id = f'{self._robot_id}/lidar'
+        if self._latest_odom is not None:
+            odom_at_scan_time = copy.copy(self._latest_odom)
+            odom_at_scan_time.header = copy.copy(self._latest_odom.header)
+            odom_at_scan_time.header.stamp = fixed_msg.header.stamp
+            self._publish_odom_tf(odom_at_scan_time)
         self._scan_relay_pub.publish(fixed_msg)
 
     def _odom_callback(self, msg: Odometry) -> None:
