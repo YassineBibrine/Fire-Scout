@@ -37,11 +37,10 @@
 
 Hybrid target: high-confidence fire/human confirmation and mission-priority decisions.
 
-- Implement robust fusion-side response gating:
-	- sensor-only fire alert -> preliminary incident
-	- sensor+vision agreement -> confirmed incident
-	- human+confirmed fire -> highest-priority rescue task
-- Add temporal and confidence filters to reduce false positives from camera-only detections.
-- Add dedicated planning-node tests for rescue/suppression branching under hybrid inputs.
-- Add conflict-resolution logic for simultaneous incidents across robots and ensure deterministic priority output.
-- Integrate with `coordination` task assignment so hybrid-confirmed incidents trigger actionable `TaskAssignment` outputs with bounded response latency.
+- [ ] Implement `sensor_gateway_node.py` to publish `/robotX/fire_sensor_alert` from `/robotX/esp32/sensors` and add entry point in `setup.py`.
+- [ ] Implement `camera_inference_node.py` subscribing to `/robotX/camera/image_raw`, with params `model_path` and `confidence_threshold`, publishing `/robotX/camera_detections`, and add entry point.
+- [ ] Implement `fusion_decision_node.py` subscribing to fire sensor + camera detections, publishing `/robotX/fusion_decision` with 2-of-2 temporal confirmation within 3 seconds.
+- [ ] Upgrade `fire_detection_node.py` to publish `FireDetection` only when `fusion_decision.fire_confirmed == true`.
+- [ ] Add conflict resolution in `rescue_planning_node.py` (human > fire, then confidence, then robot_id lexicographic).
+- [ ] Add tests: `test_sensor_gateway_output.py`, `test_fusion_decision_sensor_only.py`, `test_fusion_decision_confirmed.py`, `test_fusion_temporal_filter.py`, `test_multi_incident_priority.py`.
+- [ ] Integrate with `coordination` task assignment so hybrid-confirmed incidents trigger actionable `TaskAssignment` outputs with bounded response latency.
