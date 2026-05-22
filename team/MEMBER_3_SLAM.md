@@ -50,3 +50,13 @@ Hybrid support scope: mapping and monitoring support for sensor+vision fusion re
 - Add one monitoring test for hybrid timing alarms (for example, delayed camera detections).
 - Validate TF consistency for camera frames used by Jetson inference outputs.
 - Document expected map/fusion topic dependencies so response and coordination teams consume consistent data.
+## Phase 2 - Hybrid System Tasks 
+
+Hybrid support scope: mapping and monitoring support for sensor+vision fusion reliability.
+
+- [ ] Add camera static TF in `src/mapping/launch/slam_robot.launch.py` for each robot (parent `robotX/base_link`, child `robotX/camera`, translation `0.10 0 0.15`, rotation `0 0 0`).
+- [ ] Update `src/mapping/config/tf_policy.yaml` to document the camera frame (publisher: `slam_robot.launch.py` static_transform_publisher, rate: static).
+- [ ] Add monitor topics in `src/monitoring/config/monitor_topics.yaml` for camera, fire_sensor_alert, and fusion_decision with expected rates (15.0, 5.0, 2.0 per robot).
+- [ ] Add latency thresholds in `src/monitoring/config/thresholds.yaml` (`camera_max_latency_ms: 200.0`, `sensor_alert_max_latency_ms: 500.0`).
+- [ ] Update `metrics_exporter_node` to emit CRITICAL when both `/robotX/fire_sensor_alert` and `/robotX/camera/image_raw` are silent for > 5 seconds.
+- [ ] Add tests: `test_metrics_exporter.py`, `test_tf_camera_consistency.py`, and `test_hybrid_timing_alarm.py`.

@@ -43,8 +43,8 @@
 
 Hybrid support scope: exploration behavior adapts to fire/human confirmations.
 
-- Update exploration scoring logic so confirmed fire zones are deprioritized for normal exploration and escalated for response workflows.
-- Add helper utilities in `common_utils` for hybrid confidence weighting (sensor confidence + vision confidence).
-- Add normal-priority tests verifying auction/frontier behavior when fusion decisions mark zones as hazardous.
-- Ensure exploration nodes subscribe safely to fusion outputs without creating hard dependencies on response internals.
-- Document fallback behavior when camera detections are unavailable but fire sensors still trigger alerts.
+- [ ] Update frontier scoring to subscribe only to `/robotX/fusion_decision` and never directly to `/incidents/fire`.
+- [ ] When `fusion_decision.risk_level > 0.7` for a frontier zone, multiply travel_cost by `3.0`.
+- [ ] Add `weighted_confidence(sensor_conf, vision_conf, sensor_weight=0.6, vision_weight=0.4)` in `common_utils`.
+- [ ] Add tests: `test_hazard_aware_frontier_scoring.py` and `test_weighted_confidence_util.py`.
+- [ ] Document fallback behavior when fusion decisions are unavailable (skip hazard weighting and keep baseline scoring).

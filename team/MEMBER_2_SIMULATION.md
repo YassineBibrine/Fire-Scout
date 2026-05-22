@@ -38,9 +38,11 @@
 
 Primary objective: upgrade simulation world and robot models for hybrid fire/human scenarios.
 
-- Add fire entities in world files (`src/simulation/worlds/*.sdf`) with realistic placement and ignition zones for repeatable test scenes.
-- Add human entities in world files (`src/simulation/worlds/*.sdf`) with multiple rescue scenarios (single victim, multiple victims, blocked path).
-- Enhance robot model `.sdf` design in `src/simulation/models/` to improve sensor mounting realism (camera frame, lidar frame, optional thermal mount points).
+- [ ] Add a camera sensor to `src/simulation/models/*/model.sdf` with pose `0.10 0 0.15 0 0 0`, topic `~/camera/image_raw`, rate 15, and 640x480 RGB8.
+- [ ] Add camera bridge entry in `src/simulation/launch/bridge_robot.launch.py` for `/robotX/camera/image_raw` ↔ `gz.msgs.Image` (GZ_TO_ROS).
+- [ ] Add a fire entity to `src/simulation/worlds/world_1.sdf` (red/orange box, no physics) at `(3.0, 2.0, 0)` with realistic placement and ignition zones for repeatable test scenes.
+- [ ] Add a human entity to `src/simulation/worlds/world_1.sdf` (blue box) at `(-3.0, 4.0, 0)` with multiple rescue scenarios (single victim, multiple victims, blocked path).
 - Improve visual/material and collision models in `.sdf` assets so obstacle boundaries and fire zones are more realistic for avoidance testing.
-- Add simulation launch arguments to enable or disable fire and human scenario packs for CI and demos.
-- Add/extend tests to validate that fire and human entities are spawned correctly and namespaced topics remain collision-free.
+- [ ] Add launch arguments in `src/simulation/launch/sim.launch.py`: `spawn_fire_entities` and `spawn_human_entities` (default true) to enable or disable fire and human scenario packs for CI and demos.
+- [ ] Add `mock_camera_inference_node` in `src/testing_tools/testing_tools/` that reads Gazebo entity positions and publishes `VisionDetectionArray`.
+- [ ] Add tests: `test_camera_bridge_topic.py` for `/robot1/camera/image_raw` and `test_fire_entity_spawn.py` for fire entity existence.

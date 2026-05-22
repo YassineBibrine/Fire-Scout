@@ -8,35 +8,47 @@ Legend:
 
 | Owner | Priority | Task | Status | Deadline |
 |---|---|---|---|---|
-| Member 1 (Interfaces) | Hard | Freeze hybrid message contract (`FireSensorAlert`, `VisionDetectionArray`, `FusionDecision`) | Not Started | 2026-05-10 |
-| Member 1 (Interfaces) | Hard | Add strict interface versioning/migration rules in `interface_contract.yaml` | Not Started | 2026-05-12 |
-| Member 1 (Interfaces) | Hard | Add schema/QoS validation tests for critical hybrid topics | Not Started | 2026-05-14 |
-| Member 2 (Simulation) | Simulation | Add fire entities in `src/simulation/worlds/*.sdf` with repeatable ignition zones | Not Started | 2026-05-11 |
-| Member 2 (Simulation) | Simulation | Add human entities/scenarios in `src/simulation/worlds/*.sdf` | Not Started | 2026-05-12 |
-| Member 2 (Simulation) | Simulation | Enhance robot model `.sdf` sensor mounting and collision realism | Not Started | 2026-05-14 |
-| Member 2 (Simulation) | Simulation | Add launch toggles for fire/human scenario packs | Not Started | 2026-05-15 |
-| Member 2 (Simulation) | Simulation | Add tests for fire/human spawn validity + namespace safety | Not Started | 2026-05-16 |
-| Member 3 (Mapping/Monitoring) | Normal | Add high-risk fire zone annotation support for fusion context | Not Started | 2026-05-13 |
-| Member 3 (Mapping/Monitoring) | Normal | Extend monitoring topics to include sensor heartbeat + camera latency | Not Started | 2026-05-14 |
-| Member 3 (Mapping/Monitoring) | Normal | Add hybrid timing alarm test and camera TF consistency check | Not Started | 2026-05-16 |
-| Member 4 (Exploration/Utils) | Normal | Update exploration scoring with hazard-aware fusion input | Not Started | 2026-05-13 |
-| Member 4 (Exploration/Utils) | Normal | Add confidence-weight helper utilities in `common_utils` | Not Started | 2026-05-14 |
-| Member 4 (Exploration/Utils) | Normal | Add tests for auction/frontier behavior under fusion hazard flags | Not Started | 2026-05-16 |
-| Member 5 (Response) | Hard | Implement response gating (sensor-only alert vs sensor+vision confirmed incident) | Not Started | 2026-05-12 |
-| Member 5 (Response) | Hard | Add temporal/confidence filters for camera-only false positives | Not Started | 2026-05-14 |
-| Member 5 (Response) | Hard | Add dedicated rescue/suppression planning tests for hybrid inputs | Not Started | 2026-05-16 |
-| Member 5 (Response) | Hard | Implement deterministic multi-incident conflict resolution | Not Started | 2026-05-18 |
-| Member 6 (Coordination/Bringup) | Hard | Integrate hybrid bringup flow in `full_system.launch.py` | Not Started | 2026-05-12 |
-| Member 6 (Coordination/Bringup) | Hard | Add `hybrid_sim`, `hybrid_robot`, `hybrid_debug` launch profiles | Not Started | 2026-05-14 |
-| Member 6 (Coordination/Bringup) | Hard | Implement failover modes (camera timeout, sensor timeout, safe-stop) | Not Started | 2026-05-16 |
-| Member 6 (Coordination/Bringup) | Hard | Improve `cmd_vel` safety with fusion risk input + faster avoidance | Not Started | 2026-05-18 |
-| Member 6 (Coordination/Bringup) | Hard | Add E2E latency/observability tests and metrics | Not Started | 2026-05-20 |
+| Member 1 (Interfaces) | Hard | Define FireSensorAlert.msg fields | Not Started | 2026-05-12 |
+| Member 1 (Interfaces) | Hard | Define VisionDetectionArray.msg + Detection struct | Not Started | 2026-05-12 |
+| Member 1 (Interfaces) | Hard | Define FusionDecision.msg fields | Not Started | 2026-05-12 |
+| Member 1 (Interfaces) | Hard | Add migration note for FireDetection in interface_contract.yaml | Not Started | 2026-05-13 |
+| Member 1 (Interfaces) | Hard | Document QoS policies for hybrid topics | Not Started | 2026-05-13 |
+| Member 1 (Interfaces) | Hard | Add schema validation tests for hybrid messages | Not Started | 2026-05-15 |
+| Member 2 (Simulation) | Simulation | Add camera sensor to robot model.sdf | Not Started | 2026-05-13 |
+| Member 2 (Simulation) | Simulation | Add camera ros_gz_bridge entry in bridge_robot.launch.py | Not Started | 2026-05-13 |
+| Member 2 (Simulation) | Simulation | Add fire entity in world_1.sdf | Not Started | 2026-05-14 |
+| Member 2 (Simulation) | Simulation | Add human entity in world_1.sdf | Not Started | 2026-05-14 |
+| Member 2 (Simulation) | Simulation | Add sim.launch.py args spawn_fire_entities/spawn_human_entities | Not Started | 2026-05-15 |
+| Member 2 (Simulation) | Simulation | Add mock_camera_inference_node in testing_tools | Not Started | 2026-05-16 |
+| Member 2 (Simulation) | Simulation | Add tests: test_camera_bridge_topic.py + test_fire_entity_spawn.py | Not Started | 2026-05-16 |
+| Member 3 (Mapping/Monitoring) | Normal | Add camera static TF in slam_robot.launch.py | Not Started | 2026-05-14 |
+| Member 3 (Mapping/Monitoring) | Normal | Update tf_policy.yaml for camera frame | Not Started | 2026-05-14 |
+| Member 3 (Mapping/Monitoring) | Normal | Add monitor_topics.yaml entries for camera/sensor/fusion | Not Started | 2026-05-15 |
+| Member 3 (Mapping/Monitoring) | Normal | Add thresholds.yaml camera/sensor latency limits | Not Started | 2026-05-15 |
+| Member 3 (Mapping/Monitoring) | Normal | Update metrics_exporter_node critical rule for dual silence | Not Started | 2026-05-16 |
+| Member 3 (Mapping/Monitoring) | Normal | Add tests: metrics_exporter, tf_camera_consistency, hybrid_timing_alarm | Not Started | 2026-05-18 |
+| Member 4 (Exploration/Utils) | Normal | Subscribe frontier scoring to fusion_decision only | Not Started | 2026-05-14 |
+| Member 4 (Exploration/Utils) | Normal | Deprioritize frontiers when risk_level > 0.7 | Not Started | 2026-05-15 |
+| Member 4 (Exploration/Utils) | Normal | Add weighted_confidence helper in common_utils | Not Started | 2026-05-15 |
+| Member 4 (Exploration/Utils) | Normal | Add tests: hazard_aware_frontier_scoring + weighted_confidence_util | Not Started | 2026-05-17 |
+| Member 5 (Response) | Hard | Implement sensor_gateway_node | Not Started | 2026-05-15 |
+| Member 5 (Response) | Hard | Implement camera_inference_node | Not Started | 2026-05-16 |
+| Member 5 (Response) | Hard | Implement fusion_decision_node | Not Started | 2026-05-17 |
+| Member 5 (Response) | Hard | Upgrade fire_detection_node to consume fusion_decision | Not Started | 2026-05-17 |
+| Member 5 (Response) | Hard | Add conflict resolution in rescue_planning_node | Not Started | 2026-05-18 |
+| Member 5 (Response) | Hard | Add tests for fusion and multi-incident priority | Not Started | 2026-05-19 |
+| Member 6 (Coordination/Bringup) | Hard | Add hybrid nodes per robot in full_system.launch.py | Not Started | 2026-05-15 |
+| Member 6 (Coordination/Bringup) | Hard | Add launch_profile sim/robot/debug behavior | Not Started | 2026-05-16 |
+| Member 6 (Coordination/Bringup) | Hard | Add fusion_decision liveness checks and degraded status | Not Started | 2026-05-17 |
+| Member 6 (Coordination/Bringup) | Hard | SAFE_STOP when all robots timed out | Not Started | 2026-05-18 |
+| Member 6 (Coordination/Bringup) | Hard | Extend cmd_vel_safety for risk_level and critical task passthrough | Not Started | 2026-05-19 |
+| Member 6 (Coordination/Bringup) | Hard | Add hybrid failover and launch profile tests | Not Started | 2026-05-20 |
 
 ## Coordination Milestones
 
 | Milestone | Owner(s) | Status | Deadline |
 |---|---|---|---|
 | Phase 2 interface freeze | Member 1 + Member 6 | Not Started | 2026-05-12 |
-| Simulation scenario ready (fire + human) | Member 2 | Not Started | 2026-05-15 |
-| Hybrid integration dry run | Members 2, 5, 6 | Not Started | 2026-05-18 |
-| Full Phase 2 system validation | All members | Not Started | 2026-05-21 |
+| Simulation scenario ready (fire + human + camera) | Member 2 | Not Started | 2026-05-16 |
+| Hybrid integration dry run | Members 2, 5, 6 | Not Started | 2026-05-19 |
+| Full Phase 2 system validation | All members | Not Started | 2026-05-22 |
