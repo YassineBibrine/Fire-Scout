@@ -107,13 +107,12 @@ ros2 interface list | grep firescout_interfaces
 
 Hybrid target: Jetson + fire sensors + ROS 2 fusion.
 
-- Define and freeze new hybrid interface contract for sensor-driven fire alerts and vision detections:
-	- `FireSensorAlert.msg` (flame/smoke/gas/temp raw + normalized + timestamp + source id)
-	- `VisionDetectionArray.msg` (class, confidence, bbox, camera id, frame id)
-	- `FusionDecision.msg` (`fire_confirmed`, `human_confirmed`, `risk_level`, `recommended_action`)
-- Add strict versioning rules in `src/firescout_interfaces/config/interface_contract.yaml` for backward compatibility across microcontroller gateway, Jetson AI node, and fusion node.
-- Add schema validation tests for all hybrid messages/services and reject invalid payload ranges (NaN, out-of-range confidence, invalid namespace).
-- Define QoS profiles and reliability rules for critical topics (`/fire_sensor_alert`, `/camera_detections`, `/fusion_decision`, `/emergency_stop`) and document required publish rates.
-- Provide migration notes from Phase 1 interfaces to Phase 2 hybrid interfaces so all teams can upgrade without breaking runtime nodes.
+- [ ] Define `FireSensorAlert.msg` fields (robot_id, flame_detected, smoke_level, gas_level, temperature, normalized_risk, source_id, timestamp).
+- [ ] Define `VisionDetectionArray.msg` with `Detection` struct (class_label, confidence, bounding_box, estimated_pose) plus robot_id, camera_id, detections, timestamp.
+- [ ] Define `FusionDecision.msg` fields (robot_id, fire_confirmed, human_confirmed, risk_level, recommended_action, contributing_sources, sensor_confidence, vision_confidence, timestamp).
+- [ ] Add migration note in `interface_contract.yaml` that `FireDetection.msg` is now populated by `fusion_decision_node` output (not raw sensor stubs).
+- [ ] Document QoS policies: `fire_sensor_alert` and `fusion_decision` RELIABLE KEEP_LAST depth 5; `camera_detections` BEST_EFFORT sensor_data QoS.
+- [ ] Add schema validation tests for hybrid messages and reject invalid ranges (NaN, out-of-range confidence, invalid namespace).
+- [ ] Provide migration notes from Phase 1 interfaces to Phase 2 hybrid interfaces so all teams can upgrade without breaking runtime nodes.
 
 
