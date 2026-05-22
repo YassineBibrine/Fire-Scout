@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 import time
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.logging import get_logger
 from launch.substitutions import PathJoinSubstitution
 from launch.substitutions import LaunchConfiguration
+from launch.substitutions import PythonExpression
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -25,6 +27,13 @@ def generate_launch_description():
     start_paused = LaunchConfiguration('start_paused')
     rviz_config = LaunchConfiguration('rviz_config')
     rviz_config_out = LaunchConfiguration('rviz_config_out')
+    robot_count = LaunchConfiguration('robot_count')
+    launch_rviz = LaunchConfiguration('launch_rviz')
+    launch_global_stack = LaunchConfiguration('launch_global_stack')
+    launch_slam = LaunchConfiguration('launch_slam')
+    launch_nav2 = LaunchConfiguration('launch_nav2')
+    launch_exploration = LaunchConfiguration('launch_exploration')
+    launch_detection = LaunchConfiguration('launch_detection')
 
     def _prepare_rviz_config(context, *args, **kwargs):
         source = rviz_config.perform(context)
@@ -105,6 +114,41 @@ def generate_launch_description():
         default_value='/tmp/firescout_viz_runtime.rviz',
         description='Runtime RViz config path to ensure clean settings each launch.',
     )
+    robot_count_arg = DeclareLaunchArgument(
+        'robot_count',
+        default_value='3',
+        description='Number of robots to launch from the built-in robot list.',
+    )
+    launch_rviz_arg = DeclareLaunchArgument(
+        'launch_rviz',
+        default_value='true',
+        description='Start RViz.',
+    )
+    launch_global_stack_arg = DeclareLaunchArgument(
+        'launch_global_stack',
+        default_value='true',
+        description='Start global mapping, coordination, monitoring, exploration, and response nodes.',
+    )
+    launch_slam_arg = DeclareLaunchArgument(
+        'launch_slam',
+        default_value='true',
+        description='Start per-robot SLAM.',
+    )
+    launch_nav2_arg = DeclareLaunchArgument(
+        'launch_nav2',
+        default_value='true',
+        description='Start per-robot Nav2.',
+    )
+    launch_exploration_arg = DeclareLaunchArgument(
+        'launch_exploration',
+        default_value='true',
+        description='Start per-robot frontier exploration.',
+    )
+    launch_detection_arg = DeclareLaunchArgument(
+        'launch_detection',
+        default_value='true',
+        description='Start per-robot detection nodes.',
+    )
     global_stack = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -113,6 +157,7 @@ def generate_launch_description():
                 'global_stack.launch.py',
             ])
         ),
+        condition=IfCondition(launch_global_stack),
         launch_arguments={
             'use_sim_time': use_sim_time,
             'simulation': simulation,
@@ -133,6 +178,7 @@ def generate_launch_description():
             'start_paused': start_paused,
         }.items(),
     )
+
 
     robot_groups = []
     robot_specs = (
@@ -156,17 +202,23 @@ def generate_launch_description():
                 'spawn_y': spawn_y,
                 'use_sim_time': use_sim_time,
                 'world_name': world_name,
+                'launch_slam': launch_slam,
+                'launch_nav2': launch_nav2,
+                'launch_exploration': launch_exploration,
+                'launch_detection': launch_detection,
             }.items(),
         )
         robot_groups.append(
             TimerAction(
                 period=12.0 + 4.0 * index,
                 actions=[robot_stack],
+                condition=IfCondition(PythonExpression([robot_count, ' > ', str(index)])),
             )
         )
 
     rviz_node = TimerAction(
         period=26.0,   # last robot spawns at 12+4*2=20 s; allow extra margin
+        condition=IfCondition(launch_rviz),
         actions=[Node(
             package='rviz2',
             executable='rviz2',
@@ -184,9 +236,16 @@ def generate_launch_description():
         start_paused_arg,
         rviz_config_arg,
         rviz_config_out_arg,
+        robot_count_arg,
+        launch_rviz_arg,
+        launch_global_stack_arg,
+        launch_slam_arg,
+        launch_nav2_arg,
+        launch_exploration_arg,
+        launch_detection_arg,
         simulation_world,
         global_stack,
         *robot_groups,
-        OpaqueFunction(function=_prepare_rviz_config),
+        OpaqueFunction(function=_prepare_rviz_config, condition=IfCondition(launch_rviz)),
         rviz_node,
     ])

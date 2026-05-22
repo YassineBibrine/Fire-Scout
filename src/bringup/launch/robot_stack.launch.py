@@ -15,6 +15,10 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     world_name = LaunchConfiguration('world_name')
     lidar_gz_topic = LaunchConfiguration('lidar_gz_topic')
+    launch_slam = LaunchConfiguration('launch_slam')
+    launch_nav2 = LaunchConfiguration('launch_nav2')
+    launch_exploration = LaunchConfiguration('launch_exploration')
+    launch_detection = LaunchConfiguration('launch_detection')
     safety_params = PathJoinSubstitution([
         FindPackageShare('bringup'),
         'config',
@@ -55,6 +59,26 @@ def generate_launch_description():
         'lidar_gz_topic',
         default_value=PathJoinSubstitution(['/', robot_id, 'scan']),
         description='Gazebo LaserScan topic to bridge into /<robot_id>/scan.',
+    )
+    launch_slam_arg = DeclareLaunchArgument(
+        'launch_slam',
+        default_value='true',
+        description='Start per-robot SLAM.',
+    )
+    launch_nav2_arg = DeclareLaunchArgument(
+        'launch_nav2',
+        default_value='true',
+        description='Start per-robot Nav2.',
+    )
+    launch_exploration_arg = DeclareLaunchArgument(
+        'launch_exploration',
+        default_value='true',
+        description='Start per-robot frontier exploration.',
+    )
+    launch_detection_arg = DeclareLaunchArgument(
+        'launch_detection',
+        default_value='false',
+        description='Start per-robot detection nodes.',
     )
 
     includes = [
@@ -99,6 +123,7 @@ def generate_launch_description():
                     'slam_robot.launch.py',
                 ])
             ),
+            condition=IfCondition(launch_slam),
             launch_arguments={
                 'robot_id': robot_id,
                 'use_sim_time': use_sim_time,
@@ -112,6 +137,7 @@ def generate_launch_description():
                     'nav2_robot.launch.py',
                 ])
             ),
+            condition=IfCondition(launch_nav2),
             launch_arguments={
                 'robot_id': robot_id,
                 'use_sim_time': use_sim_time,
@@ -136,6 +162,7 @@ def generate_launch_description():
                     'frontier_robot.launch.py',
                 ])
             ),
+            condition=IfCondition(launch_exploration),
             launch_arguments={
                 'robot_id': robot_id,
                 'use_sim_time': use_sim_time,
@@ -149,6 +176,7 @@ def generate_launch_description():
                     'detection_robot.launch.py',
                 ])
             ),
+            condition=IfCondition(launch_detection),
             launch_arguments={
                 'robot_id': robot_id,
                 'use_sim_time': use_sim_time,
@@ -164,5 +192,9 @@ def generate_launch_description():
         use_sim_time_arg,
         world_name_arg,
         lidar_gz_topic_arg,
+        launch_slam_arg,
+        launch_nav2_arg,
+        launch_exploration_arg,
+        launch_detection_arg,
         *includes,
     ])

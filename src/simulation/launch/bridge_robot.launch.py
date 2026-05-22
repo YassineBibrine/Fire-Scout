@@ -31,6 +31,12 @@ def generate_launch_description():
         lidar_gz_value = lidar_gz_topic.perform(context)
         gz_cmd_vel_topic = f"/model/{robot_id_value}/cmd_vel"
         gz_odom_topic = f"/model/{robot_id_value}/odometry"
+        # NOTE: We intentionally do NOT bridge /model/<robot>/tf. The Gazebo
+        # gz.msgs.Pose_V message has no per-pose timestamp, so the ros_gz_bridge
+        # stamps every TF with t=0, which clashes with the timestamped TF that
+        # slam_wrapper_node publishes (causing TF_OLD_DATA spam and ambiguous
+        # transforms for Nav2/SLAM). slam_wrapper_node is the single source of
+        # truth for the odom -> base_link TF per robot.
 
         return [
             Node(

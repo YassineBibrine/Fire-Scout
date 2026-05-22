@@ -26,6 +26,12 @@ def generate_launch_description():
         'navigate_through_poses_w_replanning_and_recovery.xml',
     ])
 
+    # NOTE: We intentionally do NOT chain controller_server -> velocity_smoother.
+    # The MPPI controller already enforces velocity/acceleration limits and
+    # cmd_vel_safety_node performs the final safety filtering on /<robot>/cmd_vel
+    # before the Gazebo bridge consumes /<robot>/cmd_vel_safe. Adding the
+    # nav2_velocity_smoother lifecycle node was making robotN.nav2_lifecycle_manager
+    # block indefinitely on velocity_smoother/get_state under heavy startup load.
     controller_server = Node(
         package='nav2_controller',
         executable='controller_server',
@@ -33,9 +39,6 @@ def generate_launch_description():
         namespace=robot_id,
         output='screen',
         parameters=[nav2_params, {'use_sim_time': use_sim_time}],
-        remappings=[
-            ('cmd_vel', 'cmd_vel_nav'),
-        ],
     )
 
     planner_server = Node(
@@ -81,19 +84,6 @@ def generate_launch_description():
         parameters=[nav2_params, {'use_sim_time': use_sim_time}],
     )
 
-    velocity_smoother = Node(
-        package='nav2_velocity_smoother',
-        executable='velocity_smoother',
-        name='velocity_smoother',
-        namespace=robot_id,
-        output='screen',
-        parameters=[nav2_params, {'use_sim_time': use_sim_time}],
-        remappings=[
-            ('cmd_vel', 'cmd_vel_nav'),
-            ('cmd_vel_smoothed', 'cmd_vel'),
-        ],
-    )
-
     lifecycle_manager = Node(
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
@@ -112,7 +102,6 @@ def generate_launch_description():
                     'bt_navigator',
                     'behavior_server',
                     'waypoint_follower',
-                    'velocity_smoother',
                 ],
             },
         ],
@@ -134,6 +123,5 @@ def generate_launch_description():
         bt_navigator,
         behavior_server,
         waypoint_follower,
-        velocity_smoother,
         lifecycle_manager,
     ])

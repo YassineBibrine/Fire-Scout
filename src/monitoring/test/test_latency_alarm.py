@@ -65,6 +65,46 @@ def _publish_scan(publisher_node, publisher, stamp_msg) -> None:
     rclpy.spin_once(publisher_node, timeout_sec=0.0)
 
 
+def _wait_for_subscriber(node, publisher, timeout_sec: float = 5.0) -> bool:
+    """Block until the monitor subprocess has discovered our publisher."""
+    deadline = time.time() + timeout_sec
+    while time.time() < deadline:
+        if publisher.get_subscription_count() >= 1:
+            return True
+        rclpy.spin_once(node, timeout_sec=0.05)
+    return publisher.get_subscription_count() >= 1
+
+
+def _publish_until_received(
+    helper,
+    publisher,
+    stamp_factory,
+    received,
+    prefix: str,
+    timeout_sec: float = 5.0,
+    publish_period_sec: float = 0.1,
+) -> Optional[str]:
+    """Publish scans repeatedly with refreshed stamps until matching reply arrives.
+
+    Running this test in parallel with other ROS packages can delay the
+    subprocess monitor's subscription discovery, so a single one-shot publish
+    races with subscription creation. Repeating the publish while polling for
+    the latency alarm makes the assertion deterministic under load.
+    """
+    deadline = time.time() + timeout_sec
+    next_publish = 0.0
+    while time.time() < deadline:
+        now = time.time()
+        if now >= next_publish:
+            _publish_scan(helper, publisher, stamp_factory())
+            next_publish = now + publish_period_sec
+        rclpy.spin_once(helper, timeout_sec=0.05)
+        for payload in received:
+            if payload.startswith(prefix):
+                return payload
+    return None
+
+
 def test_latency_alarm_old_and_fresh_scan(ros_context):
     """Verify stale header stamp triggers ALARM and fresh stamp triggers OK."""
     helper = rclpy.create_node('test_latency_alarm_helper')
@@ -80,31 +120,38 @@ def test_latency_alarm_old_and_fresh_scan(ros_context):
     )
 
     try:
-        # Give ROS graph a moment for discovery.
-        start_deadline = time.time() + 0.5
-        while time.time() < start_deadline:
-            rclpy.spin_once(helper, timeout_sec=0.05)
+        # Wait until the monitor subprocess has actually subscribed; otherwise
+        # the first published scan is dropped before discovery completes (this
+        # was the source of the flaky failure when colcon ran every package's
+        # tests in parallel).
+        assert _wait_for_subscriber(helper, pub, timeout_sec=5.0), (
+            'latency_monitor_node never discovered /monitoring/test/scan publisher'
+        )
 
         # Publish a stale scan (1 second old) which exceeds 200 ms threshold.
-        stale_stamp = (helper.get_clock().now() - Duration(seconds=1.0)).to_msg()
-        _publish_scan(helper, pub, stale_stamp)
-        stale_result = _wait_for_message_with_prefix(
+        stale_result = _publish_until_received(
             helper,
+            pub,
+            lambda: (helper.get_clock().now() - Duration(seconds=1.0)).to_msg(),
             received_messages,
             'ALARM:/monitoring/test/scan:latency=',
-            timeout_sec=2.0,
+            timeout_sec=5.0,
         )
         assert stale_result is not None, 'No latency message received for stale scan'
         assert stale_result.startswith('ALARM:/monitoring/test/scan:latency='), stale_result
 
+        # Drop the stale ALARM messages so the next phase observes only fresh
+        # results (otherwise an already-buffered ALARM could be misread as OK).
+        received_messages.clear()
+
         # Publish a fresh scan stamped at current time; should be within threshold.
-        fresh_stamp = helper.get_clock().now().to_msg()
-        _publish_scan(helper, pub, fresh_stamp)
-        fresh_result = _wait_for_message_with_prefix(
+        fresh_result = _publish_until_received(
             helper,
+            pub,
+            lambda: helper.get_clock().now().to_msg(),
             received_messages,
             'OK:/monitoring/test/scan:latency=',
-            timeout_sec=2.0,
+            timeout_sec=5.0,
         )
         assert fresh_result is not None, 'No latency message received for fresh scan'
         assert fresh_result.startswith('OK:/monitoring/test/scan:latency='), fresh_result

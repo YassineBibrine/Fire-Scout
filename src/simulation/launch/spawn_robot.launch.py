@@ -56,6 +56,22 @@ def generate_launch_description():
                 f'        <gz_frame_id>{robot_id_value}/lidar</gz_frame_id>'
             ),
         )
+        # Namespace DiffDrive odom frames per robot. Without this every robot
+        # publishes Odometry with frame_id="odom"/child_frame_id="base_link"
+        # which prevents per-robot SLAM/Nav2 lookups. We also disable Gazebo's
+        # /model/<robot>/tf publication: gz.msgs.Pose_V has no timestamp, so
+        # bridging it produces stamp=0 TFs that conflict with the timestamped
+        # TF published by slam_wrapper_node. slam_wrapper_node is the single
+        # authority for the odom -> base_link transform.
+        model_text = model_text.replace(
+            '<publish_tf>true</publish_tf>',
+            (
+                '<publish_tf>false</publish_tf>\n'
+                f'      <odom_topic>/model/{robot_id_value}/odometry</odom_topic>\n'
+                f'      <frame_id>{robot_id_value}/odom</frame_id>\n'
+                f'      <child_frame_id>{robot_id_value}/base_link</child_frame_id>'
+            ),
+        )
 
         generated_dir = Path('/tmp') / 'firescout_models'
         generated_dir.mkdir(parents=True, exist_ok=True)
