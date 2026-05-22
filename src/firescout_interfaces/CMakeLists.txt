@@ -32,6 +32,10 @@ set(msg_files
   "msg/RobotHealth.msg"
   "msg/SensorData.msg"
   "msg/TaskAssignment.msg"
+  "msg/Detection.msg"
+  "msg/FireSensorAlert.msg"
+  "msg/FusionDecision.msg"
+  "msg/VisionDetectionArray.msg"
 )
 
 # Services
@@ -76,6 +80,7 @@ if(BUILD_TESTING)
   ament_add_pytest_test(test_msg_generation test/test_msg_generation.py)
   ament_add_pytest_test(test_srv_generation test/test_srv_generation.py)
   ament_add_pytest_test(test_action_generation test/test_action_generation.py)
+  ament_add_pytest_test(test_hybrid_msg_generation test/test_hybrid_msg_generation.py)
 endif()
 
 # Installation

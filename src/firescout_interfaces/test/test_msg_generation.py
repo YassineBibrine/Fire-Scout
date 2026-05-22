@@ -11,7 +11,8 @@ class TestMessageGeneration(unittest.TestCase):
             'FireDetection', 'HumanDetection', 'TaskAssignment',
             'NodeStatus', 'Incident', 'FaultEvent', 'MissionState',
             'MapMergeStatus', 'ReferenceTrajectory', 'SensorData',
-            'AuctionAnnouncement', 'AuctionBid', 'AuctionResult'
+            'AuctionAnnouncement', 'AuctionBid', 'AuctionResult',
+            'FireSensorAlert', 'Detection', 'VisionDetectionArray', 'FusionDecision'
         ]
         
         for msg in messages:
