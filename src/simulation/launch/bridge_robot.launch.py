@@ -32,7 +32,7 @@ def generate_launch_description():
         name=[TextSubstitution(text='robot_bridge_'), robot_id],
         output='screen',
         parameters=[
-            {'bridge_names': ['cmd_vel', 'odometry', 'lidar']},
+            {'bridge_names': ['cmd_vel', 'odometry', 'lidar', 'camera']},
             {
                 'bridges.cmd_vel.ros_topic_name': PathJoinSubstitution(['/', robot_id, 'cmd_vel_safe']),
                 'bridges.cmd_vel.gz_topic_name': PathJoinSubstitution(['/model', robot_id, 'cmd_vel']),
@@ -53,6 +53,16 @@ def generate_launch_description():
                 'bridges.lidar.ros_type_name': 'sensor_msgs/msg/LaserScan',
                 'bridges.lidar.gz_type_name': 'gz.msgs.LaserScan',
                 'bridges.lidar.direction': 'GZ_TO_ROS',
+            },
+            # Phase 2: forward-facing camera image bridge (GZ_TO_ROS)
+            # Gazebo topic is robot-specific: /<robot_id>/camera/image_raw
+            # which matches the <gz_frame_id> substitution done in spawn_robot.launch.py
+            {
+                'bridges.camera.ros_topic_name': PathJoinSubstitution(['/', robot_id, 'camera', 'image_raw']),
+                'bridges.camera.gz_topic_name': PathJoinSubstitution(['/', robot_id, 'camera', 'image_raw']),
+                'bridges.camera.ros_type_name': 'sensor_msgs/msg/Image',
+                'bridges.camera.gz_type_name': 'gz.msgs.Image',
+                'bridges.camera.direction': 'GZ_TO_ROS',
             },
         ],
     )
