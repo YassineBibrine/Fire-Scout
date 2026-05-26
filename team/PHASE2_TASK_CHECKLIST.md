@@ -8,19 +8,19 @@ Legend:
 
 | Owner | Priority | Task | Status | Deadline |
 |---|---|---|---|---|
-| Member 1 (Interfaces) | Hard | Define FireSensorAlert.msg fields | Not Started | 2026-05-12 |
-| Member 1 (Interfaces) | Hard | Define VisionDetectionArray.msg + Detection struct | Not Started | 2026-05-12 |
-| Member 1 (Interfaces) | Hard | Define FusionDecision.msg fields | Not Started | 2026-05-12 |
-| Member 1 (Interfaces) | Hard | Add migration note for FireDetection in interface_contract.yaml | Not Started | 2026-05-13 |
-| Member 1 (Interfaces) | Hard | Document QoS policies for hybrid topics | Not Started | 2026-05-13 |
-| Member 1 (Interfaces) | Hard | Add schema validation tests for hybrid messages | Not Started | 2026-05-15 |
-| Member 2 (Simulation) | Simulation | Add camera sensor to robot model.sdf | Not Started | 2026-05-13 |
-| Member 2 (Simulation) | Simulation | Add camera ros_gz_bridge entry in bridge_robot.launch.py | Not Started | 2026-05-13 |
-| Member 2 (Simulation) | Simulation | Add fire entity in world_1.sdf | Not Started | 2026-05-14 |
-| Member 2 (Simulation) | Simulation | Add human entity in world_1.sdf | Not Started | 2026-05-14 |
-| Member 2 (Simulation) | Simulation | Add sim.launch.py args spawn_fire_entities/spawn_human_entities | Not Started | 2026-05-15 |
-| Member 2 (Simulation) | Simulation | Add mock_camera_inference_node in testing_tools | Not Started | 2026-05-16 |
-| Member 2 (Simulation) | Simulation | Add tests: test_camera_bridge_topic.py + test_fire_entity_spawn.py | Not Started | 2026-05-16 |
+| Member 1 (Interfaces) | Hard | Define FireSensorAlert.msg fields | Done | 2026-05-12 |
+| Member 1 (Interfaces) | Hard | Define VisionDetectionArray.msg + Detection struct | Done | 2026-05-12 |
+| Member 1 (Interfaces) | Hard | Define FusionDecision.msg fields | Done | 2026-05-12 |
+| Member 1 (Interfaces) | Hard | Add migration note for FireDetection in interface_contract.yaml | Done | 2026-05-13 |
+| Member 1 (Interfaces) | Hard | Document QoS policies for hybrid topics | Done | 2026-05-13 |
+| Member 1 (Interfaces) | Hard | Add schema validation tests for hybrid messages | Done | 2026-05-15 |
+| Member 2 (Simulation) | Simulation | Add camera sensor to robot model.sdf | Done | 2026-05-13 |
+| Member 2 (Simulation) | Simulation | Add camera ros_gz_bridge entry in bridge_robot.launch.py | Done | 2026-05-13 |
+| Member 2 (Simulation) | Simulation | Add fire entity in world_1.sdf | Done | 2026-05-14 |
+| Member 2 (Simulation) | Simulation | Add human entity in world_1.sdf | Done | 2026-05-14 |
+| Member 2 (Simulation) | Simulation | Add sim.launch.py args spawn_fire_entities/spawn_human_entities | Done | 2026-05-15 |
+| Member 2 (Simulation) | Simulation | Add mock_camera_inference_node in testing_tools | Done | 2026-05-16 |
+| Member 2 (Simulation) | Simulation | Add tests: test_camera_bridge_topic.py + test_fire_entity_spawn.py | Done | 2026-05-16 |
 | Member 3 (Mapping/Monitoring) | Normal | Add camera static TF in slam_robot.launch.py | Done | 2026-05-14 |
 | Member 3 (Mapping/Monitoring) | Normal | Update tf_policy.yaml for camera frame | Done | 2026-05-14 |
 | Member 3 (Mapping/Monitoring) | Normal | Add monitor_topics.yaml entries for camera/sensor/fusion | Done | 2026-05-15 |
