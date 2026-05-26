@@ -45,15 +45,29 @@ def generate_launch_description():
 
         # Use local Fire-Scout diff-drive model with robot-specific sensor
         # topics. Gazebo's expansion of ~/sensor topics varies by context, so
-        # make the LaserScan transport path explicit for each spawned robot.
+        # make the LaserScan and Camera transport paths explicit for each
+        # spawned robot.
         pkg_sim = get_package_share_directory('simulation')
         source_model = Path(pkg_sim) / 'models' / 'model.sdf'
         model_text = source_model.read_text(encoding='utf-8')
+
+        # Substitute lidar topic (existing behaviour, preserved)
         model_text = model_text.replace(
             '<topic>~/lidar</topic>',
             (
                 f'<topic>/{robot_id_value}/scan</topic>\n'
                 f'        <gz_frame_id>{robot_id_value}/lidar</gz_frame_id>'
+            ),
+        )
+
+        # Phase 2: substitute camera topic so each robot publishes on its own
+        # /<robot_id>/camera/image_raw Gazebo topic, which the camera bridge
+        # in bridge_robot.launch.py then forwards to ROS.
+        model_text = model_text.replace(
+            '<topic>~/camera/image_raw</topic>',
+            (
+                f'<topic>/{robot_id_value}/camera/image_raw</topic>\n'
+                f'        <gz_frame_id>{robot_id_value}/camera</gz_frame_id>'
             ),
         )
 
