@@ -18,15 +18,19 @@ Behaviour:
 
 from importlib import import_module
 import math
+from typing import Any, Callable, cast
 
+from geometry_msgs.msg import Pose
 import rclpy
 from nav_msgs.msg import Odometry
+from rclpy.publisher import Publisher
 from rclpy.node import Node
 
 # Resolve generated message types dynamically to avoid IDE false positives
 # when interface stubs are not available outside of the ROS environment.
-VisionDetectionArray = getattr(import_module('firescout_interfaces.msg'), 'VisionDetectionArray')
-Detection = getattr(import_module('firescout_interfaces.msg'), 'Detection')
+_interfaces_msg = import_module('firescout_interfaces.msg')
+VisionDetectionArray = cast(Any, getattr(_interfaces_msg, 'VisionDetectionArray'))
+Detection = cast(Any, getattr(_interfaces_msg, 'Detection'))
 
 
 # ---------------------------------------------------------------------------
@@ -85,7 +89,7 @@ def _entity_in_fov(
     return visible, relative_bearing, distance
 
 
-def _project_to_pixel(bearing_rad: float, distance_m: float) -> list:
+def _project_to_pixel(bearing_rad: float, distance_m: float) -> list[float]:
     """Project world-space bearing + distance to approximate pixel bounding box.
 
     Produces a plausible but synthetic 640x480 bounding box.
@@ -117,7 +121,8 @@ class MockCameraInferenceNode(Node):
         self.declare_parameter('publish_rate_hz', 5.0)
         self.declare_parameter('confidence_jitter', 0.05)
 
-        robot_ids_param = list(self.get_parameter('robot_ids').value)
+        robot_ids_value = self.get_parameter('robot_ids').value
+        robot_ids_param = robot_ids_value if isinstance(robot_ids_value, list) else []
         self._robot_ids = [str(r) for r in robot_ids_param if r] or ['robot1', 'robot2', 'robot3']
 
         publish_rate_hz = max(float(self.get_parameter('publish_rate_hz').value), 0.5)
@@ -127,7 +132,7 @@ class MockCameraInferenceNode(Node):
         self._latest_odom: dict[str, Odometry | None] = {r: None for r in self._robot_ids}
 
         # Per-robot VisionDetectionArray publisher
-        self._publishers = {}
+        self._publishers: dict[str, Publisher[Any]] = {}
         for robot_id in self._robot_ids:
             self._publishers[robot_id] = self.create_publisher(
                 VisionDetectionArray,
@@ -147,7 +152,7 @@ class MockCameraInferenceNode(Node):
             f'MockCameraInferenceNode started for robots: {", ".join(self._robot_ids)}'
         )
 
-    def _make_odom_callback(self, robot_id: str):
+    def _make_odom_callback(self, robot_id: str) -> Callable[[Odometry], None]:
         def _cb(msg: Odometry) -> None:
             self._latest_odom[robot_id] = msg
         return _cb
@@ -157,7 +162,7 @@ class MockCameraInferenceNode(Node):
             msg = self._build_detection_array(robot_id)
             self._publishers[robot_id].publish(msg)
 
-    def _build_detection_array(self, robot_id: str) -> VisionDetectionArray:
+    def _build_detection_array(self, robot_id: str) -> Any:
         now = self.get_clock().now().to_msg()
         arr = VisionDetectionArray()
         arr.robot_id = robot_id
@@ -195,7 +200,6 @@ class MockCameraInferenceNode(Node):
             det.bounding_box = _project_to_pixel(bearing, distance)
 
             # Estimated pose in robot frame (simplified: entity at (distance, 0, 0))
-            from geometry_msgs.msg import Pose
             est_pose = Pose()
             est_pose.position.x = distance * math.cos(bearing)
             est_pose.position.y = distance * math.sin(bearing)

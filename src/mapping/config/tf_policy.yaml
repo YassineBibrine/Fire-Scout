@@ -43,6 +43,15 @@ tf_policy:
           update_rate_hz: 10.0
           authority: mapping/launch/slam_robot.launch.py
           notes: Robot body pose in local odom frame.
+        - parent: robot1/base_link
+          child: robot1/camera
+          frame_type: sensor_camera
+          published_by: tf2_ros/static_transform_publisher
+          update_rate_hz: static
+          authority: mapping/launch/slam_robot.launch.py
+          translation_xyz: [0.10, 0.0, 0.15]
+          rotation_rpy: [0.0, 0.0, 0.0]
+          notes: Fixed Jetson/inference camera frame used by VisionDetectionArray estimated poses.
 
     - robot_id: robot2
       chain:
@@ -67,6 +76,15 @@ tf_policy:
           update_rate_hz: 10.0
           authority: mapping/launch/slam_robot.launch.py
           notes: Robot body pose in local odom frame.
+        - parent: robot2/base_link
+          child: robot2/camera
+          frame_type: sensor_camera
+          published_by: tf2_ros/static_transform_publisher
+          update_rate_hz: static
+          authority: mapping/launch/slam_robot.launch.py
+          translation_xyz: [0.10, 0.0, 0.15]
+          rotation_rpy: [0.0, 0.0, 0.0]
+          notes: Fixed Jetson/inference camera frame used by VisionDetectionArray estimated poses.
 
     - robot_id: robot3
       chain:
@@ -91,6 +109,15 @@ tf_policy:
           update_rate_hz: 10.0
           authority: mapping/launch/slam_robot.launch.py
           notes: Robot body pose in local odom frame.
+        - parent: robot3/base_link
+          child: robot3/camera
+          frame_type: sensor_camera
+          published_by: tf2_ros/static_transform_publisher
+          update_rate_hz: static
+          authority: mapping/launch/slam_robot.launch.py
+          translation_xyz: [0.10, 0.0, 0.15]
+          rotation_rpy: [0.0, 0.0, 0.0]
+          notes: Fixed Jetson/inference camera frame used by VisionDetectionArray estimated poses.
 
   frame_naming_rules:
     - Use fully namespaced robot frames: robotX/map, robotX/odom, robotX/base_link.
@@ -101,4 +128,5 @@ tf_policy:
     - Transform availability: map -> robotX/map for X in {1,2,3}
     - Transform availability: robotX/map -> robotX/odom for X in {1,2,3}
     - Transform availability: robotX/odom -> robotX/base_link for X in {1,2,3}
+    - Transform availability: robotX/base_link -> robotX/camera for X in {1,2,3}
     - No disconnected TF subtrees during nominal operation.

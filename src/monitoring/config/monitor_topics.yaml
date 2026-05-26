@@ -20,6 +20,18 @@
       - /robot3/map                  # Robot3 local SLAM map stream.
       - /map                         # Global merged map stream.
       - /mapping/map_merge_status    # Map merge status heartbeat.
+      - /robot1/camera/image_raw     # Robot1 RGB camera stream.
+      - /robot2/camera/image_raw     # Robot2 RGB camera stream.
+      - /robot3/camera/image_raw     # Robot3 RGB camera stream.
+      - /robot1/fire_sensor_alert    # Robot1 physical sensor heartbeat.
+      - /robot2/fire_sensor_alert    # Robot2 physical sensor heartbeat.
+      - /robot3/fire_sensor_alert    # Robot3 physical sensor heartbeat.
+      - /robot1/fusion_decision      # Robot1 fused hybrid decision stream.
+      - /robot2/fusion_decision      # Robot2 fused hybrid decision stream.
+      - /robot3/fusion_decision      # Robot3 fused hybrid decision stream.
+      - /robot1/camera_detections    # Robot1 Jetson inference output.
+      - /robot2/camera_detections    # Robot2 Jetson inference output.
+      - /robot3/camera_detections    # Robot3 Jetson inference output.
 
     # Required expected publication rates (Hz), one-to-one with monitored_topics.
     expected_rates_hz:
@@ -34,6 +46,18 @@
       - 1.0                          # /robot3/map expected at 1 Hz.
       - 1.0                          # /map expected at 1 Hz.
       - 1.0                          # /mapping/map_merge_status expected at 1 Hz.
+      - 15.0                         # /robot1/camera/image_raw expected at 15 Hz.
+      - 15.0                         # /robot2/camera/image_raw expected at 15 Hz.
+      - 15.0                         # /robot3/camera/image_raw expected at 15 Hz.
+      - 5.0                          # /robot1/fire_sensor_alert expected at 5 Hz.
+      - 5.0                          # /robot2/fire_sensor_alert expected at 5 Hz.
+      - 5.0                          # /robot3/fire_sensor_alert expected at 5 Hz.
+      - 2.0                          # /robot1/fusion_decision expected at 2 Hz.
+      - 2.0                          # /robot2/fusion_decision expected at 2 Hz.
+      - 2.0                          # /robot3/fusion_decision expected at 2 Hz.
+      - 5.0                          # /robot1/camera_detections expected at 5 Hz.
+      - 5.0                          # /robot2/camera_detections expected at 5 Hz.
+      - 5.0                          # /robot3/camera_detections expected at 5 Hz.
 
 /monitoring/latency_monitor_node:
   ros__parameters:
@@ -49,11 +73,22 @@
       - /robot2/map                  # Robot2 local map latency.
       - /robot3/map                  # Robot3 local map latency.
       - /map                         # Global merged map latency.
+      - /robot1/camera/image_raw     # Robot1 camera image latency.
+      - /robot2/camera/image_raw     # Robot2 camera image latency.
+      - /robot3/camera/image_raw     # Robot3 camera image latency.
+      - /robot1/fire_sensor_alert    # Robot1 sensor alert heartbeat age.
+      - /robot2/fire_sensor_alert    # Robot2 sensor alert heartbeat age.
+      - /robot3/fire_sensor_alert    # Robot3 sensor alert heartbeat age.
+      - /robot1/camera_detections    # Robot1 camera inference latency.
+      - /robot2/camera_detections    # Robot2 camera inference latency.
+      - /robot3/camera_detections    # Robot3 camera inference latency.
 
     # Per-topic-type maximum transport latency (ms).
     scan_max_latency_ms: 200.0       # LaserScan max allowed latency.
     odom_max_latency_ms: 100.0       # Odometry max allowed latency.
     map_max_latency_ms: 2000.0       # OccupancyGrid max allowed latency.
+    camera_max_latency_ms: 200.0     # Camera image/inference max allowed latency.
+    sensor_alert_max_latency_ms: 500.0  # Fire sensor alert max allowed latency.
 
 /monitoring/metrics_exporter_node:
   ros__parameters:
@@ -70,3 +105,20 @@
       - /robot3/map                  # Monitored local map topic.
       - /map                         # Monitored global map topic.
       - /mapping/map_merge_status    # Monitored merge status topic.
+      - /robot1/camera/image_raw     # Monitored camera stream.
+      - /robot2/camera/image_raw     # Monitored camera stream.
+      - /robot3/camera/image_raw     # Monitored camera stream.
+      - /robot1/fire_sensor_alert    # Monitored sensor heartbeat.
+      - /robot2/fire_sensor_alert    # Monitored sensor heartbeat.
+      - /robot3/fire_sensor_alert    # Monitored sensor heartbeat.
+      - /robot1/fusion_decision      # Monitored fusion stream.
+      - /robot2/fusion_decision      # Monitored fusion stream.
+      - /robot3/fusion_decision      # Monitored fusion stream.
+      - /robot1/camera_detections    # Monitored camera inference output.
+      - /robot2/camera_detections    # Monitored camera inference output.
+      - /robot3/camera_detections    # Monitored camera inference output.
+    robot_ids:
+      - robot1
+      - robot2
+      - robot3
+    hybrid_silence_timeout_sec: 5.0

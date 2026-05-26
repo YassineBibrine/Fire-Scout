@@ -78,6 +78,24 @@ def generate_launch_description():
         parameters=[{'use_sim_time': use_sim_time}],
     )
 
+    camera_static_tf_node = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name=['static_tf_', robot_id, '_base_link_to_camera'],
+        output='screen',
+        arguments=[
+            '0.10',
+            '0',
+            '0.15',
+            '0',
+            '0',
+            '0',
+            PathJoinSubstitution([robot_id, 'base_link']),
+            PathJoinSubstitution([robot_id, 'camera']),
+        ],
+        parameters=[{'use_sim_time': use_sim_time}],
+    )
+
     def _launch_lifecycle_manager(context, *args, **kwargs):
         robot_id_value = robot_id.perform(context)
         return [
@@ -107,5 +125,6 @@ def generate_launch_description():
         slam_toolbox_node,
         slam_wrapper_node,
         lidar_static_tf_node,
+        camera_static_tf_node,
         OpaqueFunction(function=_launch_lifecycle_manager),
     ])

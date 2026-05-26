@@ -2,13 +2,20 @@
 
 """Monitor message transport latency for header-bearing topics."""
 
-from typing import Callable, Dict, List
+from importlib import import_module
+from typing import Any, Callable, List, Optional, cast
 
 import rclpy
+from builtin_interfaces.msg import Time
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
-from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import Image, LaserScan
 from std_msgs.msg import String
+
+
+_interfaces_msg = import_module('firescout_interfaces.msg')
+FireSensorAlert = cast(Any, getattr(_interfaces_msg, 'FireSensorAlert'))
+VisionDetectionArray = cast(Any, getattr(_interfaces_msg, 'VisionDetectionArray'))
 
 
 class LatencyMonitorNode(Node):
@@ -22,6 +29,8 @@ class LatencyMonitorNode(Node):
         self.declare_parameter('scan_max_latency_ms', 200.0)
         self.declare_parameter('odom_max_latency_ms', 100.0)
         self.declare_parameter('map_max_latency_ms', 2000.0)
+        self.declare_parameter('camera_max_latency_ms', 200.0)
+        self.declare_parameter('sensor_alert_max_latency_ms', 500.0)
 
         # Preferred config interface from monitor_topics.yaml.
         self.declare_parameter('monitored_topics', [''])
@@ -33,6 +42,10 @@ class LatencyMonitorNode(Node):
         self._scan_max_latency_ms = float(self.get_parameter('scan_max_latency_ms').value)
         self._odom_max_latency_ms = float(self.get_parameter('odom_max_latency_ms').value)
         self._map_max_latency_ms = float(self.get_parameter('map_max_latency_ms').value)
+        self._camera_max_latency_ms = float(self.get_parameter('camera_max_latency_ms').value)
+        self._sensor_alert_max_latency_ms = float(
+            self.get_parameter('sensor_alert_max_latency_ms').value
+        )
 
         monitored_topics = [t for t in list(self.get_parameter('monitored_topics').value) if t]
         if not monitored_topics:
@@ -54,10 +67,17 @@ class LatencyMonitorNode(Node):
             f'LatencyMonitorNode started with {len(self._subscriptions)} header topics.'
         )
 
-    def _infer_msg_type(self, topic: str):
+    @staticmethod
+    def _infer_msg_type(topic: str):
         """Infer ROS message type from Fire-Scout topic naming conventions."""
         if topic.endswith('/scan'):
             return LaserScan
+        if topic.endswith('/camera/image_raw'):
+            return Image
+        if topic.endswith('/fire_sensor_alert'):
+            return FireSensorAlert
+        if topic.endswith('/camera_detections'):
+            return VisionDetectionArray
         if topic.endswith('/odom'):
             return Odometry
         if topic.endswith('/map') or topic == '/map':
@@ -68,18 +88,36 @@ class LatencyMonitorNode(Node):
         """Resolve topic-specific latency threshold in milliseconds."""
         if topic.endswith('/scan'):
             return self._scan_max_latency_ms
+        if topic.endswith('/camera/image_raw') or topic.endswith('/camera_detections'):
+            return self._camera_max_latency_ms
+        if topic.endswith('/fire_sensor_alert'):
+            return self._sensor_alert_max_latency_ms
         if topic.endswith('/odom'):
             return self._odom_max_latency_ms
         if topic.endswith('/map') or topic == '/map':
             return self._map_max_latency_ms
         return self._default_max_latency_ms
 
+    def _stamp_from_msg(self, msg) -> Optional[Time]:
+        """Extract std_msgs/Header.stamp or hybrid message timestamp."""
+        header = getattr(msg, 'header', None)
+        if header is not None and hasattr(header, 'stamp'):
+            return header.stamp
+        timestamp = getattr(msg, 'timestamp', None)
+        if timestamp is not None:
+            return timestamp
+        return None
+
     def _make_latency_callback(self, topic: str) -> Callable:
         """Create callback computing latency and publishing ALARM/OK."""
 
         def _callback(msg) -> None:
             now_ns = self.get_clock().now().nanoseconds
-            stamp_ns = int(msg.header.stamp.sec) * 1000000000 + int(msg.header.stamp.nanosec)
+            stamp = self._stamp_from_msg(msg)
+            if stamp is None:
+                stamp_ns = 0
+            else:
+                stamp_ns = int(stamp.sec) * 1000000000 + int(stamp.nanosec)
 
             # Guard against invalid or zero timestamps.
             if stamp_ns <= 0:

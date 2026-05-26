@@ -21,12 +21,12 @@ Legend:
 | Member 2 (Simulation) | Simulation | Add sim.launch.py args spawn_fire_entities/spawn_human_entities | Not Started | 2026-05-15 |
 | Member 2 (Simulation) | Simulation | Add mock_camera_inference_node in testing_tools | Not Started | 2026-05-16 |
 | Member 2 (Simulation) | Simulation | Add tests: test_camera_bridge_topic.py + test_fire_entity_spawn.py | Not Started | 2026-05-16 |
-| Member 3 (Mapping/Monitoring) | Normal | Add camera static TF in slam_robot.launch.py | Not Started | 2026-05-14 |
-| Member 3 (Mapping/Monitoring) | Normal | Update tf_policy.yaml for camera frame | Not Started | 2026-05-14 |
-| Member 3 (Mapping/Monitoring) | Normal | Add monitor_topics.yaml entries for camera/sensor/fusion | Not Started | 2026-05-15 |
-| Member 3 (Mapping/Monitoring) | Normal | Add thresholds.yaml camera/sensor latency limits | Not Started | 2026-05-15 |
-| Member 3 (Mapping/Monitoring) | Normal | Update metrics_exporter_node critical rule for dual silence | Not Started | 2026-05-16 |
-| Member 3 (Mapping/Monitoring) | Normal | Add tests: metrics_exporter, tf_camera_consistency, hybrid_timing_alarm | Not Started | 2026-05-18 |
+| Member 3 (Mapping/Monitoring) | Normal | Add camera static TF in slam_robot.launch.py | Done | 2026-05-14 |
+| Member 3 (Mapping/Monitoring) | Normal | Update tf_policy.yaml for camera frame | Done | 2026-05-14 |
+| Member 3 (Mapping/Monitoring) | Normal | Add monitor_topics.yaml entries for camera/sensor/fusion | Done | 2026-05-15 |
+| Member 3 (Mapping/Monitoring) | Normal | Add thresholds.yaml camera/sensor latency limits | Done | 2026-05-15 |
+| Member 3 (Mapping/Monitoring) | Normal | Update metrics_exporter_node critical rule for dual silence | Done | 2026-05-16 |
+| Member 3 (Mapping/Monitoring) | Normal | Add tests: metrics_exporter, tf_camera_consistency, hybrid_timing_alarm | Done | 2026-05-18 |
 | Member 4 (Exploration/Utils) | Normal | Subscribe frontier scoring to fusion_decision only | Not Started | 2026-05-14 |
 | Member 4 (Exploration/Utils) | Normal | Deprioritize frontiers when risk_level > 0.7 | Not Started | 2026-05-15 |
 | Member 4 (Exploration/Utils) | Normal | Add weighted_confidence helper in common_utils | Not Started | 2026-05-15 |

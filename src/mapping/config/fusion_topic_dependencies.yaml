@@ -1,0 +1,32 @@
+# Expected mapping/monitoring topics consumed by fusion, response, and coordination.
+
+fusion_topic_dependencies:
+  frames:
+    required:
+      - map
+      - robotX/map
+      - robotX/odom
+      - robotX/base_link
+      - robotX/camera
+    camera_transform:
+      parent: robotX/base_link
+      child: robotX/camera
+      translation_xyz: [0.10, 0.0, 0.15]
+      rotation_rpy: [0.0, 0.0, 0.0]
+  mapping_topics:
+    local_map: /robotX/map
+    global_map: /map
+    map_merge_status: /mapping/map_merge_status
+    map_annotations: /mapping/map_annotations
+  hybrid_topics:
+    fire_sensor_alert: /robotX/fire_sensor_alert
+    camera_image: /robotX/camera/image_raw
+    camera_detections: /robotX/camera_detections
+    fusion_decision: /robotX/fusion_decision
+  consumers:
+    response:
+      - /robotX/fusion_decision
+      - /map
+    coordination:
+      - /monitoring/system_health
+      - /mapping/map_merge_status
