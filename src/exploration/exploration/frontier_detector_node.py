@@ -14,6 +14,7 @@ def main() -> None:
     Node = importlib.import_module('rclpy.node').Node
 
     msg_module = importlib.import_module('firescout_interfaces.msg')
+    FusionDecision = msg_module.FusionDecision
     Frontier = msg_module.Frontier
     FrontierArray = msg_module.FrontierArray
 
@@ -26,8 +27,15 @@ def main() -> None:
             self.robot_id = str(self.get_parameter('robot_id').value)
             self._latest_map = None
             self._odom_seen = False
+            self._latest_fusion_decision = None
             self.create_subscription(OccupancyGrid, f'/{self.robot_id}/map', self._on_map, 10)
             self.create_subscription(Odometry, f'/{self.robot_id}/odom', self._on_odom, 10)
+            self.create_subscription(
+                FusionDecision,
+                f'/{self.robot_id}/fusion_decision',
+                self._on_fusion_decision,
+                10,
+            )
             self.publisher = self.create_publisher(FrontierArray, '/coordination/frontiers', 10)
             self.timer = self.create_timer(1.0, self._publish_frontiers)
 
@@ -36,6 +44,9 @@ def main() -> None:
 
         def _on_odom(self, _msg) -> None:
             self._odom_seen = True
+
+        def _on_fusion_decision(self, msg) -> None:
+            self._latest_fusion_decision = msg
 
         def _extract_frontiers(self) -> List[FrontierCandidate]:
             if self._latest_map is None:
@@ -127,7 +138,12 @@ def main() -> None:
         def _publish_frontiers(self) -> None:
             min_size = float(self.get_parameter('frontier_min_size').value)
             max_travel_cost = float(self.get_parameter('frontier_max_travel_cost').value)
-            selected = select_frontiers(self._extract_frontiers(), min_size, max_travel_cost)
+            selected = select_frontiers(
+                self._extract_frontiers(),
+                min_size,
+                max_travel_cost,
+                hazard_decision=self._latest_fusion_decision,
+            )
 
             msg = FrontierArray()
             msg.robot_id = self.robot_id

@@ -1,5 +1,5 @@
 from .geometry_utils import distance_2d
-from .math_utils import clamp
+from .math_utils import clamp, weighted_confidence
 from .namespace_utils import namespaced
 from .qos_profiles import COMMAND_QOS, SENSOR_QOS, STATUS_QOS
 
@@ -10,4 +10,5 @@ __all__ = [
 	'clamp',
 	'distance_2d',
 	'namespaced',
+	'weighted_confidence',
 ]

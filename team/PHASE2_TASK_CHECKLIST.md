@@ -27,10 +27,10 @@ Legend:
 | Member 3 (Mapping/Monitoring) | Normal | Add thresholds.yaml camera/sensor latency limits | Done | 2026-05-15 |
 | Member 3 (Mapping/Monitoring) | Normal | Update metrics_exporter_node critical rule for dual silence | Done | 2026-05-16 |
 | Member 3 (Mapping/Monitoring) | Normal | Add tests: metrics_exporter, tf_camera_consistency, hybrid_timing_alarm | Done | 2026-05-18 |
-| Member 4 (Exploration/Utils) | Normal | Subscribe frontier scoring to fusion_decision only | Not Started | 2026-05-14 |
-| Member 4 (Exploration/Utils) | Normal | Deprioritize frontiers when risk_level > 0.7 | Not Started | 2026-05-15 |
-| Member 4 (Exploration/Utils) | Normal | Add weighted_confidence helper in common_utils | Not Started | 2026-05-15 |
-| Member 4 (Exploration/Utils) | Normal | Add tests: hazard_aware_frontier_scoring + weighted_confidence_util | Not Started | 2026-05-17 |
+| Member 4 (Exploration/Utils) | Normal | Subscribe frontier scoring to fusion_decision only | Done | 2026-05-14 |
+| Member 4 (Exploration/Utils) | Normal | Deprioritize frontiers when risk_level > 0.7 | Done | 2026-05-15 |
+| Member 4 (Exploration/Utils) | Normal | Add weighted_confidence helper in common_utils | Done | 2026-05-15 |
+| Member 4 (Exploration/Utils) | Normal | Add tests: hazard_aware_frontier_scoring + weighted_confidence_util | Done | 2026-05-17 |
 | Member 5 (Response) | Hard | Implement sensor_gateway_node | Not Started | 2026-05-15 |
 | Member 5 (Response) | Hard | Implement camera_inference_node | Not Started | 2026-05-16 |
 | Member 5 (Response) | Hard | Implement fusion_decision_node | Not Started | 2026-05-17 |
