@@ -572,13 +572,12 @@
   </model>
 
   <!--
-    PHASE 2 - FIRE 1  position (2.37, -5.22)
+    PHASE 2 - FIRE ENTITY  position (3.0, 2.0) — primary fire (Phase 2 spec)
     Static, no physics. Ignition zone radius ~0.8 m.
-    seed=42 ensures deterministic placement across runs.
   -->
-  <model name="fire_1">
+  <model name="fire_entity">
     <static>true</static>
-    <pose>2.37 -5.22 0.0 0 0 0</pose>
+    <pose>3.0 2.0 0.0 0 0 0</pose>
     <link name="fire_base">
       <visual name="base_vis">
         <pose>0 0 0.05 0 0 0</pose>

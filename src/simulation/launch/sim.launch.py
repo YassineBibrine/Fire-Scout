@@ -135,7 +135,15 @@ def _build_effective_world(base_world_path: str, fire_on: bool, human_on: bool) 
 
     # Entity name patterns to strip when the scenario is disabled.
     # These correspond exactly to the model names in world_1.sdf.
-    fire_model_names = ['fire_entity']
+    fire_model_names = [
+        'fire_entity',
+        'fire_2',
+        'fire_3',
+        'fire_4',
+        'fire_5',
+        'fire_6',
+        'fire_7',
+    ]
     human_model_names = [
         'human_victim_1', 'human_victim_2', 'human_victim_3_blocked',
         'debris_left', 'debris_right',
