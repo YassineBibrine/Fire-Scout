@@ -19,6 +19,9 @@ if(BUILD_TESTING)
   ament_add_pytest_test(test_lidar_sensor_model test/test_lidar_sensor_model.py)
   ament_add_pytest_test(test_spawn_robot_launch test/test_spawn_robot_launch.py)
   ament_add_pytest_test(test_spawn_namespaces test/test_spawn_namespaces.py)
+  # Phase 2 tests
+  ament_add_pytest_test(test_camera_bridge_topic test/test_camera_bridge_topic.py)
+  ament_add_pytest_test(test_fire_entity_spawn test/test_fire_entity_spawn.py)
 endif()
 
 ament_package()
