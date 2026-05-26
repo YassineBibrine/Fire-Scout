@@ -23,7 +23,7 @@ from importlib import import_module
 # Nodes must call these before publishing hybrid messages.
 # Source of truth: interface_contract.yaml v2.0.0
 
-def validate_robot_id(robot_id: str) -> None:
+def validate_robot_id(robot_id: object) -> None:
     """Enforce contract rule: reject_empty_robot_id: true.
 
     Raises ValueError if robot_id is empty or whitespace-only.

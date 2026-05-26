@@ -3,13 +3,20 @@
 """Monitor topic publication rates and emit alarms when rates drop."""
 
 from collections import deque
-from typing import Callable, Deque, Dict, List, Tuple
+from importlib import import_module
+from typing import Any, Callable, Deque, Dict, List, Tuple, cast
 
 import rclpy
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
-from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import Image, LaserScan
 from std_msgs.msg import String
+
+
+_interfaces_msg = import_module('firescout_interfaces.msg')
+FireSensorAlert = cast(Any, getattr(_interfaces_msg, 'FireSensorAlert'))
+FusionDecision = cast(Any, getattr(_interfaces_msg, 'FusionDecision'))
+VisionDetectionArray = cast(Any, getattr(_interfaces_msg, 'VisionDetectionArray'))
 
 
 class TopicRateMonitorNode(Node):
@@ -98,10 +105,19 @@ class TopicRateMonitorNode(Node):
         )
         return monitored_topics, [fallback_rate] * len(monitored_topics)
 
-    def _infer_msg_type(self, topic: str):
+    @staticmethod
+    def _infer_msg_type(topic: str):
         """Infer message class from topic naming convention used in Fire-Scout."""
         if topic.endswith('/scan'):
             return LaserScan
+        if topic.endswith('/camera/image_raw'):
+            return Image
+        if topic.endswith('/fire_sensor_alert'):
+            return FireSensorAlert
+        if topic.endswith('/fusion_decision'):
+            return FusionDecision
+        if topic.endswith('/camera_detections'):
+            return VisionDetectionArray
         if topic.endswith('/odom'):
             return Odometry
         if topic.endswith('/map') or topic == '/map':

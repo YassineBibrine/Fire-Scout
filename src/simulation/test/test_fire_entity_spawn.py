@@ -91,8 +91,10 @@ def test_fire_entity_is_static():
 
     static_el = fire.find('static')
     assert static_el is not None, 'fire_entity missing <static> element'
-    assert static_el.text.strip().lower() == 'true', (
-        f'fire_entity <static> is "{static_el.text.strip()}", expected "true"'
+    static_text = static_el.text
+    assert static_text is not None, 'fire_entity <static> element is empty'
+    assert static_text.strip().lower() == 'true', (
+        f'fire_entity <static> is "{static_text.strip()}", expected "true"'
     )
 
 
@@ -166,8 +168,10 @@ def test_human_entities_are_static():
         assert model is not None, f'{name} not found in world_1.sdf'
         static_el = model.find('static')
         assert static_el is not None, f'{name} missing <static> element'
-        assert static_el.text.strip().lower() == 'true', (
-            f'{name} <static> is "{static_el.text.strip()}", expected "true"'
+        static_text = static_el.text
+        assert static_text is not None, f'{name} <static> element is empty'
+        assert static_text.strip().lower() == 'true', (
+            f'{name} <static> is "{static_text.strip()}", expected "true"'
         )
 
 
