@@ -57,12 +57,14 @@ Le fichier `config/interface_contract.yaml` définit:
 - ✅ test_msg_generation.py - Vérifie tous les messages
 - ✅ test_srv_generation.py - Vérifie tous les services  
 - ✅ test_action_generation.py - Vérifie toutes les actions
+- ✅ test_hybrid_msg_generation.py - Vérifie les messages Phase 2 hybrides et les règles de validation
 
 ## État
 - [x] Toutes les interfaces définies
 - [x] Tests passent (10/10)
 - [x] Documentation complétée
 - [x] Contract à jour
+- [x] Interfaces hybrides Phase 2 définies et documentées
 
 ## Dépendances
 - std_msgs
@@ -107,12 +109,11 @@ ros2 interface list | grep firescout_interfaces
 
 Hybrid target: Jetson + fire sensors + ROS 2 fusion.
 
-- [ ] Define `FireSensorAlert.msg` fields (robot_id, flame_detected, smoke_level, gas_level, temperature, normalized_risk, source_id, timestamp).
-- [ ] Define `VisionDetectionArray.msg` with `Detection` struct (class_label, confidence, bounding_box, estimated_pose) plus robot_id, camera_id, detections, timestamp.
-- [ ] Define `FusionDecision.msg` fields (robot_id, fire_confirmed, human_confirmed, risk_level, recommended_action, contributing_sources, sensor_confidence, vision_confidence, timestamp).
-- [ ] Add migration note in `interface_contract.yaml` that `FireDetection.msg` is now populated by `fusion_decision_node` output (not raw sensor stubs).
-- [ ] Document QoS policies: `fire_sensor_alert` and `fusion_decision` RELIABLE KEEP_LAST depth 5; `camera_detections` BEST_EFFORT sensor_data QoS.
-- [ ] Add schema validation tests for hybrid messages and reject invalid ranges (NaN, out-of-range confidence, invalid namespace).
-- [ ] Provide migration notes from Phase 1 interfaces to Phase 2 hybrid interfaces so all teams can upgrade without breaking runtime nodes.
-
+- [x] Define `FireSensorAlert.msg` fields (robot_id, flame_detected, smoke_level, gas_level, temperature, normalized_risk, source_id, timestamp).
+- [x] Define `VisionDetectionArray.msg` with `Detection` struct (class_label, confidence, bounding_box, estimated_pose) plus robot_id, camera_id, detections, timestamp.
+- [x] Define `FusionDecision.msg` fields (robot_id, fire_confirmed, human_confirmed, risk_level, recommended_action, contributing_sources, sensor_confidence, vision_confidence, timestamp).
+- [x] Add migration note in `interface_contract.yaml` that `FireDetection.msg` is now populated by `fusion_decision_node` output (not raw sensor stubs).
+- [x] Document QoS policies: `fire_sensor_alert` and `fusion_decision` RELIABLE KEEP_LAST depth 5; `camera_detections` BEST_EFFORT sensor_data QoS.
+- [x] Add schema validation tests for hybrid messages and reject invalid ranges (NaN, out-of-range confidence, invalid namespace).
+- [x] Provide migration notes from Phase 1 interfaces to Phase 2 hybrid interfaces so all teams can upgrade without breaking runtime nodes.
 
