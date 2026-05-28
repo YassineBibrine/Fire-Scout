@@ -43,8 +43,8 @@
 
 Hybrid support scope: exploration behavior adapts to fire/human confirmations.
 
-- [ ] Update frontier scoring to subscribe only to `/robotX/fusion_decision` and never directly to `/incidents/fire`.
-- [ ] When `fusion_decision.risk_level > 0.7` for a frontier zone, multiply travel_cost by `3.0`.
-- [ ] Add `weighted_confidence(sensor_conf, vision_conf, sensor_weight=0.6, vision_weight=0.4)` in `common_utils`.
-- [ ] Add tests: `test_hazard_aware_frontier_scoring.py` and `test_weighted_confidence_util.py`.
-- [ ] Document fallback behavior when fusion decisions are unavailable (skip hazard weighting and keep baseline scoring).
+- [x] Update frontier scoring to subscribe only to `/robotX/fusion_decision` and never directly to `/incidents/fire`.
+- [x] When `fusion_decision.risk_level > 0.7` for a frontier zone, multiply travel_cost by `3.0`.
+- [x] Add `weighted_confidence(sensor_conf, vision_conf, sensor_weight=0.6, vision_weight=0.4)` in `common_utils`.
+- [x] Add tests: `test_hazard_aware_frontier_scoring.py` and `test_weighted_confidence_util.py`.
+- [x] Document fallback behavior when fusion decisions are unavailable (skip hazard weighting and keep baseline scoring).
