@@ -50,7 +50,7 @@ setup(
             'sensor_gateway_node = response.sensor_gateway_node:main',
             'camera_inference_node = response.camera_inference_node:main',
             'fusion_decision_node = response.fusion_decision_node:main',
+            'coordination_bridge_node = response.coordination_bridge_node:main',
         ],
     },
 )
-
