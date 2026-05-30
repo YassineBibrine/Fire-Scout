@@ -1,0 +1,6 @@
+fusion_decision_node:
+  ros__parameters:
+    confirmation_window_sec: 3.0
+    fire_sensor_threshold: 0.5
+    vision_confidence_threshold: 0.4
+    confirmed_cooldown_sec: 1.0
