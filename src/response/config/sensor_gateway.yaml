@@ -1,0 +1,3 @@
+sensor_gateway_node:
+  ros__parameters:
+    robot_id: robot1

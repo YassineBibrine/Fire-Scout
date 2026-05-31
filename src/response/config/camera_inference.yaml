@@ -1,0 +1,4 @@
+camera_inference_node:
+  ros__parameters:
+    model_path: ''
+    confidence_threshold: 0.5

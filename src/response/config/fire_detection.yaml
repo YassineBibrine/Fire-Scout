@@ -1,0 +1,3 @@
+response:
+  ros__parameters:
+    fire_confidence_threshold: 0.7

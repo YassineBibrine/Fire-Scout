@@ -1,0 +1,8 @@
+# Acknowledge task
+string task_id
+string robot_id
+bool accept
+string message
+---
+bool success
+string response_message

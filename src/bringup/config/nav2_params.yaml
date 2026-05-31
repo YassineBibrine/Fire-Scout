@@ -1,0 +1,195 @@
+/**:
+  ros__parameters:
+    use_sim_time: true
+
+robot1:
+  controller_server:
+    ros__parameters:
+      use_sim_time: true
+  planner_server:
+    ros__parameters:
+      use_sim_time: true
+  bt_navigator:
+    ros__parameters:
+      use_sim_time: true
+  local_costmap:
+    local_costmap:
+      ros__parameters:
+        use_sim_time: true
+        global_frame: robot1/odom
+        robot_base_frame: robot1/base_link
+        update_frequency: 5.0
+        publish_frequency: 2.0
+        rolling_window: true
+        width: 6.0
+        height: 6.0
+        resolution: 0.05
+        plugins: ["obstacle_layer", "inflation_layer"]
+        obstacle_layer:
+          plugin: "nav2_costmap_2d::ObstacleLayer"
+          enabled: true
+          observation_sources: scan
+          scan:
+            topic: /robot1/scan
+            max_obstacle_height: 2.0
+            clearing: true
+            marking: true
+            data_type: "LaserScan"
+        inflation_layer:
+          plugin: "nav2_costmap_2d::InflationLayer"
+          inflation_radius: 0.6
+          cost_scaling_factor: 3.0
+
+robot2:
+  controller_server:
+    ros__parameters:
+      use_sim_time: true
+  planner_server:
+    ros__parameters:
+      use_sim_time: true
+  bt_navigator:
+    ros__parameters:
+      use_sim_time: true
+  local_costmap:
+    local_costmap:
+      ros__parameters:
+        use_sim_time: true
+        global_frame: robot2/odom
+        robot_base_frame: robot2/base_link
+        update_frequency: 5.0
+        publish_frequency: 2.0
+        rolling_window: true
+        width: 6.0
+        height: 6.0
+        resolution: 0.05
+        plugins: ["obstacle_layer", "inflation_layer"]
+        obstacle_layer:
+          plugin: "nav2_costmap_2d::ObstacleLayer"
+          enabled: true
+          observation_sources: scan
+          scan:
+            topic: /robot2/scan
+            max_obstacle_height: 2.0
+            clearing: true
+            marking: true
+            data_type: "LaserScan"
+        inflation_layer:
+          plugin: "nav2_costmap_2d::InflationLayer"
+          inflation_radius: 0.6
+          cost_scaling_factor: 3.0
+  global_costmap:
+    global_costmap:
+      ros__parameters:
+        use_sim_time: true
+        global_frame: robot2/map
+        robot_base_frame: robot2/base_link
+        update_frequency: 1.0
+        publish_frequency: 1.0
+        resolution: 0.05
+        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        static_layer:
+          plugin: "nav2_costmap_2d::StaticLayer"
+        obstacle_layer:
+          plugin: "nav2_costmap_2d::ObstacleLayer"
+          enabled: true
+          observation_sources: scan
+          scan:
+            topic: /robot2/scan
+            max_obstacle_height: 2.0
+            clearing: true
+            marking: true
+            data_type: "LaserScan"
+        inflation_layer:
+          plugin: "nav2_costmap_2d::InflationLayer"
+          inflation_radius: 0.6
+          cost_scaling_factor: 3.0
+
+robot3:
+  controller_server:
+    ros__parameters:
+      use_sim_time: true
+  planner_server:
+    ros__parameters:
+      use_sim_time: true
+  bt_navigator:
+    ros__parameters:
+      use_sim_time: true
+  local_costmap:
+    local_costmap:
+      ros__parameters:
+        use_sim_time: true
+        global_frame: robot3/odom
+        robot_base_frame: robot3/base_link
+        update_frequency: 5.0
+        publish_frequency: 2.0
+        rolling_window: true
+        width: 6.0
+        height: 6.0
+        resolution: 0.05
+        plugins: ["obstacle_layer", "inflation_layer"]
+        obstacle_layer:
+          plugin: "nav2_costmap_2d::ObstacleLayer"
+          enabled: true
+          observation_sources: scan
+          scan:
+            topic: /robot3/scan
+            max_obstacle_height: 2.0
+            clearing: true
+            marking: true
+            data_type: "LaserScan"
+        inflation_layer:
+          plugin: "nav2_costmap_2d::InflationLayer"
+          inflation_radius: 0.6
+          cost_scaling_factor: 3.0
+  global_costmap:
+    global_costmap:
+      ros__parameters:
+        use_sim_time: true
+        global_frame: robot3/map
+        robot_base_frame: robot3/base_link
+        update_frequency: 1.0
+        publish_frequency: 1.0
+        resolution: 0.05
+        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        static_layer:
+          plugin: "nav2_costmap_2d::StaticLayer"
+        obstacle_layer:
+          plugin: "nav2_costmap_2d::ObstacleLayer"
+          enabled: true
+          observation_sources: scan
+          scan:
+            topic: /robot3/scan
+            max_obstacle_height: 2.0
+            clearing: true
+            marking: true
+            data_type: "LaserScan"
+        inflation_layer:
+          plugin: "nav2_costmap_2d::InflationLayer"
+          inflation_radius: 0.6
+          cost_scaling_factor: 3.0
+  global_costmap:
+    global_costmap:
+      ros__parameters:
+        use_sim_time: true
+        global_frame: robot1/map
+        robot_base_frame: robot1/base_link
+        update_frequency: 1.0
+        publish_frequency: 1.0
+        resolution: 0.05
+        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        static_layer:
+          plugin: "nav2_costmap_2d::StaticLayer"
+        obstacle_layer:
+          plugin: "nav2_costmap_2d::ObstacleLayer"
+          enabled: true
+          observation_sources: scan
+          scan:
+            topic: /robot1/scan
+            max_obstacle_height: 2.0
+            clearing: true
+            marking: true
+            data_type: "LaserScan"
+        inflation_layer:
+          plugin: "nav2_costmap_2d::InflationLayer"
+          inflation_radius: 0.6
+          cost_scaling_factor: 3.0

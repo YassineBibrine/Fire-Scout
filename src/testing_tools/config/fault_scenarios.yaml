@@ -1,0 +1,5 @@
+testing_tools:
+  ros__parameters:
+    scenarios:
+      - robot2_drop_heartbeat
+      - robot3_lidar_timeout

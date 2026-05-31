@@ -1,0 +1,3 @@
+coordination:
+  ros__parameters:
+    degraded_mode_on_fault: true

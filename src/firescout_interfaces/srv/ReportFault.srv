@@ -1,0 +1,8 @@
+# Report fault from robot
+string robot_id
+string fault_type
+string severity
+string description
+---
+bool logged
+string fault_id

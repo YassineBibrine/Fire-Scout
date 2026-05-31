@@ -1,0 +1,6 @@
+# Start mapping on a robot
+string robot_name
+bool merge_with_global
+---
+bool success
+string message

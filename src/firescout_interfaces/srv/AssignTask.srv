@@ -1,0 +1,9 @@
+# Assign a task to a robot
+string task_id
+string task_type
+string target_robot
+geometry_msgs/Pose target_pose
+float32 priority
+---
+bool success
+string message

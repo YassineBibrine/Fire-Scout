@@ -1,0 +1,7 @@
+# Auction announcement for frontier exploration
+string auction_id
+string frontier_id
+float32 starting_bid
+float32 min_bid_increment
+float32 bidding_duration_seconds
+builtin_interfaces/Time timestamp

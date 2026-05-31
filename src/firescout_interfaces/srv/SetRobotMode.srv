@@ -1,0 +1,6 @@
+# Set robot operational mode
+string robot_name
+string mode  # "EXPLORE", "RESCUE", "SUPPRESS", "RETURN", "STANDBY"
+---
+bool success
+string message

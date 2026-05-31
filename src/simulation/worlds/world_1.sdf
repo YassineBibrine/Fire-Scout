@@ -1,0 +1,917 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+<world name="villa_world">
+
+  <scene>
+    <ambient>0.95 0.95 0.95 1</ambient>
+    <background>0.98 0.98 1 1</background>
+    <shadows>true</shadows>
+  </scene>
+
+  <light name="sun" type="directional">
+    <pose>0 0 20 0 0 0</pose>
+    <diffuse>1 1 1 1</diffuse>
+    <specular>0.3 0.3 0.3 1</specular>
+    <direction>-0.4 -0.3 -1</direction>
+    <cast_shadows>true</cast_shadows>
+  </light>
+
+  <light name="fire_glow_1" type="point">
+    <pose>2.37 -5.22 1.5 0 0 0</pose>
+    <diffuse>1.0 0.4 0.05 1</diffuse>
+    <specular>0.2 0.1 0.0 1</specular>
+    <attenuation>
+      <range>3.5</range>
+      <constant>0.4</constant>
+      <linear>0.5</linear>
+      <quadratic>0.1</quadratic>
+    </attenuation>
+    <cast_shadows>false</cast_shadows>
+  </light>
+
+  <light name="fire_glow_2" type="point">
+    <pose>4.02 1.94 1.5 0 0 0</pose>
+    <diffuse>1.0 0.4 0.05 1</diffuse>
+    <specular>0.2 0.1 0.0 1</specular>
+    <attenuation>
+      <range>3.5</range>
+      <constant>0.4</constant>
+      <linear>0.5</linear>
+      <quadratic>0.1</quadratic>
+    </attenuation>
+    <cast_shadows>false</cast_shadows>
+  </light>
+
+  <light name="fire_glow_3" type="point">
+    <pose>6.67 -4.54 1.5 0 0 0</pose>
+    <diffuse>1.0 0.4 0.05 1</diffuse>
+    <specular>0.2 0.1 0.0 1</specular>
+    <attenuation>
+      <range>3.5</range>
+      <constant>0.4</constant>
+      <linear>0.5</linear>
+      <quadratic>0.1</quadratic>
+    </attenuation>
+    <cast_shadows>false</cast_shadows>
+  </light>
+
+  <light name="fire_glow_4" type="point">
+    <pose>-1.33 -5.17 1.5 0 0 0</pose>
+    <diffuse>1.0 0.4 0.05 1</diffuse>
+    <specular>0.2 0.1 0.0 1</specular>
+    <attenuation>
+      <range>3.5</range>
+      <constant>0.4</constant>
+      <linear>0.5</linear>
+      <quadratic>0.1</quadratic>
+    </attenuation>
+    <cast_shadows>false</cast_shadows>
+  </light>
+
+  <light name="fire_glow_5" type="point">
+    <pose>-4.78 0.06 1.5 0 0 0</pose>
+    <diffuse>1.0 0.4 0.05 1</diffuse>
+    <specular>0.2 0.1 0.0 1</specular>
+    <attenuation>
+      <range>3.5</range>
+      <constant>0.4</constant>
+      <linear>0.5</linear>
+      <quadratic>0.1</quadratic>
+    </attenuation>
+    <cast_shadows>false</cast_shadows>
+  </light>
+
+  <light name="fire_glow_6" type="point">
+    <pose>-8.05 -3.31 1.5 0 0 0</pose>
+    <diffuse>1.0 0.4 0.05 1</diffuse>
+    <specular>0.2 0.1 0.0 1</specular>
+    <attenuation>
+      <range>3.5</range>
+      <constant>0.4</constant>
+      <linear>0.5</linear>
+      <quadratic>0.1</quadratic>
+    </attenuation>
+    <cast_shadows>false</cast_shadows>
+  </light>
+
+  <light name="fire_glow_7" type="point">
+    <pose>7.77 -1.80 1.5 0 0 0</pose>
+    <diffuse>1.0 0.4 0.05 1</diffuse>
+    <specular>0.2 0.1 0.0 1</specular>
+    <attenuation>
+      <range>3.5</range>
+      <constant>0.4</constant>
+      <linear>0.5</linear>
+      <quadratic>0.1</quadratic>
+    </attenuation>
+    <cast_shadows>false</cast_shadows>
+  </light>
+
+  <physics type="ode">
+    <max_step_size>0.001</max_step_size>
+    <real_time_factor>1</real_time_factor>
+  </physics>
+
+  <plugin name="gz::sim::systems::Physics" filename="gz-sim-physics-system"/>
+  <plugin name="gz::sim::systems::UserCommands" filename="gz-sim-user-commands-system"/>
+  <plugin name="gz::sim::systems::SceneBroadcaster" filename="gz-sim-scene-broadcaster-system"/>
+
+  <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+    <render_engine>ogre2</render_engine>
+  </plugin>
+
+  <!-- GROUND -->
+  <model name="ground">
+    <static>true</static>
+    <link name="link">
+      <collision name="c">
+        <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+      </collision>
+      <visual name="v">
+        <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+        <material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material>
+      </visual>
+    </link>
+  </model>
+
+  <!-- FLOOR 20x14m -->
+  <model name="villa_floor">
+    <static>true</static>
+    <link name="link">
+      <collision name="c">
+        <geometry><box><size>20 14 0.1</size></box></geometry>
+      </collision>
+      <visual name="v">
+        <geometry><box><size>20 14 0.1</size></box></geometry>
+        <material><ambient>0.92 0.88 0.82 1</ambient><diffuse>0.92 0.88 0.82 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>0 0 0.05 0 0 0</pose>
+  </model>
+
+  <!-- EXTERNAL WALLS -->
+  <model name="wall_north">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>20 0.2 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>20 0.2 3</size></box></geometry>
+        <material><ambient>0.85 0.82 0.78 1</ambient><diffuse>0.85 0.82 0.78 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>0 7 1.5 0 0 0</pose>
+  </model>
+
+  <model name="wall_south_left">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>8 0.2 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>8 0.2 3</size></box></geometry>
+        <material><ambient>0.85 0.82 0.78 1</ambient><diffuse>0.85 0.82 0.78 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>-6 -7 1.5 0 0 0</pose>
+  </model>
+
+  <model name="wall_south_right">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>8 0.2 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>8 0.2 3</size></box></geometry>
+        <material><ambient>0.85 0.82 0.78 1</ambient><diffuse>0.85 0.82 0.78 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>6 -7 1.5 0 0 0</pose>
+  </model>
+
+  <model name="wall_east">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.2 14 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.2 14 3</size></box></geometry>
+        <material><ambient>0.85 0.82 0.78 1</ambient><diffuse>0.85 0.82 0.78 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>10 0 1.5 0 0 0</pose>
+  </model>
+
+  <model name="wall_west">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.2 14 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.2 14 3</size></box></geometry>
+        <material><ambient>0.85 0.82 0.78 1</ambient><diffuse>0.85 0.82 0.78 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>-10 0 1.5 0 0 0</pose>
+  </model>
+
+  <!-- INTERIOR WALLS -->
+  <model name="divider_west">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>9 0.15 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>9 0.15 3</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+    </link>
+    <pose>-5.5 0 1.5 0 0 0</pose>
+  </model>
+
+  <model name="divider_east">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>9 0.15 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>9 0.15 3</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+    </link>
+    <pose>5.5 0 1.5 0 0 0</pose>
+  </model>
+
+  <model name="wall_bedroom1">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.15 5.5 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.15 5.5 3</size></box></geometry>
+        <material><ambient>0.75 0.7 0.85 1</ambient></material>
+      </visual>
+    </link>
+    <pose>-5 -4.25 1.5 0 0 0</pose>
+  </model>
+
+  <model name="wall_bedroom2">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.15 3.5 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.15 3.5 3</size></box></geometry>
+        <material><ambient>0.75 0.7 0.85 1</ambient></material>
+      </visual>
+    </link>
+    <pose>0 -5.25 1.5 0 0 0</pose>
+  </model>
+
+  <model name="wall_bathroom">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.15 5.5 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.15 5.5 3</size></box></geometry>
+        <material><ambient>0.7 0.85 0.85 1</ambient></material>
+      </visual>
+    </link>
+    <pose>5 -4.25 1.5 0 0 0</pose>
+  </model>
+
+  <model name="wall_living_dining">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.15 5.5 3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.15 5.5 3</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+    </link>
+    <pose>0 3.75 1.5 0 0 0</pose>
+  </model>
+
+  <!-- FURNITURE -->
+  <model name="sofa_main">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>2.5 0.9 0.7</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>2.5 0.9 0.7</size></box></geometry>
+        <material><ambient>0.15 0.25 0.65 1</ambient><diffuse>0.15 0.25 0.65 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>-6 5 0.35 0 0 0</pose>
+  </model>
+
+  <model name="coffee_table">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>1.2 0.6 0.4</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>1.2 0.6 0.4</size></box></geometry>
+        <material><ambient>0.55 0.35 0.15 1</ambient><diffuse>0.55 0.35 0.15 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>-6 3.8 0.2 0 0 0</pose>
+  </model>
+
+  <model name="tv_stand">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>1.8 0.4 0.5</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>1.8 0.4 0.5</size></box></geometry>
+        <material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>-6 6.6 0.25 0 0 0</pose>
+  </model>
+
+  <model name="dining_table">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>2 1 0.75</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>2 1 0.75</size></box></geometry>
+        <material><ambient>0.65 0.4 0.15 1</ambient><diffuse>0.65 0.4 0.15 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>6 4 0.375 0 0 0</pose>
+  </model>
+
+  <model name="chair1">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.5 0.5 0.9</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.5 0.5 0.9</size></box></geometry>
+        <material><ambient>0.8 0.6 0.3 1</ambient></material>
+      </visual>
+    </link>
+    <pose>5 4 0.45 0 0 0</pose>
+  </model>
+
+  <model name="chair2">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.5 0.5 0.9</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.5 0.5 0.9</size></box></geometry>
+        <material><ambient>0.8 0.6 0.3 1</ambient></material>
+      </visual>
+    </link>
+    <pose>7 4 0.45 0 0 0</pose>
+  </model>
+
+  <model name="chair3">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.5 0.5 0.9</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.5 0.5 0.9</size></box></geometry>
+        <material><ambient>0.8 0.6 0.3 1</ambient></material>
+      </visual>
+    </link>
+    <pose>6 3.2 0.45 0 0 0</pose>
+  </model>
+
+  <model name="chair4">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.5 0.5 0.9</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.5 0.5 0.9</size></box></geometry>
+        <material><ambient>0.8 0.6 0.3 1</ambient></material>
+      </visual>
+    </link>
+    <pose>6 4.8 0.45 0 0 0</pose>
+  </model>
+
+  <model name="kitchen_counter">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>3 0.6 0.9</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>3 0.6 0.9</size></box></geometry>
+        <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>8.5 6.7 0.45 0 0 0</pose>
+  </model>
+
+  <model name="fridge">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.7 0.7 1.8</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.7 0.7 1.8</size></box></geometry>
+        <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>9.65 5.65 0.9 0 0 0</pose>
+  </model>
+
+  <model name="bed_1">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>2 1.6 0.5</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>2 1.6 0.5</size></box></geometry>
+        <material><ambient>0.85 0.3 0.3 1</ambient><diffuse>0.85 0.3 0.3 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>-7.5 -4.5 0.25 0 0 0</pose>
+  </model>
+
+  <model name="wardrobe_1">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>2 0.6 2</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>2 0.6 2</size></box></geometry>
+        <material><ambient>0.7 0.55 0.35 1</ambient></material>
+      </visual>
+    </link>
+    <pose>-9 -6.2 1 0 0 0</pose>
+  </model>
+
+  <model name="bed_2">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>1.6 2 0.5</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>1.6 2 0.5</size></box></geometry>
+        <material><ambient>0.3 0.5 0.85 1</ambient><diffuse>0.3 0.5 0.85 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>-2.5 -5.5 0.25 0 0 0</pose>
+  </model>
+
+  <model name="bathtub">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>1.6 0.8 0.5</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>1.6 0.8 0.5</size></box></geometry>
+        <material><ambient>0.95 0.95 1 1</ambient><diffuse>0.95 0.95 1 1</diffuse></material>
+      </visual>
+    </link>
+    <pose>7.5 -5.5 0.25 0 0 0</pose>
+  </model>
+
+  <model name="sink">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.6 0.5 0.85</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.6 0.5 0.85</size></box></geometry>
+        <material><ambient>0.9 0.9 0.9 1</ambient></material>
+      </visual>
+    </link>
+    <pose>5.5 -6.5 0.425 0 0 0</pose>
+  </model>
+
+  <model name="hall_cabinet">
+    <static>true</static>
+    <link name="link">
+      <collision name="c"><geometry><box><size>1 0.4 0.9</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>1 0.4 0.9</size></box></geometry>
+        <material><ambient>0.6 0.45 0.3 1</ambient></material>
+      </visual>
+    </link>
+    <pose>1 -6.5 0.45 0 0 0</pose>
+  </model>
+
+  <!-- HUMAN ENTITIES (Phase 2) -->
+  <model name="human_victim_1">
+    <static>true</static>
+    <pose>-3.0 4.0 0.0 0 0 0</pose>
+    <link name="body">
+      <visual name="body_visual">
+        <pose>0 0 0.45 0 0 0</pose>
+        <geometry><box><size>0.5 0.3 0.9</size></box></geometry>
+        <material>
+          <ambient>0.1 0.3 0.9 1</ambient>
+          <diffuse>0.1 0.3 0.9 1</diffuse>
+          <emissive>0.0 0.05 0.2 1</emissive>
+        </material>
+      </visual>
+      <visual name="head_visual">
+        <pose>0 0 1.0 0 0 0</pose>
+        <geometry><sphere><radius>0.15</radius></sphere></geometry>
+        <material>
+          <ambient>0.85 0.7 0.55 1</ambient>
+          <diffuse>0.85 0.7 0.55 1</diffuse>
+        </material>
+      </visual>
+      <collision name="body_col">
+        <pose>0 0 0.45 0 0 0</pose>
+        <geometry><box><size>0.5 0.3 0.9</size></box></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <model name="human_victim_2">
+    <static>true</static>
+    <pose>-1.5 -3.0 0.0 0 0 0</pose>
+    <link name="body">
+      <visual name="body_visual">
+        <pose>0 0 0.20 0 0 0</pose>
+        <geometry><box><size>0.3 0.8 0.4</size></box></geometry>
+        <material>
+          <ambient>0.15 0.45 0.85 1</ambient>
+          <diffuse>0.15 0.45 0.85 1</diffuse>
+          <emissive>0.0 0.05 0.2 1</emissive>
+        </material>
+      </visual>
+      <collision name="body_col">
+        <pose>0 0 0.20 0 0 0</pose>
+        <geometry><box><size>0.3 0.8 0.4</size></box></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <model name="human_victim_3_blocked">
+    <static>true</static>
+    <pose>2.0 -1.5 0.0 0 0 0</pose>
+    <link name="body">
+      <visual name="body_visual">
+        <pose>0 0 0.45 0 0 0</pose>
+        <geometry><box><size>0.5 0.3 0.9</size></box></geometry>
+        <material>
+          <ambient>0.05 0.2 0.75 1</ambient>
+          <diffuse>0.05 0.2 0.75 1</diffuse>
+          <emissive>0.0 0.02 0.15 1</emissive>
+        </material>
+      </visual>
+      <collision name="body_col">
+        <pose>0 0 0.45 0 0 0</pose>
+        <geometry><box><size>0.5 0.3 0.9</size></box></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <model name="debris_left">
+    <static>true</static>
+    <pose>2.0 -0.7 0.0 0 0 0</pose>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.6 0.6 0.8</size></box></geometry></collision>
+      <visual name="v">
+        <pose>0 0 0.4 0 0 0</pose>
+        <geometry><box><size>0.6 0.6 0.8</size></box></geometry>
+        <material><ambient>0.45 0.35 0.25 1</ambient><diffuse>0.45 0.35 0.25 1</diffuse></material>
+      </visual>
+    </link>
+  </model>
+
+  <model name="debris_right">
+    <static>true</static>
+    <pose>2.0 -2.3 0.0 0 0 0</pose>
+    <link name="link">
+      <collision name="c"><geometry><box><size>0.6 0.6 0.8</size></box></geometry></collision>
+      <visual name="v">
+        <pose>0 0 0.4 0 0 0</pose>
+        <geometry><box><size>0.6 0.6 0.8</size></box></geometry>
+        <material><ambient>0.45 0.35 0.25 1</ambient><diffuse>0.45 0.35 0.25 1</diffuse></material>
+      </visual>
+    </link>
+  </model>
+
+  <!--
+    PHASE 2 - FIRE ENTITY  position (3.0, 2.0) — primary fire (Phase 2 spec)
+    Static, no physics. Ignition zone radius ~0.8 m.
+  -->
+  <model name="fire_entity">
+    <static>true</static>
+    <pose>3.0 2.0 0.0 0 0 0</pose>
+    <link name="fire_base">
+      <visual name="base_vis">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry><cylinder><radius>0.25</radius><length>0.10</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.25 0.0 0.9</ambient>
+          <diffuse>1.0 0.25 0.0 0.9</diffuse>
+          <emissive>0.9 0.15 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_mid">
+      <visual name="mid_vis">
+        <pose>0 0 0.30 0 0 0</pose>
+        <geometry><cylinder><radius>0.15</radius><length>0.40</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.5 0.0 0.85</ambient>
+          <diffuse>1.0 0.5 0.0 0.85</diffuse>
+          <emissive>0.8 0.3 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_tip">
+      <visual name="tip_vis">
+        <pose>0 0 0.65 0 0 0</pose>
+        <geometry><cylinder><radius>0.07</radius><length>0.25</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.85 0.1 0.7</ambient>
+          <diffuse>1.0 0.85 0.1 0.7</diffuse>
+          <emissive>1.0 0.7 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_obstacle">
+      <collision name="col">
+        <pose>0 0 0.4 0 0 0</pose>
+        <geometry><cylinder><radius>0.30</radius><length>0.80</length></cylinder></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <!--
+    PHASE 2 - FIRE 2  position (4.02, 1.94)
+    Static, no physics. Ignition zone radius ~0.8 m.
+    seed=42 ensures deterministic placement across runs.
+  -->
+  <model name="fire_2">
+    <static>true</static>
+    <pose>4.02 1.94 0.0 0 0 0</pose>
+    <link name="fire_base">
+      <visual name="base_vis">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry><cylinder><radius>0.25</radius><length>0.10</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.25 0.0 0.9</ambient>
+          <diffuse>1.0 0.25 0.0 0.9</diffuse>
+          <emissive>0.9 0.15 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_mid">
+      <visual name="mid_vis">
+        <pose>0 0 0.30 0 0 0</pose>
+        <geometry><cylinder><radius>0.15</radius><length>0.40</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.5 0.0 0.85</ambient>
+          <diffuse>1.0 0.5 0.0 0.85</diffuse>
+          <emissive>0.8 0.3 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_tip">
+      <visual name="tip_vis">
+        <pose>0 0 0.65 0 0 0</pose>
+        <geometry><cylinder><radius>0.07</radius><length>0.25</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.85 0.1 0.7</ambient>
+          <diffuse>1.0 0.85 0.1 0.7</diffuse>
+          <emissive>1.0 0.7 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_obstacle">
+      <collision name="col">
+        <pose>0 0 0.4 0 0 0</pose>
+        <geometry><cylinder><radius>0.30</radius><length>0.80</length></cylinder></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <!--
+    PHASE 2 - FIRE 3  position (6.67, -4.54)
+    Static, no physics. Ignition zone radius ~0.8 m.
+    seed=42 ensures deterministic placement across runs.
+  -->
+  <model name="fire_3">
+    <static>true</static>
+    <pose>6.67 -4.54 0.0 0 0 0</pose>
+    <link name="fire_base">
+      <visual name="base_vis">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry><cylinder><radius>0.25</radius><length>0.10</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.25 0.0 0.9</ambient>
+          <diffuse>1.0 0.25 0.0 0.9</diffuse>
+          <emissive>0.9 0.15 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_mid">
+      <visual name="mid_vis">
+        <pose>0 0 0.30 0 0 0</pose>
+        <geometry><cylinder><radius>0.15</radius><length>0.40</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.5 0.0 0.85</ambient>
+          <diffuse>1.0 0.5 0.0 0.85</diffuse>
+          <emissive>0.8 0.3 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_tip">
+      <visual name="tip_vis">
+        <pose>0 0 0.65 0 0 0</pose>
+        <geometry><cylinder><radius>0.07</radius><length>0.25</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.85 0.1 0.7</ambient>
+          <diffuse>1.0 0.85 0.1 0.7</diffuse>
+          <emissive>1.0 0.7 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_obstacle">
+      <collision name="col">
+        <pose>0 0 0.4 0 0 0</pose>
+        <geometry><cylinder><radius>0.30</radius><length>0.80</length></cylinder></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <!--
+    PHASE 2 - FIRE 4  position (-1.33, -5.17)
+    Static, no physics. Ignition zone radius ~0.8 m.
+    seed=42 ensures deterministic placement across runs.
+  -->
+  <model name="fire_4">
+    <static>true</static>
+    <pose>-1.33 -5.17 0.0 0 0 0</pose>
+    <link name="fire_base">
+      <visual name="base_vis">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry><cylinder><radius>0.25</radius><length>0.10</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.25 0.0 0.9</ambient>
+          <diffuse>1.0 0.25 0.0 0.9</diffuse>
+          <emissive>0.9 0.15 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_mid">
+      <visual name="mid_vis">
+        <pose>0 0 0.30 0 0 0</pose>
+        <geometry><cylinder><radius>0.15</radius><length>0.40</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.5 0.0 0.85</ambient>
+          <diffuse>1.0 0.5 0.0 0.85</diffuse>
+          <emissive>0.8 0.3 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_tip">
+      <visual name="tip_vis">
+        <pose>0 0 0.65 0 0 0</pose>
+        <geometry><cylinder><radius>0.07</radius><length>0.25</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.85 0.1 0.7</ambient>
+          <diffuse>1.0 0.85 0.1 0.7</diffuse>
+          <emissive>1.0 0.7 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_obstacle">
+      <collision name="col">
+        <pose>0 0 0.4 0 0 0</pose>
+        <geometry><cylinder><radius>0.30</radius><length>0.80</length></cylinder></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <!--
+    PHASE 2 - FIRE 5  position (-4.78, 0.06)
+    Static, no physics. Ignition zone radius ~0.8 m.
+    seed=42 ensures deterministic placement across runs.
+  -->
+  <model name="fire_5">
+    <static>true</static>
+    <pose>-4.78 0.06 0.0 0 0 0</pose>
+    <link name="fire_base">
+      <visual name="base_vis">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry><cylinder><radius>0.25</radius><length>0.10</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.25 0.0 0.9</ambient>
+          <diffuse>1.0 0.25 0.0 0.9</diffuse>
+          <emissive>0.9 0.15 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_mid">
+      <visual name="mid_vis">
+        <pose>0 0 0.30 0 0 0</pose>
+        <geometry><cylinder><radius>0.15</radius><length>0.40</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.5 0.0 0.85</ambient>
+          <diffuse>1.0 0.5 0.0 0.85</diffuse>
+          <emissive>0.8 0.3 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_tip">
+      <visual name="tip_vis">
+        <pose>0 0 0.65 0 0 0</pose>
+        <geometry><cylinder><radius>0.07</radius><length>0.25</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.85 0.1 0.7</ambient>
+          <diffuse>1.0 0.85 0.1 0.7</diffuse>
+          <emissive>1.0 0.7 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_obstacle">
+      <collision name="col">
+        <pose>0 0 0.4 0 0 0</pose>
+        <geometry><cylinder><radius>0.30</radius><length>0.80</length></cylinder></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <!--
+    PHASE 2 - FIRE 6  position (-8.05, -3.31)
+    Static, no physics. Ignition zone radius ~0.8 m.
+    seed=42 ensures deterministic placement across runs.
+  -->
+  <model name="fire_6">
+    <static>true</static>
+    <pose>-8.05 -3.31 0.0 0 0 0</pose>
+    <link name="fire_base">
+      <visual name="base_vis">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry><cylinder><radius>0.25</radius><length>0.10</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.25 0.0 0.9</ambient>
+          <diffuse>1.0 0.25 0.0 0.9</diffuse>
+          <emissive>0.9 0.15 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_mid">
+      <visual name="mid_vis">
+        <pose>0 0 0.30 0 0 0</pose>
+        <geometry><cylinder><radius>0.15</radius><length>0.40</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.5 0.0 0.85</ambient>
+          <diffuse>1.0 0.5 0.0 0.85</diffuse>
+          <emissive>0.8 0.3 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_tip">
+      <visual name="tip_vis">
+        <pose>0 0 0.65 0 0 0</pose>
+        <geometry><cylinder><radius>0.07</radius><length>0.25</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.85 0.1 0.7</ambient>
+          <diffuse>1.0 0.85 0.1 0.7</diffuse>
+          <emissive>1.0 0.7 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_obstacle">
+      <collision name="col">
+        <pose>0 0 0.4 0 0 0</pose>
+        <geometry><cylinder><radius>0.30</radius><length>0.80</length></cylinder></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <!--
+    PHASE 2 - FIRE 7  position (7.77, -1.80)
+    Static, no physics. Ignition zone radius ~0.8 m.
+    seed=42 ensures deterministic placement across runs.
+  -->
+  <model name="fire_7">
+    <static>true</static>
+    <pose>7.77 -1.80 0.0 0 0 0</pose>
+    <link name="fire_base">
+      <visual name="base_vis">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry><cylinder><radius>0.25</radius><length>0.10</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.25 0.0 0.9</ambient>
+          <diffuse>1.0 0.25 0.0 0.9</diffuse>
+          <emissive>0.9 0.15 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_mid">
+      <visual name="mid_vis">
+        <pose>0 0 0.30 0 0 0</pose>
+        <geometry><cylinder><radius>0.15</radius><length>0.40</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.5 0.0 0.85</ambient>
+          <diffuse>1.0 0.5 0.0 0.85</diffuse>
+          <emissive>0.8 0.3 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_tip">
+      <visual name="tip_vis">
+        <pose>0 0 0.65 0 0 0</pose>
+        <geometry><cylinder><radius>0.07</radius><length>0.25</length></cylinder></geometry>
+        <material>
+          <ambient>1.0 0.85 0.1 0.7</ambient>
+          <diffuse>1.0 0.85 0.1 0.7</diffuse>
+          <emissive>1.0 0.7 0.0 1</emissive>
+        </material>
+      </visual>
+    </link>
+    <link name="fire_obstacle">
+      <collision name="col">
+        <pose>0 0 0.4 0 0 0</pose>
+        <geometry><cylinder><radius>0.30</radius><length>0.80</length></cylinder></geometry>
+      </collision>
+    </link>
+  </model>
+
+</world>
+</sdf>

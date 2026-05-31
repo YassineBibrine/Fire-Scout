@@ -1,0 +1,95 @@
+Panels:
+- Class: rviz_common/Displays
+  Name: Displays
+- Class: rviz_common/Views
+  Name: Views
+- Class: rviz_common/Selection
+  Name: Selection
+- Class: rviz_common/Tool Properties
+  Name: Tool Properties
+- Class: rviz_common/Time
+  Name: Time
+Visualization Manager:
+  Class: "rviz_default_plugins/VisualizationManager"
+  Global Options:
+    Fixed Frame: map
+  Displays:
+  - Class: rviz_default_plugins/Grid
+    Name: Grid
+    Enabled: true
+  - Class: rviz_default_plugins/Map
+    Name: Global Map
+    Enabled: true
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /map
+    Alpha: 0.8
+    Color Scheme: costmap
+    Draw Behind: true
+  - Class: rviz_default_plugins/Map
+    Name: Robot1 Map
+    Enabled: true
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /robot1/map
+    Alpha: 0.45
+    Color Scheme: map
+    Draw Behind: true
+  - Class: rviz_default_plugins/Map
+    Name: Robot2 Map
+    Enabled: true
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /robot2/map
+    Alpha: 0.45
+    Color Scheme: map
+    Draw Behind: true
+  - Class: rviz_default_plugins/Map
+    Name: Robot3 Map
+    Enabled: true
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /robot3/map
+    Alpha: 0.45
+    Color Scheme: map
+    Draw Behind: true
+  - Class: rviz_default_plugins/LaserScan
+    Name: Robot1 Scan
+    Enabled: true
+    Topic: /robot1/slam/scan
+    Size (m): 0.03
+  - Class: rviz_default_plugins/LaserScan
+    Name: Robot2 Scan
+    Enabled: true
+    Topic: /robot2/slam/scan
+    Size (m): 0.03
+  - Class: rviz_default_plugins/LaserScan
+    Name: Robot3 Scan
+    Enabled: true
+    Topic: /robot3/slam/scan
+    Size (m): 0.03
+  - Class: rviz_default_plugins/TF
+    Name: TF
+    Enabled: true
+    Show Names: true
+  Tools:
+  - Class: rviz_default_plugins/Interact
+  - Class: rviz_default_plugins/MoveCamera
+  - Class: rviz_default_plugins/Select
+  - Class: rviz_default_plugins/FocusCamera
+  - Class: rviz_default_plugins/Measure
+  - Class: rviz_default_plugins/SetInitialPose
+  - Class: rviz_default_plugins/SetGoal
+  - Class: rviz_default_plugins/PublishPoint

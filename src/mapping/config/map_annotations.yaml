@@ -1,0 +1,23 @@
+# Lightweight semantic map annotations for Phase 2 hybrid fire context.
+
+map_annotations:
+  frame_id: map
+  zones:
+    - id: primary_fire_zone
+      label: high_risk_fire_area
+      center_xy: [3.0, 2.0]
+      radius_m: 0.8
+      risk_level: 0.9
+      source: simulation/world_1.sdf fire_entity
+    - id: kitchen_fire_zone
+      label: high_risk_fire_area
+      center_xy: [4.02, 1.94]
+      radius_m: 0.8
+      risk_level: 0.75
+      source: simulation/world_1.sdf fire_2
+    - id: blocked_rescue_zone
+      label: rescue_access_constraint
+      center_xy: [2.0, -1.5]
+      radius_m: 1.2
+      risk_level: 0.6
+      source: simulation/world_1.sdf human_victim_3_blocked

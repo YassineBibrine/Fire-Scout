@@ -1,0 +1,3 @@
+response:
+  ros__parameters:
+    prioritize_human_over_fire: true

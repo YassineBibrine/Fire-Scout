@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    auction_timeout_sec: 30.0
+    task_type: 1

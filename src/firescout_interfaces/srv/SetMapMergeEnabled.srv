@@ -1,0 +1,6 @@
+# Enable/disable map merging
+bool enable
+string robot_id
+---
+bool success
+string message

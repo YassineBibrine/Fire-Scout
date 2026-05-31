@@ -1,0 +1,15 @@
+# Goal
+string human_id
+geometry_msgs/Pose human_location
+geometry_msgs/Pose rescue_point
+float32 estimated_duration
+---
+# Result
+bool success
+string message
+float32 rescue_time_seconds
+bool human_safe
+---
+# Feedback
+float32 progress
+string current_status

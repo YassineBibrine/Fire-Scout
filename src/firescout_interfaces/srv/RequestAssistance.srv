@@ -1,0 +1,8 @@
+# Request assistance from other robots
+string robot_id
+string assistance_type
+string details
+---
+bool assigned
+string assisting_robot
+string message
