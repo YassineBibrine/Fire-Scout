@@ -44,6 +44,7 @@ def generate_launch_description():
             name=f'static_tf_map_to_{robot_id}_map',
             output='screen',
             arguments=['0', '0', '0', '0', '0', '0', 'map', f'{robot_id}/map'],
+            parameters=[{'use_sim_time': use_sim_time}],
         )
         for robot_id in robot_ids
     ]

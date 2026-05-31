@@ -27,6 +27,7 @@ def generate_launch_description():
     rviz_config_out = LaunchConfiguration('rviz_config_out')
     launch_profile = LaunchConfiguration('launch_profile')
     model_path = LaunchConfiguration('model_path')
+    include_response = LaunchConfiguration('include_response')
 
     def _prepare_rviz_config(context, *args, **kwargs):
         source = rviz_config.perform(context)
@@ -117,6 +118,11 @@ def generate_launch_description():
         default_value='',
         description='YOLO model path required when launch_profile:=robot.',
     )
+    include_response_arg = DeclareLaunchArgument(
+        'include_response',
+        default_value='false',
+        description='Include response pipeline inside robot_stack when true.',
+    )
     global_stack = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -170,6 +176,8 @@ def generate_launch_description():
                 'use_sim_time': use_sim_time,
                 'world_name': world_name,
                 'include_response': 'false',
+                'launch_profile': launch_profile,
+                'model_path': model_path,
             }.items(),
         )
         hybrid_pipeline = IncludeLaunchDescription(
@@ -221,6 +229,7 @@ def generate_launch_description():
         rviz_config_out_arg,
         launch_profile_arg,
         model_path_arg,
+        include_response_arg,
         simulation_world,
         global_stack,
         *robot_groups,

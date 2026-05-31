@@ -23,7 +23,7 @@ def ros_context():
         '--ros-args',
         '-p', 'publish_rate_hz:=10.0',
         '-p', 'robot_ids:=[robot1]',
-        '-p', 'hybrid_silence_timeout_sec:=0.25',
+        '-p', 'hybrid_silence_timeout_sec:=0.20',
         '-p', 'monitored_topics:=[/robot1/fire_sensor_alert,/robot1/camera/image_raw]',
     ])
     time.sleep(0.5)
