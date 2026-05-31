@@ -1,0 +1,21 @@
+
+##Phase 2 Bringup: Hybrid pipeline launch + safety/health integration
+
+
+## Summary
+
+Added a per-robot hybrid pipeline launch with a launch_profile (sim/robot/debug).
+Integrated fusion decision liveness into system health and SAFE_STOP behavior.
+Extended cmd_vel safety to respect fusion risk_level and critical actions.    
+ ## Key Changes
+
+full_system.launch.py: added launch_profile and launched hybrid_pipeline.launch.py per robot.
+response/launch/hybrid_pipeline.launch.py: new launch for sensor gateway + camera inference (real vs mock) + fusion decision.
+health_monitor_node.py: fusion decision timeout → camera_sensor_timeout:<robot>.
+mission_manager_node.py: SAFE_STOP when all robots timeout.
+cmd_vel_safety_node.py: speed cap on high risk + passthrough for SUPPRESS/RESCUE.
+Added tests: risk-level safety + hybrid failover + launch profile check.
+Tests
+
+pytest ...
+Skipped (ROS 2 modules like rclpy/launch not available in this Windows environment).
