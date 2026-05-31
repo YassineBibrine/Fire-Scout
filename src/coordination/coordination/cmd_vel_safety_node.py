@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from importlib import import_module
 from typing import Iterable, Optional
 
 import rclpy
@@ -10,12 +11,20 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan
 
+FusionDecision = getattr(import_module('firescout_interfaces.msg'), 'FusionDecision')
+
 
 @dataclass(frozen=True)
 class SectorClearance:
     front: float
     left: float
     right: float
+
+
+@dataclass(frozen=True)
+class FusionDecisionSnapshot:
+    risk_level: float
+    recommended_action: str
 
 
 def _finite_min(values: Iterable[float], default: float) -> float:
@@ -91,6 +100,41 @@ def limit_twist_for_obstacles(
     return safe
 
 
+def should_bypass_obstacle_safety(decision: Optional[FusionDecisionSnapshot]) -> bool:
+    if decision is None:
+        return False
+    return decision.recommended_action in {'SUPPRESS', 'RESCUE'}
+
+
+def apply_risk_speed_limit(
+    command: Twist,
+    decision: Optional[FusionDecisionSnapshot],
+    risk_threshold: float,
+    max_linear_speed: float,
+) -> Twist:
+    safe = Twist()
+    safe.linear.x = command.linear.x
+    safe.linear.y = command.linear.y
+    safe.linear.z = command.linear.z
+    safe.angular.x = command.angular.x
+    safe.angular.y = command.angular.y
+    safe.angular.z = command.angular.z
+
+    if decision is None:
+        return safe
+
+    if decision.risk_level <= risk_threshold:
+        return safe
+
+    limit = max(float(max_linear_speed), 0.0)
+    if limit == 0.0:
+        safe.linear.x = 0.0
+        return safe
+
+    safe.linear.x = max(-limit, min(limit, safe.linear.x))
+    return safe
+
+
 class CmdVelSafetyNode(Node):
     """Filter commanded velocity with a local lidar-based obstacle reflex."""
 
@@ -103,6 +147,8 @@ class CmdVelSafetyNode(Node):
         self.declare_parameter('slow_distance_m', 1.1)
         self.declare_parameter('avoidance_turn_speed', 1.15)
         self.declare_parameter('escape_reverse_speed', 0.12)
+        self.declare_parameter('risk_level_threshold', 0.8)
+        self.declare_parameter('high_risk_max_linear_speed', 0.1)
 
         self._robot_id = str(self.get_parameter('robot_id').value)
         self._front_angle_rad = math.radians(float(self.get_parameter('front_angle_deg').value))
@@ -110,8 +156,14 @@ class CmdVelSafetyNode(Node):
         self._slow_distance_m = max(float(self.get_parameter('slow_distance_m').value), self._stop_distance_m)
         self._avoidance_turn_speed = max(float(self.get_parameter('avoidance_turn_speed').value), 0.0)
         self._escape_reverse_speed = max(float(self.get_parameter('escape_reverse_speed').value), 0.0)
+        self._risk_level_threshold = float(self.get_parameter('risk_level_threshold').value)
+        self._high_risk_max_linear_speed = max(
+            float(self.get_parameter('high_risk_max_linear_speed').value),
+            0.0,
+        )
 
         self._latest_clearance: Optional[SectorClearance] = None
+        self._latest_decision: Optional[FusionDecisionSnapshot] = None
         self._safe_pub = self.create_publisher(Twist, f'/{self._robot_id}/cmd_vel_safe', 10)
         self.create_subscription(Twist, f'/{self._robot_id}/cmd_vel', self._cmd_callback, 10)
         self.create_subscription(
@@ -119,6 +171,12 @@ class CmdVelSafetyNode(Node):
             f'/{self._robot_id}/scan',
             self._scan_callback,
             qos_profile_sensor_data,
+        )
+        self.create_subscription(
+            FusionDecision,
+            f'/{self._robot_id}/fusion_decision',
+            self._fusion_callback,
+            10,
         )
 
         self.get_logger().info(
@@ -129,7 +187,22 @@ class CmdVelSafetyNode(Node):
     def _scan_callback(self, msg: LaserScan) -> None:
         self._latest_clearance = scan_clearance(msg, self._front_angle_rad)
 
+    def _fusion_callback(self, msg: FusionDecision) -> None:
+        self._latest_decision = FusionDecisionSnapshot(
+            risk_level=float(msg.risk_level),
+            recommended_action=str(msg.recommended_action),
+        )
+
     def _cmd_callback(self, msg: Twist) -> None:
+        decision = self._latest_decision
+
+        # For critical actions (SUPPRESS/RESCUE), publish full passthrough —
+        # no obstacle slow-down and no risk speed cap.
+        if should_bypass_obstacle_safety(decision):
+            self._safe_pub.publish(msg)
+            return
+
+        # Normal path: apply obstacle avoidance first, then risk speed cap.
         safe = limit_twist_for_obstacles(
             msg,
             self._latest_clearance,
@@ -137,6 +210,12 @@ class CmdVelSafetyNode(Node):
             self._slow_distance_m,
             self._avoidance_turn_speed,
             self._escape_reverse_speed,
+        )
+        safe = apply_risk_speed_limit(
+            safe,
+            decision,
+            self._risk_level_threshold,
+            self._high_risk_max_linear_speed,
         )
         self._safe_pub.publish(safe)
 

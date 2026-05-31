@@ -25,6 +25,7 @@ def generate_launch_description():
     start_paused = LaunchConfiguration('start_paused')
     rviz_config = LaunchConfiguration('rviz_config')
     rviz_config_out = LaunchConfiguration('rviz_config_out')
+    launch_profile = LaunchConfiguration('launch_profile')
 
     def _prepare_rviz_config(context, *args, **kwargs):
         source = rviz_config.perform(context)
@@ -105,6 +106,11 @@ def generate_launch_description():
         default_value='/tmp/firescout_viz_runtime.rviz',
         description='Runtime RViz config path to ensure clean settings each launch.',
     )
+    launch_profile_arg = DeclareLaunchArgument(
+        'launch_profile',
+        default_value='sim',
+        description='Launch profile (sim, robot, debug) for hybrid pipeline nodes.',
+    )
     global_stack = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -135,6 +141,7 @@ def generate_launch_description():
     )
 
     robot_groups = []
+    hybrid_groups = []
     robot_specs = (
         ('robot1', '-2.0', '-2.0'),
         ('robot2', '0.0', '-2.0'),
@@ -158,10 +165,30 @@ def generate_launch_description():
                 'world_name': world_name,
             }.items(),
         )
+        hybrid_pipeline = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('response'),
+                    'launch',
+                    'hybrid_pipeline.launch.py',
+                ])
+            ),
+            launch_arguments={
+                'robot_id': robot_id,
+                'use_sim_time': use_sim_time,
+                'launch_profile': launch_profile,
+            }.items(),
+        )
         robot_groups.append(
             TimerAction(
                 period=8.0 + 4.0 * index,
                 actions=[robot_stack],
+            )
+        )
+        hybrid_groups.append(
+            TimerAction(
+                period=8.0 + 4.0 * index,
+                actions=[hybrid_pipeline],
             )
         )
 
@@ -184,9 +211,11 @@ def generate_launch_description():
         start_paused_arg,
         rviz_config_arg,
         rviz_config_out_arg,
+        launch_profile_arg,
         simulation_world,
         global_stack,
         *robot_groups,
+        *hybrid_groups,
         OpaqueFunction(function=_prepare_rviz_config),
         rviz_node,
     ])
