@@ -147,8 +147,8 @@ class CmdVelSafetyNode(Node):
         self.declare_parameter('slow_distance_m', 1.1)
         self.declare_parameter('avoidance_turn_speed', 1.15)
         self.declare_parameter('escape_reverse_speed', 0.12)
-    self.declare_parameter('risk_level_threshold', 0.8)
-    self.declare_parameter('high_risk_max_linear_speed', 0.1)
+        self.declare_parameter('risk_level_threshold', 0.8)
+        self.declare_parameter('high_risk_max_linear_speed', 0.1)
 
         self._robot_id = str(self.get_parameter('robot_id').value)
         self._front_angle_rad = math.radians(float(self.get_parameter('front_angle_deg').value))
@@ -195,18 +195,22 @@ class CmdVelSafetyNode(Node):
 
     def _cmd_callback(self, msg: Twist) -> None:
         decision = self._latest_decision
-        if should_bypass_obstacle_safety(decision):
-            safe = msg
-        else:
-            safe = limit_twist_for_obstacles(
-                msg,
-                self._latest_clearance,
-                self._stop_distance_m,
-                self._slow_distance_m,
-                self._avoidance_turn_speed,
-                self._escape_reverse_speed,
-            )
 
+        # For critical actions (SUPPRESS/RESCUE), publish full passthrough —
+        # no obstacle slow-down and no risk speed cap.
+        if should_bypass_obstacle_safety(decision):
+            self._safe_pub.publish(msg)
+            return
+
+        # Normal path: apply obstacle avoidance first, then risk speed cap.
+        safe = limit_twist_for_obstacles(
+            msg,
+            self._latest_clearance,
+            self._stop_distance_m,
+            self._slow_distance_m,
+            self._avoidance_turn_speed,
+            self._escape_reverse_speed,
+        )
         safe = apply_risk_speed_limit(
             safe,
             decision,

@@ -68,8 +68,8 @@ class HealthMonitorNode(Node):
         self.declare_parameter('robot_ids', ['robot1', 'robot2', 'robot3'])
         robot_ids = list(self.get_parameter('robot_ids').value)
         self.robots = [str(robot) for robot in robot_ids if str(robot)] or ['robot1', 'robot2', 'robot3']
-    self.last_heartbeat: Dict[str, Optional[Time]] = {robot: None for robot in self.robots}
-    self.last_fusion: Dict[str, Optional[Time]] = {robot: None for robot in self.robots}
+        self.last_heartbeat: Dict[str, Optional[Time]] = {robot: None for robot in self.robots}
+        self.last_fusion: Dict[str, Optional[Time]] = {robot: None for robot in self.robots}
         self.degraded_robots = set()
         self.start_time = self.get_clock().now()
 
@@ -140,8 +140,8 @@ class HealthMonitorNode(Node):
     def publish_health_status(self):
 
         now = self.get_clock().now()
-    degraded = []
-    error_tokens: List[str] = []
+        degraded = []
+        error_tokens: List[str] = []
 
         for robot in self.robots:
             errors = evaluate_robot_timeout_errors(
@@ -167,7 +167,7 @@ class HealthMonitorNode(Node):
         status = NodeStatus()
         status.node_name = 'system_health'
         status.status = 'HEALTHY' if not degraded else 'DEGRADED'
-    status.error_message = ','.join(error_tokens)
+        status.error_message = ','.join(error_tokens)
         status.uptime_seconds = (
             (now - self.start_time).nanoseconds / 1e9
         )

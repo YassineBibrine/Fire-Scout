@@ -7,7 +7,6 @@ setup(
     name=package_name,
     version='0.0.0',
     packages=find_packages(exclude=['test']),
-    py_modules=['mock_camera_inference_node'],
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
@@ -30,7 +29,7 @@ setup(
             'dummy_frontier_pub = testing_tools.dummy_frontier_pub:main',
             'dummy_camera_pub = testing_tools.dummy_camera_pub:main',
             'namespace_lint_node = testing_tools.namespace_lint_node:main',
-            'mock_camera_inference_node = mock_camera_inference_node:main',
+            'mock_camera_inference_node = testing_tools.mock_camera_inference_node:main',
         ]
     },
 )
