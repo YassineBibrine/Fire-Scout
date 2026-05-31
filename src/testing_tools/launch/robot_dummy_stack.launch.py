@@ -50,6 +50,13 @@ def generate_launch_description():
         output='screen',
         parameters=[{'robot_id': robot_id, 'use_sim_time': use_sim_time}],
     )
+    dummy_esp32_sensor_pub = Node(
+        package='testing_tools',
+        executable='dummy_esp32_sensor_pub',
+        name='dummy_esp32_sensor_pub',
+        output='screen',
+        parameters=[{'robot_id': robot_id, 'use_sim_time': use_sim_time}],
+    )
 
     return LaunchDescription([
         robot_id_arg,
@@ -58,4 +65,5 @@ def generate_launch_description():
         dummy_odom_pub,
         dummy_heartbeat_pub,
         dummy_camera_pub,
+        dummy_esp32_sensor_pub,
     ])

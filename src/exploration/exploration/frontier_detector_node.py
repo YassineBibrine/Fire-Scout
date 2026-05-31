@@ -12,6 +12,12 @@ def main() -> None:
     OccupancyGrid = importlib.import_module('nav_msgs.msg').OccupancyGrid
     Odometry = importlib.import_module('nav_msgs.msg').Odometry
     Node = importlib.import_module('rclpy.node').Node
+    qos_module = importlib.import_module('rclpy.qos')
+    fusion_qos = qos_module.QoSProfile(
+        history=qos_module.HistoryPolicy.KEEP_LAST,
+        depth=5,
+        reliability=qos_module.ReliabilityPolicy.RELIABLE,
+    )
 
     msg_module = importlib.import_module('firescout_interfaces.msg')
     FusionDecision = msg_module.FusionDecision
@@ -34,7 +40,7 @@ def main() -> None:
                 FusionDecision,
                 f'/{self.robot_id}/fusion_decision',
                 self._on_fusion_decision,
-                10,
+                fusion_qos,
             )
             self.publisher = self.create_publisher(FrontierArray, '/coordination/frontiers', 10)
             self.timer = self.create_timer(1.0, self._publish_frontiers)

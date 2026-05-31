@@ -25,6 +25,7 @@ import rclpy
 from nav_msgs.msg import Odometry
 from rclpy.publisher import Publisher
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 # Resolve generated message types dynamically to avoid IDE false positives
 # when interface stubs are not available outside of the ROS environment.
@@ -117,15 +118,14 @@ class MockCameraInferenceNode(Node):
     def __init__(self) -> None:
         super().__init__('mock_camera_inference_node')
 
-        self.declare_parameter('robot_ids', ['robot1', 'robot2', 'robot3'])
+        self.declare_parameter('robot_id', 'robot1')
         self.declare_parameter('publish_rate_hz', 5.0)
         self.declare_parameter('confidence_jitter', 0.05)
         if not self.has_parameter('use_sim_time'):
             self.declare_parameter('use_sim_time', True)
 
-        robot_ids_value = self.get_parameter('robot_ids').value
-        robot_ids_param = robot_ids_value if isinstance(robot_ids_value, list) else []
-        self._robot_ids = [str(r) for r in robot_ids_param if r] or ['robot1', 'robot2', 'robot3']
+        robot_id = str(self.get_parameter('robot_id').value)
+        self._robot_ids = [robot_id] if robot_id else ['robot1']
 
         publish_rate_hz = max(float(self.get_parameter('publish_rate_hz').value), 0.5)
         self._confidence_jitter = float(self.get_parameter('confidence_jitter').value)
@@ -135,11 +135,16 @@ class MockCameraInferenceNode(Node):
 
         # Per-robot VisionDetectionArray publisher
         self._publishers: dict[str, Publisher[Any]] = {}
+        camera_detections_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+        )
         for robot_id in self._robot_ids:
             self._publishers[robot_id] = self.create_publisher(
                 VisionDetectionArray,
                 f'/{robot_id}/camera_detections',
-                10,
+                camera_detections_qos,
             )
             self.create_subscription(
                 Odometry,

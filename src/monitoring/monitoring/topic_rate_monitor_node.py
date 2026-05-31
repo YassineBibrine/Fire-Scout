@@ -9,6 +9,7 @@ from typing import Any, Callable, Deque, Dict, List, Tuple, cast
 import rclpy
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, LaserScan
 from std_msgs.msg import String
 
@@ -68,7 +69,10 @@ class TopicRateMonitorNode(Node):
         for topic in topics:
             msg_type = self._infer_msg_type(topic)
             callback = self._make_topic_callback(topic)
-            self._subscriptions.append(self.create_subscription(msg_type, topic, callback, 10))
+            qos = qos_profile_sensor_data if (
+                '/camera/' in topic or topic.endswith('/camera_detections')
+            ) else 10
+            self._subscriptions.append(self.create_subscription(msg_type, topic, callback, qos))
 
         # Evaluate all topic rates at 2 Hz (or configured value).
         self.create_timer(1.0 / self._check_rate_hz, self._check_all_topics)

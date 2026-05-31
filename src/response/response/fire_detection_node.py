@@ -1,7 +1,9 @@
 from importlib import import_module
+from typing import Any
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from geometry_msgs.msg import Pose
 
 FusionDecision = getattr(import_module('firescout_interfaces.msg'), 'FusionDecision')
@@ -56,11 +58,16 @@ class FireDetectionNode(Node):
             )
         else:
             # Production: subscribe to the fusion pipeline.
+            fusion_qos = QoSProfile(
+                history=HistoryPolicy.KEEP_LAST,
+                depth=5,
+                reliability=ReliabilityPolicy.RELIABLE,
+            )
             self._fusion_sub = self.create_subscription(
                 FusionDecision,
                 f'/{self.robot_id}/fusion_decision',
                 self._fusion_callback,
-                10,
+                fusion_qos,
             )
 
         self.get_logger().info(
@@ -72,7 +79,7 @@ class FireDetectionNode(Node):
     # Fusion-driven path (production)
     # ------------------------------------------------------------------
 
-    def _fusion_callback(self, msg: FusionDecision) -> None:
+    def _fusion_callback(self, msg: Any) -> None:
         if not msg.fire_confirmed:
             return
 
@@ -91,7 +98,7 @@ class FireDetectionNode(Node):
         detection.intensity = msg.risk_level
         detection.temperature = 0.0   # raw temperature not forwarded through fusion
         detection.flame_coordinates = []
-        detection.position = Pose()   # pose not propagated through FusionDecision
+        detection.position = msg.incident_position
         detection.detection_time = msg.timestamp
 
         self.publisher_.publish(detection)
@@ -145,4 +152,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-

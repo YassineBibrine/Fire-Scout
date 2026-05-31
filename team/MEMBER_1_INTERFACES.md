@@ -7,7 +7,7 @@
 
 ## Package: firescout_interfaces
 
-### Messages (16)
+### Messages (20)
 | Message | Description | Utilisé par |
 |---------|-------------|-------------|
 | RobotHealth | État de santé du robot | Monitoring, Coordination |
@@ -26,6 +26,10 @@
 | AuctionResult | Résultat d'enchère | Exploration |
 | ReferenceTrajectory | Trajectoire de référence | Navigation |
 | SensorData | Données capteur génériques | Response |
+| FireSensorAlert | Alerte capteur feu ESP32 | Response |
+| VisionDetectionArray | Résultats inference caméra | Response |
+| Detection | Détection caméra élémentaire | Response |
+| FusionDecision | Décision fusion capteur + vision | Response, Coordination, Exploration |
 
 ### Services (10)
 | Service | Description |
@@ -116,4 +120,3 @@ Hybrid target: Jetson + fire sensors + ROS 2 fusion.
 - [x] Document QoS policies: `fire_sensor_alert` and `fusion_decision` RELIABLE KEEP_LAST depth 5; `camera_detections` BEST_EFFORT sensor_data QoS.
 - [x] Add schema validation tests for hybrid messages and reject invalid ranges (NaN, out-of-range confidence, invalid namespace).
 - [x] Provide migration notes from Phase 1 interfaces to Phase 2 hybrid interfaces so all teams can upgrade without breaking runtime nodes.
-

@@ -22,3 +22,18 @@ def test_camera_timeout_emits_error_token():
     )
 
     assert 'camera_sensor_timeout:robot1' in errors
+
+
+def test_camera_timeout_is_suppressed_during_staggered_launch_grace_period():
+    errors = evaluate_robot_timeout_errors(
+        'robot3',
+        Time(seconds=10.0),
+        Time(seconds=9.5),
+        None,
+        heartbeat_timeout_sec=5.0,
+        fusion_timeout_sec=5.0,
+        startup_elapsed_sec=10.0,
+        startup_grace_sec=20.0,
+    )
+
+    assert 'camera_sensor_timeout:robot3' not in errors

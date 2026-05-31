@@ -31,24 +31,24 @@ Legend:
 | Member 4 (Exploration/Utils) | Normal | Deprioritize frontiers when risk_level > 0.7 | Done | 2026-05-15 |
 | Member 4 (Exploration/Utils) | Normal | Add weighted_confidence helper in common_utils | Done | 2026-05-15 |
 | Member 4 (Exploration/Utils) | Normal | Add tests: hazard_aware_frontier_scoring + weighted_confidence_util | Done | 2026-05-17 |
-| Member 5 (Response) | Hard | Implement sensor_gateway_node | Not Started | 2026-05-15 |
-| Member 5 (Response) | Hard | Implement camera_inference_node | Not Started | 2026-05-16 |
-| Member 5 (Response) | Hard | Implement fusion_decision_node | Not Started | 2026-05-17 |
-| Member 5 (Response) | Hard | Upgrade fire_detection_node to consume fusion_decision | Not Started | 2026-05-17 |
-| Member 5 (Response) | Hard | Add conflict resolution in rescue_planning_node | Not Started | 2026-05-18 |
-| Member 5 (Response) | Hard | Add tests for fusion and multi-incident priority | Not Started | 2026-05-19 |
-| Member 6 (Coordination/Bringup) | Hard | Add hybrid nodes per robot in full_system.launch.py | Not Started | 2026-05-15 |
-| Member 6 (Coordination/Bringup) | Hard | Add launch_profile sim/robot/debug behavior | Not Started | 2026-05-16 |
-| Member 6 (Coordination/Bringup) | Hard | Add fusion_decision liveness checks and degraded status | Not Started | 2026-05-17 |
-| Member 6 (Coordination/Bringup) | Hard | SAFE_STOP when all robots timed out | Not Started | 2026-05-18 |
-| Member 6 (Coordination/Bringup) | Hard | Extend cmd_vel_safety for risk_level and critical task passthrough | Not Started | 2026-05-19 |
-| Member 6 (Coordination/Bringup) | Hard | Add hybrid failover and launch profile tests | Not Started | 2026-05-20 |
+| Member 5 (Response) | Hard | Implement sensor_gateway_node | Done | 2026-05-15 |
+| Member 5 (Response) | Hard | Implement camera_inference_node | Done | 2026-05-16 |
+| Member 5 (Response) | Hard | Implement fusion_decision_node | Done | 2026-05-17 |
+| Member 5 (Response) | Hard | Upgrade fire_detection_node to consume fusion_decision | Done | 2026-05-17 |
+| Member 5 (Response) | Hard | Add conflict resolution in rescue_planning_node | Done | 2026-05-18 |
+| Member 5 (Response) | Hard | Add tests for fusion and multi-incident priority | Done | 2026-05-19 |
+| Member 6 (Coordination/Bringup) | Hard | Add hybrid nodes per robot in full_system.launch.py | Done | 2026-05-15 |
+| Member 6 (Coordination/Bringup) | Hard | Add launch_profile sim/robot/debug behavior | Done | 2026-05-16 |
+| Member 6 (Coordination/Bringup) | Hard | Add fusion_decision liveness checks and degraded status | Done | 2026-05-17 |
+| Member 6 (Coordination/Bringup) | Hard | SAFE_STOP when all robots timed out | Done | 2026-05-18 |
+| Member 6 (Coordination/Bringup) | Hard | Extend cmd_vel_safety for risk_level and bounded critical-task passthrough | Done | 2026-05-19 |
+| Member 6 (Coordination/Bringup) | Hard | Add hybrid failover and launch profile tests | Done | 2026-05-20 |
 
 ## Coordination Milestones
 
 | Milestone | Owner(s) | Status | Deadline |
 |---|---|---|---|
-| Phase 2 interface freeze | Member 1 + Member 6 | Not Started | 2026-05-12 |
-| Simulation scenario ready (fire + human + camera) | Member 2 | Not Started | 2026-05-16 |
-| Hybrid integration dry run | Members 2, 5, 6 | Not Started | 2026-05-19 |
-| Full Phase 2 system validation | All members | Not Started | 2026-05-22 |
+| Phase 2 interface freeze | Member 1 + Member 6 | Done | 2026-05-12 |
+| Simulation scenario ready (fire + human + camera) | Member 2 | Done | 2026-05-16 |
+| Hybrid integration dry run | Members 2, 5, 6 | Done | 2026-05-19 |
+| Full Phase 2 system validation | All members | In Progress | 2026-05-22 |

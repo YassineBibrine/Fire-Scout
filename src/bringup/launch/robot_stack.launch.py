@@ -15,6 +15,12 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     world_name = LaunchConfiguration('world_name')
     lidar_gz_topic = LaunchConfiguration('lidar_gz_topic')
+    include_response = LaunchConfiguration('include_response')
+    launch_profile = LaunchConfiguration('launch_profile')
+    model_path = LaunchConfiguration('model_path')
+    cmd_vel_safety_config = PathJoinSubstitution([
+        FindPackageShare('coordination'), 'config', 'cmd_vel_safety.yaml'
+    ])
 
     simulation_arg = DeclareLaunchArgument(
         'simulation',
@@ -50,6 +56,21 @@ def generate_launch_description():
         'lidar_gz_topic',
         default_value=PathJoinSubstitution(['/', robot_id, 'scan']),
         description='Gazebo LaserScan topic to bridge into /<robot_id>/scan.',
+    )
+    include_response_arg = DeclareLaunchArgument(
+        'include_response',
+        default_value='true',
+        description='Launch per-robot response pipeline from robot_stack.',
+    )
+    launch_profile_arg = DeclareLaunchArgument(
+        'launch_profile',
+        default_value='sim',
+        description='Hybrid response profile: sim, robot, or debug.',
+    )
+    model_path_arg = DeclareLaunchArgument(
+        'model_path',
+        default_value='',
+        description='YOLO model path required by the robot response profile.',
     )
 
     includes = [
@@ -105,6 +126,7 @@ def generate_launch_description():
             name=['cmd_vel_safety_', robot_id],
             output='screen',
             parameters=[
+                cmd_vel_safety_config,
                 {'robot_id': robot_id},
                 {'use_sim_time': use_sim_time},
             ],
@@ -127,12 +149,15 @@ def generate_launch_description():
                 PathJoinSubstitution([
                     FindPackageShare('response'),
                     'launch',
-                    'detection_robot.launch.py',
+                    'hybrid_pipeline.launch.py',
                 ])
             ),
+            condition=IfCondition(include_response),
             launch_arguments={
                 'robot_id': robot_id,
                 'use_sim_time': use_sim_time,
+                'launch_profile': launch_profile,
+                'model_path': model_path,
             }.items(),
         ),
     ]
@@ -145,5 +170,8 @@ def generate_launch_description():
         use_sim_time_arg,
         world_name_arg,
         lidar_gz_topic_arg,
+        include_response_arg,
+        launch_profile_arg,
+        model_path_arg,
         *includes,
     ])

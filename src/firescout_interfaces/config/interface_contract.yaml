@@ -114,12 +114,13 @@ messages:
     fields:
       robot_id: "string"
       fire_confirmed: "bool  true when 2-of-2 sources agree within 3 s"
-      human_confirmed: "bool  true when 2-of-2 sources agree within 3 s"
+      human_confirmed: "bool  true when camera vision confirms a human within freshness window"
       risk_level: "float32 [0.0-1.0]"
       recommended_action: "string  SUPPRESS | RESCUE | MONITOR | NONE"
       contributing_sources: "string[]"
       sensor_confidence: "float32 [0.0-1.0]"
       vision_confidence: "float32 [0.0-1.0]"
+      incident_position: "geometry_msgs/Pose  best estimated pose transformed into map frame"
       timestamp: "builtin_interfaces/Time"
 
 # ─── Service specifications ───────────────────────────────────────────────────

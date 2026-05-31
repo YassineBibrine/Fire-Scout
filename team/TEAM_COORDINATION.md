@@ -16,6 +16,7 @@
 - The interface contract is defined in `src/firescout_interfaces/config/interface_contract.yaml` and all msg/srv/action trees are present.
 - Simulation, mapping, monitoring, exploration, response, coordination, bringup, and testing_tools all have implemented launch/config/test surfaces in place.
 - `src/bringup/launch/full_system.launch.py` is the top-level orchestration entrypoint for the full stack.
+- `src/response/launch/hybrid_pipeline.launch.py` is the profile-aware per-robot hybrid response entrypoint used by full-system bringup.
 - `testing_tools` provides the dummy publishers and fault injection helpers used for integration runs.
 
 ## Single-Owner Artifacts
@@ -40,4 +41,5 @@
 ## Coverage Notes
 
 - Most packages have focused unit or launch tests already present.
-- Known gaps: `monitoring` does not have a dedicated exporter test file, `response` does not have a dedicated planning-node test file, and `bringup` does not include a namespace-isolation test file.
+- Monitoring has exporter coverage, response has hybrid pipeline and bridge coverage, and bringup has profile wiring coverage.
+- Remaining gap: response planning nodes still do not have dedicated runtime integration tests.

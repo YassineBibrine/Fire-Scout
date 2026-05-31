@@ -1,4 +1,5 @@
 from importlib import import_module
+from typing import Any
 
 import rclpy
 from rclpy.node import Node
@@ -84,7 +85,7 @@ class SuppressionPlanningNode(Node):
             f'SuppressionPlanningNode started for {self.robot_id}'
         )
 
-    def fire_detection_callback(self, detection: FireDetection) -> None:
+    def fire_detection_callback(self, detection: Any) -> None:
         # Secondary confidence gate (primary gate is inside FireDetectionNode)
         if detection.confidence <= 0.7:
             return
@@ -132,4 +133,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-

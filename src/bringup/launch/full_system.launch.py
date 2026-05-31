@@ -26,6 +26,7 @@ def generate_launch_description():
     rviz_config = LaunchConfiguration('rviz_config')
     rviz_config_out = LaunchConfiguration('rviz_config_out')
     launch_profile = LaunchConfiguration('launch_profile')
+    model_path = LaunchConfiguration('model_path')
 
     def _prepare_rviz_config(context, *args, **kwargs):
         source = rviz_config.perform(context)
@@ -111,6 +112,11 @@ def generate_launch_description():
         default_value='sim',
         description='Launch profile (sim, robot, debug) for hybrid pipeline nodes.',
     )
+    model_path_arg = DeclareLaunchArgument(
+        'model_path',
+        default_value='',
+        description='YOLO model path required when launch_profile:=robot.',
+    )
     global_stack = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -163,6 +169,7 @@ def generate_launch_description():
                 'spawn_y': spawn_y,
                 'use_sim_time': use_sim_time,
                 'world_name': world_name,
+                'include_response': 'false',
             }.items(),
         )
         hybrid_pipeline = IncludeLaunchDescription(
@@ -177,6 +184,7 @@ def generate_launch_description():
                 'robot_id': robot_id,
                 'use_sim_time': use_sim_time,
                 'launch_profile': launch_profile,
+                'model_path': model_path,
             }.items(),
         )
         robot_groups.append(
@@ -212,6 +220,7 @@ def generate_launch_description():
         rviz_config_arg,
         rviz_config_out_arg,
         launch_profile_arg,
+        model_path_arg,
         simulation_world,
         global_stack,
         *robot_groups,

@@ -37,8 +37,16 @@ def _load_launch_module(path: Path):
 
 def test_full_system_includes_hybrid_pipeline_with_profile():
     launch_path = Path(__file__).resolve().parents[1] / 'launch' / 'full_system.launch.py'
+    hybrid_launch_path = (
+        Path(__file__).resolve().parents[2]
+        / 'response'
+        / 'launch'
+        / 'hybrid_pipeline.launch.py'
+    )
     module = _load_launch_module(launch_path)
     description = module.generate_launch_description()
+
+    assert hybrid_launch_path.exists()
 
     hybrid_includes = []
     for include in _collect_includes(description.entities):
@@ -51,3 +59,21 @@ def test_full_system_includes_hybrid_pipeline_with_profile():
     for include in hybrid_includes:
         launch_arguments = dict(getattr(include, 'launch_arguments', []) or [])
         assert 'launch_profile' in launch_arguments
+
+
+def test_full_system_disables_robot_stack_response_to_avoid_duplicate_hybrid_nodes():
+    launch_path = Path(__file__).resolve().parents[1] / 'launch' / 'full_system.launch.py'
+    module = _load_launch_module(launch_path)
+    description = module.generate_launch_description()
+
+    robot_stack_includes = []
+    for include in _collect_includes(description.entities):
+        source = getattr(include, 'launch_description_source', None)
+        location = getattr(source, 'location', '') if source else ''
+        if 'robot_stack.launch.py' in str(location):
+            robot_stack_includes.append(include)
+
+    assert len(robot_stack_includes) >= 3
+    for include in robot_stack_includes:
+        launch_arguments = dict(getattr(include, 'launch_arguments', []) or [])
+        assert launch_arguments.get('include_response') == 'false'

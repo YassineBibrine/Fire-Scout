@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Set, cast
 import rclpy
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 
@@ -73,7 +74,7 @@ class MetricsExporterNode(Node):
                     Image,
                     f'/{robot_id}/camera/image_raw',
                     self._make_hybrid_seen_callback(self._last_camera_seen, robot_id),
-                    10,
+                    qos_profile_sensor_data,
                 )
             )
 

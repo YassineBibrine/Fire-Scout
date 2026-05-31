@@ -53,6 +53,7 @@ def generate_launch_description():
             camera_cfg,
             {'robot_id': robot_id},
             {'use_sim_time': use_sim_time},
+            {'allow_stub_inference': True},
         ],
         output='screen',
     )
@@ -119,4 +120,3 @@ def generate_launch_description():
         fire_detection,
         human_detection,
     ])
-

@@ -26,11 +26,11 @@ def _compute_risk(sensor_conf: float, vision_conf: float) -> float:
 
 
 def _recommended_action(fire_confirmed: bool, human_confirmed: bool) -> str:
-    if fire_confirmed:
-        return 'SUPPRESS'
     if human_confirmed:
         return 'RESCUE'
-    return 'MONITOR'
+    if fire_confirmed:
+        return 'SUPPRESS'
+    return 'NONE'
 
 
 # ---------------------------------------------------------------------------
@@ -98,13 +98,12 @@ def test_action_rescue_when_human():
     assert _recommended_action(fire_confirmed=False, human_confirmed=True) == 'RESCUE'
 
 
-def test_action_monitor_when_neither():
-    assert _recommended_action(fire_confirmed=False, human_confirmed=False) == 'MONITOR'
+def test_action_none_when_neither():
+    assert _recommended_action(fire_confirmed=False, human_confirmed=False) == 'NONE'
 
 
-def test_action_suppress_takes_precedence_over_rescue():
-    # fire_confirmed checked first in node logic
-    assert _recommended_action(fire_confirmed=True, human_confirmed=True) == 'SUPPRESS'
+def test_action_rescue_takes_precedence_over_suppress():
+    assert _recommended_action(fire_confirmed=True, human_confirmed=True) == 'RESCUE'
 
 
 # ---------------------------------------------------------------------------
@@ -141,4 +140,3 @@ def test_contributing_sources_include_sensor_and_camera():
     assert len(sources) == 2
     assert any('sensor' in s for s in sources)
     assert any('camera' in s for s in sources)
-

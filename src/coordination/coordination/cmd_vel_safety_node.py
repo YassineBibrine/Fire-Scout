@@ -3,12 +3,12 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from importlib import import_module
-from typing import Iterable, Optional
+from typing import Any, Iterable, Optional
 
 import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan
 
 FusionDecision = getattr(import_module('firescout_interfaces.msg'), 'FusionDecision')
@@ -100,10 +100,14 @@ def limit_twist_for_obstacles(
     return safe
 
 
-def should_bypass_obstacle_safety(decision: Optional[FusionDecisionSnapshot]) -> bool:
+def should_bypass_risk_speed_limit(decision: Optional[FusionDecisionSnapshot]) -> bool:
     if decision is None:
         return False
     return decision.recommended_action in {'SUPPRESS', 'RESCUE'}
+
+
+# Backward-compatible helper name retained for existing callers/tests.
+should_bypass_obstacle_safety = should_bypass_risk_speed_limit
 
 
 def apply_risk_speed_limit(
@@ -164,6 +168,11 @@ class CmdVelSafetyNode(Node):
 
         self._latest_clearance: Optional[SectorClearance] = None
         self._latest_decision: Optional[FusionDecisionSnapshot] = None
+        fusion_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
+            reliability=ReliabilityPolicy.RELIABLE,
+        )
         self._safe_pub = self.create_publisher(Twist, f'/{self._robot_id}/cmd_vel_safe', 10)
         self.create_subscription(Twist, f'/{self._robot_id}/cmd_vel', self._cmd_callback, 10)
         self.create_subscription(
@@ -176,7 +185,7 @@ class CmdVelSafetyNode(Node):
             FusionDecision,
             f'/{self._robot_id}/fusion_decision',
             self._fusion_callback,
-            10,
+            fusion_qos,
         )
 
         self.get_logger().info(
@@ -187,7 +196,7 @@ class CmdVelSafetyNode(Node):
     def _scan_callback(self, msg: LaserScan) -> None:
         self._latest_clearance = scan_clearance(msg, self._front_angle_rad)
 
-    def _fusion_callback(self, msg: FusionDecision) -> None:
+    def _fusion_callback(self, msg: Any) -> None:
         self._latest_decision = FusionDecisionSnapshot(
             risk_level=float(msg.risk_level),
             recommended_action=str(msg.recommended_action),
@@ -197,12 +206,7 @@ class CmdVelSafetyNode(Node):
         decision = self._latest_decision
 
         # For critical actions (SUPPRESS/RESCUE), publish full passthrough —
-        # no obstacle slow-down and no risk speed cap.
-        if should_bypass_obstacle_safety(decision):
-            self._safe_pub.publish(msg)
-            return
-
-        # Normal path: apply obstacle avoidance first, then risk speed cap.
+        # keep obstacle avoidance active but allow the task speed policy through.
         safe = limit_twist_for_obstacles(
             msg,
             self._latest_clearance,
@@ -211,12 +215,13 @@ class CmdVelSafetyNode(Node):
             self._avoidance_turn_speed,
             self._escape_reverse_speed,
         )
-        safe = apply_risk_speed_limit(
-            safe,
-            decision,
-            self._risk_level_threshold,
-            self._high_risk_max_linear_speed,
-        )
+        if not should_bypass_risk_speed_limit(decision):
+            safe = apply_risk_speed_limit(
+                safe,
+                decision,
+                self._risk_level_threshold,
+                self._high_risk_max_linear_speed,
+            )
         self._safe_pub.publish(safe)
 
 

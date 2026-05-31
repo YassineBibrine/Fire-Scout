@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 from std_msgs.msg import String
 
@@ -29,6 +30,8 @@ def evaluate_robot_timeout_errors(
     last_fusion: Optional[Time],
     heartbeat_timeout_sec: float,
     fusion_timeout_sec: float,
+    startup_elapsed_sec: float = float('inf'),
+    startup_grace_sec: float = 0.0,
 ) -> List[str]:
     errors = []
     heartbeat_elapsed = _elapsed_seconds(now, last_heartbeat)
@@ -36,7 +39,10 @@ def evaluate_robot_timeout_errors(
         errors.append(f'heartbeat_timeout:{robot_id}')
 
     fusion_elapsed = _elapsed_seconds(now, last_fusion)
-    if fusion_elapsed is None or fusion_elapsed > fusion_timeout_sec:
+    if (
+        startup_elapsed_sec > startup_grace_sec
+        and (fusion_elapsed is None or fusion_elapsed > fusion_timeout_sec)
+    ):
         errors.append(f'camera_sensor_timeout:{robot_id}')
 
     return errors
@@ -53,6 +59,7 @@ class HealthMonitorNode(Node):
             2.0
         )
         self.declare_parameter('fusion_timeout_sec', 5.0)
+        self.declare_parameter('startup_grace_sec', 20.0)
 
         if not self.has_parameter('use_sim_time'):
             self.declare_parameter(
@@ -64,6 +71,7 @@ class HealthMonitorNode(Node):
             'heartbeat_timeout_sec'
         ).value
         self.fusion_timeout_sec = float(self.get_parameter('fusion_timeout_sec').value)
+        self.startup_grace_sec = float(self.get_parameter('startup_grace_sec').value)
 
         self.declare_parameter('robot_ids', ['robot1', 'robot2', 'robot3'])
         robot_ids = list(self.get_parameter('robot_ids').value)
@@ -72,6 +80,11 @@ class HealthMonitorNode(Node):
         self.last_fusion: Dict[str, Optional[Time]] = {robot: None for robot in self.robots}
         self.degraded_robots = set()
         self.start_time = self.get_clock().now()
+        fusion_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
+            reliability=ReliabilityPolicy.RELIABLE,
+        )
 
         for robot in self.robots:
             self.create_subscription(
@@ -92,7 +105,7 @@ class HealthMonitorNode(Node):
                 FusionDecision,
                 f'/{robot}/fusion_decision',
                 self._make_fusion_callback(robot),
-                10
+                fusion_qos
             )
 
         self.publisher_ = self.create_publisher(
@@ -126,7 +139,7 @@ class HealthMonitorNode(Node):
 
     def _make_fusion_callback(self, robot_id: str):
 
-        def _callback(_msg: FusionDecision) -> None:
+        def _callback(_msg: Any) -> None:
             self.last_fusion[robot_id] = self.get_clock().now()
 
         return _callback
@@ -151,6 +164,8 @@ class HealthMonitorNode(Node):
                 self.last_fusion.get(robot),
                 float(self.heartbeat_timeout_sec),
                 float(self.fusion_timeout_sec),
+                startup_elapsed_sec=(now - self.start_time).nanoseconds / 1e9,
+                startup_grace_sec=float(self.startup_grace_sec),
             )
             if errors:
                 degraded.append(robot)

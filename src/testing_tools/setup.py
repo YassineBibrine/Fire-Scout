@@ -28,6 +28,7 @@ setup(
             'dummy_fault_injector = testing_tools.dummy_fault_injector:main',
             'dummy_frontier_pub = testing_tools.dummy_frontier_pub:main',
             'dummy_camera_pub = testing_tools.dummy_camera_pub:main',
+            'dummy_esp32_sensor_pub = testing_tools.dummy_esp32_sensor_pub:main',
             'namespace_lint_node = testing_tools.namespace_lint_node:main',
             'mock_camera_inference_node = testing_tools.mock_camera_inference_node:main',
         ]
