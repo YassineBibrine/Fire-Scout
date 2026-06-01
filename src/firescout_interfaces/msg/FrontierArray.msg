@@ -1,3 +1,3 @@
 Frontier[] frontiers
 string robot_id
-builtin_interfaces/Time stamp
+builtin_interfaces/Time timestamp

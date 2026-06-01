@@ -43,10 +43,13 @@ class TestMessageGeneration(unittest.TestCase):
         Frontier = getattr(module, 'Frontier')
         
         msg = Frontier()
+        self.assertTrue(hasattr(msg, 'frontier_id'))
+        self.assertTrue(hasattr(msg, 'robot_id'))
         self.assertTrue(hasattr(msg, 'centroid'))
-        self.assertTrue(hasattr(msg, 'size'))
-        self.assertTrue(hasattr(msg, 'cost'))
-        self.assertTrue(hasattr(msg, 'gain'))
+        self.assertTrue(hasattr(msg, 'area_m2'))
+        self.assertTrue(hasattr(msg, 'info_gain'))
+        self.assertTrue(hasattr(msg, 'travel_cost'))
+        self.assertTrue(hasattr(msg, 'reachable'))
 
 if __name__ == '__main__':
     unittest.main()

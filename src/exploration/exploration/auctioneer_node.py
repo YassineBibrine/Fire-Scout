@@ -20,7 +20,7 @@ def main() -> None:
         def __init__(self) -> None:
             super().__init__('auctioneer')
             self.declare_parameter('auction_timeout_sec', 1.0)
-            self.declare_parameter('bid_collection_sec', 1.0)
+            self.declare_parameter('bid_collection_sec', 0.3)
             self.declare_parameter('task_type', 1)
             self.bid_cache: DefaultDict[str, List[LogicalBid]] = defaultdict(list)
             self.first_bid_time = {}

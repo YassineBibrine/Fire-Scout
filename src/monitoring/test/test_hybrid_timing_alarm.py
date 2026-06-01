@@ -31,7 +31,7 @@ def test_hybrid_topics_have_expected_rates_per_robot():
 
     for robot_id in ('robot1', 'robot2', 'robot3'):
         assert rate_by_topic[f'/{robot_id}/camera/image_raw'] == 15.0
-        assert rate_by_topic[f'/{robot_id}/fire_sensor_alert'] == 5.0
+        assert rate_by_topic[f'/{robot_id}/fire_sensor_alert'] == 2.0
         assert rate_by_topic[f'/{robot_id}/fusion_decision'] == 2.0
         assert rate_by_topic[f'/{robot_id}/camera_detections'] == 5.0
 

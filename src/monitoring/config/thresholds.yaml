@@ -23,3 +23,17 @@
     # Keep exporter cadence explicit and centralized in thresholds config.
     publish_rate_hz: 1.0
     hybrid_silence_timeout_sec: 5.0
+    robot_ids:
+      - robot1
+      - robot2
+      - robot3
+
+metrics_exporter_node:
+  ros__parameters:
+    # Keep exporter cadence explicit and centralized in thresholds config.
+    publish_rate_hz: 1.0
+    hybrid_silence_timeout_sec: 5.0
+    robot_ids:
+      - robot1
+      - robot2
+      - robot3

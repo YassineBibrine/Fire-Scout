@@ -13,3 +13,35 @@ def test_frontier_output_filters_and_orders_frontiers():
     ranked = select_frontiers(frontiers, min_size=0.5, max_travel_cost=10.0)
 
     assert [frontier.frontier_id for frontier in ranked] == ['f3', 'f1']
+
+
+def test_frontier_output_centroid_coords_preserved():
+    frontiers = [
+        FrontierCandidate(
+            'f1',
+            'robot1',
+            area_m2=1.0,
+            info_gain=5.0,
+            travel_cost=2.0,
+            reachable=True,
+            centroid_x=1.25,
+            centroid_y=-3.5,
+        ),
+        FrontierCandidate(
+            'f2',
+            'robot1',
+            area_m2=1.0,
+            info_gain=4.0,
+            travel_cost=3.0,
+            reachable=True,
+            centroid_x=-2.0,
+            centroid_y=0.75,
+        ),
+    ]
+
+    ranked = select_frontiers(frontiers, min_size=0.5, max_travel_cost=10.0)
+
+    assert ranked[0].centroid_x == 1.25
+    assert ranked[0].centroid_y == -3.5
+    assert ranked[1].centroid_x == -2.0
+    assert ranked[1].centroid_y == 0.75

@@ -155,7 +155,7 @@ def main() -> None:
             msg.robot_id = self.robot_id
 
             now = self.get_clock().now().to_msg()
-            msg.stamp = now
+            msg.timestamp = now
 
             frontiers = []
             for candidate in selected:

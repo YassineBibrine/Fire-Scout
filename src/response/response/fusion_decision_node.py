@@ -204,23 +204,29 @@ class FusionDecisionNode(Node):
             action = 'RESCUE'
             out_vision_conf = float(best_human.confidence)
             incident_position = self._pose_to_map(best_human.estimated_pose)
+            if incident_position is None:
+                fire_confirmed = False
+                human_confirmed = False
+                risk = 0.0
+                action = 'NONE'
+                out_vision_conf = vision_conf
+                incident_position = Pose()
         elif fire_confirmed:
             best_fire = max(fire_dets, key=lambda d: d.confidence)
             risk = (sensor_conf + vision_conf) / 2.0
             action = 'SUPPRESS'
             out_vision_conf = vision_conf
             incident_position = self._pose_to_map(best_fire.estimated_pose)
+            if incident_position is None:
+                fire_confirmed = False
+                human_confirmed = False
+                risk = 0.0
+                action = 'NONE'
+                incident_position = Pose()
         else:
             risk = 0.0
             action = 'NONE'
             out_vision_conf = vision_conf
-
-        if incident_position is None:
-            fire_confirmed = False
-            human_confirmed = False
-            risk = 0.0
-            action = 'NONE'
-            incident_position = Pose()
 
         sources = []
         if sensor_fire and sensor is not None:
