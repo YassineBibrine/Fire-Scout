@@ -293,7 +293,8 @@ class TestFusionDecision(unittest.TestCase):
         obj = self.Msg()
         for field in ('robot_id', 'fire_confirmed', 'human_confirmed', 'risk_level',
                       'recommended_action', 'contributing_sources',
-                      'sensor_confidence', 'vision_confidence', 'timestamp'):
+                      'sensor_confidence', 'vision_confidence',
+                      'incident_position', 'timestamp'):
             self.assertTrue(hasattr(obj, field), f'FusionDecision missing field: {field}')
 
     def test_confirmed_flags_false_by_default(self):

@@ -12,6 +12,20 @@ MissionState = getattr(import_module('firescout_interfaces.msg'), 'MissionState'
 ReportFault = getattr(import_module('firescout_interfaces.srv'), 'ReportFault')
 
 
+def degraded_robot_ids(error_message, known_robots):
+    """Extract robot ids from plain ids or typed timeout tokens."""
+    known = set(known_robots)
+    degraded = set()
+    for token in str(error_message).split(','):
+        token = token.strip()
+        if not token:
+            continue
+        robot_id = token.rsplit(':', 1)[-1]
+        if robot_id in known:
+            degraded.add(robot_id)
+    return degraded
+
+
 class FaultSupervisorNode(Node):
 
     def __init__(self):
@@ -89,14 +103,7 @@ class FaultSupervisorNode(Node):
         if status.status != 'DEGRADED':
             return
 
-        degraded = []
-        if status.error_message:
-            degraded = [
-                robot.strip()
-                for robot in status.error_message.split(',')
-                if robot.strip()
-            ]
-        degraded_set = set(degraded)
+        degraded_set = degraded_robot_ids(status.error_message, self.robots)
 
         if degraded_set != self._last_degraded_set:
             self.get_logger().warning(
@@ -107,7 +114,7 @@ class FaultSupervisorNode(Node):
         active_robots = [
             robot
             for robot in self.robots
-            if robot not in degraded
+            if robot not in degraded_set
         ]
 
         mission_state = MissionState()

@@ -1,8 +1,13 @@
+import math
 from importlib import import_module
+from typing import Any, Optional
 
 import rclpy
+from geometry_msgs.msg import Pose
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
+from tf2_ros import Buffer, TransformListener
 
 FireSensorAlert = getattr(import_module('firescout_interfaces.msg'), 'FireSensorAlert')
 VisionDetectionArray = getattr(
@@ -41,6 +46,7 @@ class FusionDecisionNode(Node):
         self.declare_parameter('fire_sensor_threshold', 0.5)
         self.declare_parameter('vision_confidence_threshold', 0.4)
         self.declare_parameter('confirmed_cooldown_sec', 1.0)
+        self.declare_parameter('publish_rate_hz', 2.0)
         if not self.has_parameter('use_sim_time'):
             self.declare_parameter('use_sim_time', False)
 
@@ -57,28 +63,45 @@ class FusionDecisionNode(Node):
         self._cooldown_sec: float = (
             self.get_parameter('confirmed_cooldown_sec').value
         )
+        self._publish_rate_hz = max(
+            float(self.get_parameter('publish_rate_hz').value),
+            0.1,
+        )
 
-        self._latest_sensor: FireSensorAlert | None = None
-        self._latest_vision: VisionDetectionArray | None = None
+        self._latest_sensor: Optional[Any] = None
+        self._latest_vision: Optional[Any] = None
         self._last_confirmed: Time | None = None
+        self._tf_buffer = Buffer()
+        self._tf_listener = TransformListener(self._tf_buffer, self)
 
+        reliable_depth_5 = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
+            reliability=ReliabilityPolicy.RELIABLE,
+        )
+        camera_depth_1 = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+        )
         self._sensor_sub = self.create_subscription(
             FireSensorAlert,
             f'/{self.robot_id}/fire_sensor_alert',
             self._sensor_cb,
-            10,
+            reliable_depth_5,
         )
         self._vision_sub = self.create_subscription(
             VisionDetectionArray,
             f'/{self.robot_id}/camera_detections',
             self._vision_cb,
-            10,
+            camera_depth_1,
         )
         self._pub = self.create_publisher(
             FusionDecision,
             f'/{self.robot_id}/fusion_decision',
-            10,
+            reliable_depth_5,
         )
+        self.create_timer(1.0 / self._publish_rate_hz, self._publish_decision)
 
         self.get_logger().info(
             f'FusionDecisionNode started for {self.robot_id} '
@@ -90,109 +113,120 @@ class FusionDecisionNode(Node):
     # Subscription callbacks
     # ------------------------------------------------------------------
 
-    def _sensor_cb(self, msg: FireSensorAlert) -> None:
+    def _sensor_cb(self, msg: Any) -> None:
         self._latest_sensor = msg
-        self._try_fuse()
 
-    def _vision_cb(self, msg: VisionDetectionArray) -> None:
+    def _vision_cb(self, msg: Any) -> None:
         self._latest_vision = msg
-        self._try_fuse()
 
     # ------------------------------------------------------------------
     # Fusion logic
     # ------------------------------------------------------------------
 
-    def _try_fuse(self) -> None:
-        if self._latest_sensor is None or self._latest_vision is None:
-            return
-
+    def _publish_decision(self) -> None:
         now = self.get_clock().now()
+        sensor = self._latest_sensor
+        vision = self._latest_vision
 
-        # --- Staleness check -----------------------------------------
-        sensor_time = Time.from_msg(self._latest_sensor.timestamp)
-        vision_time = Time.from_msg(self._latest_vision.timestamp)
-
-        sensor_age = (now - sensor_time).nanoseconds / _NS_PER_SEC
-        vision_age = (now - vision_time).nanoseconds / _NS_PER_SEC
-        temporal_gap = abs(
-            (sensor_time - vision_time).nanoseconds
-        ) / _NS_PER_SEC
-
-        if sensor_age > self._window_sec:
-            self.get_logger().debug('Sensor data stale; skipping fusion.')
-            return
-        if vision_age > self._window_sec:
-            self.get_logger().debug('Vision data stale; skipping fusion.')
-            return
-        if temporal_gap > self._window_sec:
-            self.get_logger().debug(
-                f'Sensor/vision gap {temporal_gap:.1f}s > window; skipping.'
-            )
-            return
+        sensor_fresh = False
+        vision_fresh = False
+        temporal_gap_ok = False
+        sensor_time: Optional[Time] = None
+        vision_time: Optional[Time] = None
+        if sensor is not None:
+            sensor_time = Time.from_msg(sensor.timestamp)
+            sensor_age = (now - sensor_time).nanoseconds / _NS_PER_SEC
+            sensor_fresh = 0.0 <= sensor_age <= self._window_sec
+        if vision is not None:
+            vision_time = Time.from_msg(vision.timestamp)
+            vision_age = (now - vision_time).nanoseconds / _NS_PER_SEC
+            vision_fresh = 0.0 <= vision_age <= self._window_sec
+        if (
+            sensor_fresh
+            and vision_fresh
+            and sensor_time is not None
+            and vision_time is not None
+        ):
+            temporal_gap = abs(
+                (sensor_time - vision_time).nanoseconds
+            ) / _NS_PER_SEC
+            temporal_gap_ok = temporal_gap <= self._window_sec
 
         # --- Sensor evaluation ---------------------------------------
         sensor_fire = (
-            self._latest_sensor.flame_detected
-            or self._latest_sensor.normalized_risk >= self._sensor_thr
+            sensor_fresh
+            and sensor is not None
+            and (
+                sensor.flame_detected
+                or sensor.normalized_risk >= self._sensor_thr
+            )
         )
-        sensor_conf = self._latest_sensor.normalized_risk
+        sensor_conf = float(sensor.normalized_risk) if sensor_fresh and sensor else 0.0
 
         # --- Vision evaluation ---------------------------------------
         fire_dets = [
-            d for d in self._latest_vision.detections
+            d for d in vision.detections
             if d.class_label in ('fire', 'smoke')
             and d.confidence >= self._vision_thr
-        ]
+        ] if vision_fresh and vision else []
         human_dets = [
-            d for d in self._latest_vision.detections
+            d for d in vision.detections
             if d.class_label == 'human'
             and d.confidence >= self._vision_thr
-        ]
+        ] if vision_fresh and vision else []
         vision_fire = len(fire_dets) > 0
         vision_conf = max(
             (d.confidence for d in fire_dets), default=0.0
         )
 
         # --- 2-of-2 fire confirmation --------------------------------
-        fire_confirmed = sensor_fire and vision_fire
+        fire_confirmed = sensor_fire and vision_fire and temporal_gap_ok
 
         # --- Human confirmed by vision alone -------------------------
         human_confirmed = len(human_dets) > 0
 
-        if not fire_confirmed and not human_confirmed:
-            return
-
         # --- Duplicate suppression -----------------------------------
-        if self._last_confirmed is not None:
+        if (fire_confirmed or human_confirmed) and self._last_confirmed is not None:
             elapsed = (now - self._last_confirmed).nanoseconds / _NS_PER_SEC
             if elapsed < self._cooldown_sec:
-                self.get_logger().debug('Duplicate confirmation suppressed.')
-                return
-
-        self._last_confirmed = now
+                fire_confirmed = False
+                human_confirmed = False
+            else:
+                self._last_confirmed = now
+        elif fire_confirmed or human_confirmed:
+            self._last_confirmed = now
 
         # --- Build decision ------------------------------------------
-        if fire_confirmed:
+        incident_position = Pose()
+        if human_confirmed:
+            best_human = max(human_dets, key=lambda d: d.confidence)
+            risk = float(best_human.confidence) * 0.7
+            action = 'RESCUE'
+            out_vision_conf = float(best_human.confidence)
+            incident_position = self._pose_to_map(best_human.estimated_pose)
+        elif fire_confirmed:
+            best_fire = max(fire_dets, key=lambda d: d.confidence)
             risk = (sensor_conf + vision_conf) / 2.0
             action = 'SUPPRESS'
             out_vision_conf = vision_conf
-        elif human_confirmed:
-            best_human_conf = max(d.confidence for d in human_dets)
-            risk = best_human_conf * 0.7
-            action = 'RESCUE'
-            # vision_confidence carries human confidence so human_detection_node
-            # can apply its threshold correctly (vision_conf is fire-only = 0.0 here)
-            out_vision_conf = best_human_conf
+            incident_position = self._pose_to_map(best_fire.estimated_pose)
         else:
             risk = 0.0
-            action = 'MONITOR'
+            action = 'NONE'
             out_vision_conf = vision_conf
 
+        if incident_position is None:
+            fire_confirmed = False
+            human_confirmed = False
+            risk = 0.0
+            action = 'NONE'
+            incident_position = Pose()
+
         sources = []
-        if sensor_fire:
-            sources.append(f'sensor:{self._latest_sensor.source_id}')
-        if vision_fire or human_confirmed:
-            sources.append(f'camera:{self._latest_vision.camera_id}')
+        if sensor_fire and sensor is not None:
+            sources.append(f'sensor:{sensor.source_id}')
+        if (vision_fire or human_confirmed) and vision is not None:
+            sources.append(f'camera:{vision.camera_id}')
 
         decision = FusionDecision()
         decision.robot_id = self.robot_id
@@ -203,6 +237,7 @@ class FusionDecisionNode(Node):
         decision.contributing_sources = sources
         decision.sensor_confidence = float(sensor_conf)
         decision.vision_confidence = float(out_vision_conf)
+        decision.incident_position = incident_position
         decision.timestamp = now.to_msg()
 
         self._pub.publish(decision)
@@ -210,6 +245,41 @@ class FusionDecisionNode(Node):
             f'FusionDecision: fire={fire_confirmed} human={human_confirmed} '
             f'risk={risk:.2f} action={action}'
         )
+
+    def _pose_to_map(self, pose: Pose) -> Pose | None:
+        """Transform a robot-relative detection pose into the global map frame."""
+        try:
+            transform = self._tf_buffer.lookup_transform(
+                'map',
+                f'{self.robot_id}/base_link',
+                Time(),
+            )
+        except Exception as exc:
+            self.get_logger().warning(
+                f'Waiting for map TF before confirming incident position: {exc}'
+            )
+            return None
+
+        translation = transform.transform.translation
+        rotation = transform.transform.rotation
+        yaw = math.atan2(
+            2.0 * (rotation.w * rotation.z + rotation.x * rotation.y),
+            1.0 - 2.0 * (rotation.y * rotation.y + rotation.z * rotation.z),
+        )
+        transformed = Pose()
+        transformed.position.x = (
+            math.cos(yaw) * float(pose.position.x)
+            - math.sin(yaw) * float(pose.position.y)
+            + float(translation.x)
+        )
+        transformed.position.y = (
+            math.sin(yaw) * float(pose.position.x)
+            + math.cos(yaw) * float(pose.position.y)
+            + float(translation.y)
+        )
+        transformed.position.z = float(pose.position.z) + float(translation.z)
+        transformed.orientation = pose.orientation
+        return transformed
 
 
 def main(args=None):
@@ -226,4 +296,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-

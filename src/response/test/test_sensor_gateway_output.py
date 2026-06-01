@@ -6,6 +6,7 @@ they run cleanly in CI without a DDS / RMW installation.
 """
 
 from types import SimpleNamespace
+import math
 
 
 # ---------------------------------------------------------------------------
@@ -24,6 +25,8 @@ def _validate(sensor_type: str, data: list) -> bool:
     if len(data) < _MIN_DATA_LEN:
         return False
     smoke, gas = data[1], data[2]
+    if not all(math.isfinite(float(value)) for value in data[:4]):
+        return False
     if not (0.0 <= smoke <= 1.0 and 0.0 <= gas <= 1.0):
         return False
     return True
@@ -91,6 +94,10 @@ def test_gas_out_of_range_rejected():
     assert _validate('fire_sensor', [1.0, 0.5, -0.1, 100.0]) is False
 
 
+def test_nan_sensor_value_rejected():
+    assert _validate('fire_sensor', [1.0, float('nan'), 0.2, 100.0]) is False
+
+
 def test_flame_detected_true_when_above_threshold():
     alert = _build_alert('fire_sensor', [1.0, 0.0, 0.0, 25.0])
     assert alert.flame_detected is True
@@ -124,4 +131,3 @@ def test_source_id_preserved():
 def test_temperature_preserved():
     alert = _build_alert('fire_sensor', [0.0, 0.0, 0.0, 200.0])
     assert alert.temperature == 200.0
-

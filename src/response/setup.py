@@ -17,6 +17,7 @@ setup(
 
         ('share/' + package_name + '/launch',
             ['launch/detection_robot.launch.py',
+             'launch/hybrid_pipeline.launch.py',
              'launch/incident_global.launch.py']),
 
         ('share/' + package_name + '/config',

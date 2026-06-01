@@ -10,6 +10,7 @@ This node performs three responsibilities:
 The node does not implement SLAM; it only forwards data and reports health.
 """
 
+import copy
 from typing import Optional
 
 import rclpy
@@ -103,7 +104,6 @@ class SlamWrapperNode(Node):
         # 'robot1::base_link', or a full sensor-scoped frame. Normalize scans
         # to the robot-local lidar frame; slam_robot.launch.py publishes the
         # corresponding base_link -> lidar static transform.
-        import copy
         fixed_msg = copy.copy(msg)
         fixed_msg.header = copy.copy(msg.header)
         fixed_msg.header.stamp = now.to_msg()
@@ -113,16 +113,18 @@ class SlamWrapperNode(Node):
     def _odom_callback(self, msg: Odometry) -> None:
         """Relay odometry data for slam_toolbox odom input remapping."""
         now = self.get_clock().now()
+        fixed = copy.copy(msg)
+        fixed.header = copy.copy(msg.header)
         # Set correct frame_id for slam_toolbox (expects robotX/odom)
-        msg.header.frame_id = f'{self._robot_id}/odom'
-        msg.header.stamp = now.to_msg()
+        fixed.header.frame_id = f'{self._robot_id}/odom'
+        fixed.header.stamp = now.to_msg()
         # Also set child_frame_id for base_link
-        msg.child_frame_id = f'{self._robot_id}/base_link'
-        self._odom_relay_pub.publish(msg)
+        fixed.child_frame_id = f'{self._robot_id}/base_link'
+        self._odom_relay_pub.publish(fixed)
 
         transform = TransformStamped()
-        transform.header = msg.header
-        transform.child_frame_id = msg.child_frame_id
+        transform.header = fixed.header
+        transform.child_frame_id = fixed.child_frame_id
         transform.transform.translation.x = msg.pose.pose.position.x
         transform.transform.translation.y = msg.pose.pose.position.y
         transform.transform.translation.z = msg.pose.pose.position.z

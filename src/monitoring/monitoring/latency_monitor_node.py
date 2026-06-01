@@ -9,6 +9,7 @@ import rclpy
 from builtin_interfaces.msg import Time
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, LaserScan
 from std_msgs.msg import String
 
@@ -61,7 +62,10 @@ class LatencyMonitorNode(Node):
                 continue
 
             callback = self._make_latency_callback(topic)
-            self._subscriptions.append(self.create_subscription(msg_type, topic, callback, 10))
+            qos = qos_profile_sensor_data if (
+                '/camera/' in topic or topic.endswith('/camera_detections')
+            ) else 10
+            self._subscriptions.append(self.create_subscription(msg_type, topic, callback, qos))
 
         self.get_logger().info(
             f'LatencyMonitorNode started with {len(self._subscriptions)} header topics.'

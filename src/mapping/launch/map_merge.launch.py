@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -11,7 +11,9 @@ def generate_launch_description():
     robot_ids = ('robot1', 'robot2', 'robot3')
 
     # Config file for multirobot_map_merge behavior.
-    map_merge_params = [FindPackageShare('mapping'), '/config/map_merge.yaml']
+    map_merge_params = PathJoinSubstitution([
+        FindPackageShare('mapping'), 'config', 'map_merge.yaml'
+    ])
 
     # Custom map merge node that merges /robotX/map and publishes /map status.
     map_merge_node = Node(
@@ -19,7 +21,7 @@ def generate_launch_description():
         executable='map_merge_node',
         name='map_merge_node',
         output='screen',
-        parameters=[{'use_sim_time': use_sim_time}, {'robot_ids': list(robot_ids)}],
+        parameters=[map_merge_params, {'use_sim_time': use_sim_time}, {'robot_ids': list(robot_ids)}],
     )
 
 
@@ -42,6 +44,7 @@ def generate_launch_description():
             name=f'static_tf_map_to_{robot_id}_map',
             output='screen',
             arguments=['0', '0', '0', '0', '0', '0', 'map', f'{robot_id}/map'],
+            parameters=[{'use_sim_time': use_sim_time}],
         )
         for robot_id in robot_ids
     ]

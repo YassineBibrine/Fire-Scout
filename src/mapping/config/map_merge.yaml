@@ -19,3 +19,8 @@ multirobot_map_merge:
     discovery_rate: 0.5            # Rate (Hz) for scanning available robot map topics.
     have_merged_map_publisher: true  # Enable merged map publisher in this node.
     relaunch_on_loop_closure: false  # Keep merge process stable across SLAM loop closures.
+
+map_merge_node:
+  ros__parameters:
+    map_resolution: 0.05
+    merge_rate_hz: 1.0

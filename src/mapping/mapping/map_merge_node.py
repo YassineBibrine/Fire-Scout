@@ -17,7 +17,9 @@ from typing import Dict, List, Optional, Tuple, TypeGuard
 import rclpy
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node
+from rclpy.time import Time
 from std_msgs.msg import String
+from tf2_ros import Buffer, TransformListener
 
 
 class MapMergeNode(Node):
@@ -46,6 +48,8 @@ class MapMergeNode(Node):
 
         # Keep latest map per robot. Missing maps remain None until received.
         self._latest_maps: Dict[str, Optional[OccupancyGrid]] = {robot_id: None for robot_id in self._robot_ids}
+        self._tf_buffer = Buffer()
+        self._tf_listener = TransformListener(self._tf_buffer, self)
 
         # Subscribe to the canonical absolute per-robot map topics.
         for robot_id in self._robot_ids:
@@ -109,7 +113,12 @@ class MapMergeNode(Node):
 
         resolution = self._map_resolution
 
-        # Determine global bounds from each map's origin, size, and resolution.
+        map_transforms = {
+            id(source_map): self._lookup_global_transform(source_map)
+            for source_map in maps
+        }
+
+        # Determine global bounds from transformed map corners.
         min_x = math.inf
         min_y = math.inf
         max_x = -math.inf
@@ -122,10 +131,20 @@ class MapMergeNode(Node):
             width_m = float(m.info.width) * map_res
             height_m = float(m.info.height) * map_res
 
-            min_x = min(min_x, origin_x)
-            min_y = min(min_y, origin_y)
-            max_x = max(max_x, origin_x + width_m)
-            max_y = max(max_y, origin_y + height_m)
+            transform = map_transforms[id(m)]
+            corners = [
+                self._transform_xy(x, y, transform)
+                for x, y in (
+                    (origin_x, origin_y),
+                    (origin_x + width_m, origin_y),
+                    (origin_x, origin_y + height_m),
+                    (origin_x + width_m, origin_y + height_m),
+                )
+            ]
+            min_x = min(min_x, *(x for x, _ in corners))
+            min_y = min(min_y, *(y for _, y in corners))
+            max_x = max(max_x, *(x for x, _ in corners))
+            max_y = max(max_y, *(y for _, y in corners))
 
         if not all(math.isfinite(v) for v in [min_x, min_y, max_x, max_y]):
             return None
@@ -147,6 +166,7 @@ class MapMergeNode(Node):
                 merged_min_x=min_x,
                 merged_min_y=min_y,
                 merged_resolution=resolution,
+                transform=map_transforms[id(m)],
             )
 
         # Build outgoing OccupancyGrid message.
@@ -192,6 +212,7 @@ class MapMergeNode(Node):
         merged_min_x: float,
         merged_min_y: float,
         merged_resolution: float,
+        transform: Tuple[float, float, float] = (0.0, 0.0, 0.0),
     ) -> None:
         """Project source map cells into merged grid and combine occupancy values."""
         src_width = int(source_map.info.width)
@@ -212,8 +233,9 @@ class MapMergeNode(Node):
                     continue
 
                 # Convert source cell center to world coordinates.
-                wx = src_origin_x + (sx + 0.5) * src_res
-                wy = src_origin_y + (sy + 0.5) * src_res
+                local_x = src_origin_x + (sx + 0.5) * src_res
+                local_y = src_origin_y + (sy + 0.5) * src_res
+                wx, wy = self._transform_xy(local_x, local_y, transform)
 
                 # Convert world coordinates into merged grid indices.
                 mx = int((wx - merged_min_x) / merged_resolution)
@@ -233,6 +255,35 @@ class MapMergeNode(Node):
                     merged_data[merged_idx] = src_val
                 else:
                     merged_data[merged_idx] = max(current_val, src_val)
+
+    def _lookup_global_transform(self, source_map: OccupancyGrid) -> Tuple[float, float, float]:
+        """Return (x, y, yaw) for source map frame -> global map."""
+        source_frame = str(source_map.header.frame_id or 'map')
+        if source_frame == 'map':
+            return (0.0, 0.0, 0.0)
+        try:
+            transform = self._tf_buffer.lookup_transform('map', source_frame, Time())
+        except Exception as exc:
+            self.get_logger().warning(
+                f'Using identity alignment for {source_frame} until TF is available: {exc}'
+            )
+            return (0.0, 0.0, 0.0)
+
+        translation = transform.transform.translation
+        rotation = transform.transform.rotation
+        yaw = math.atan2(
+            2.0 * (rotation.w * rotation.z + rotation.x * rotation.y),
+            1.0 - 2.0 * (rotation.y * rotation.y + rotation.z * rotation.z),
+        )
+        return (float(translation.x), float(translation.y), yaw)
+
+    @staticmethod
+    def _transform_xy(x: float, y: float, transform: Tuple[float, float, float]) -> Tuple[float, float]:
+        tx, ty, yaw = transform
+        return (
+            math.cos(yaw) * x - math.sin(yaw) * y + tx,
+            math.sin(yaw) * x + math.cos(yaw) * y + ty,
+        )
 
 
 def main(args=None) -> None:

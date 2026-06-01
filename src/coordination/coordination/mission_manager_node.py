@@ -10,6 +10,23 @@ Incident = getattr(import_module('firescout_interfaces.msg'), 'Incident')
 NodeStatus = getattr(import_module('firescout_interfaces.msg'), 'NodeStatus')
 
 
+def _parse_error_tokens(error_message: str):
+    if not error_message:
+        return set()
+    return {token.strip() for token in error_message.split(',') if token.strip()}
+
+
+def camera_timeout_robots(robots, error_message: str):
+    tokens = _parse_error_tokens(error_message)
+    return {robot for robot in robots if f'camera_sensor_timeout:{robot}' in tokens}
+
+
+def should_enter_safe_stop(robots, error_message: str) -> bool:
+    if not robots:
+        return False
+    return len(camera_timeout_robots(robots, error_message)) == len(robots)
+
+
 class MissionManagerNode(Node):
 
     def __init__(self):
@@ -30,6 +47,7 @@ class MissionManagerNode(Node):
         self.last_incident_time = None
         self.last_incident = None
         self.degraded_override = False
+        self.safe_stop_override = False
 
         robot_ids = list(self.get_parameter('robot_ids').value)
         self.robots = [str(robot) for robot in robot_ids if str(robot)] or ['robot1', 'robot2', 'robot3']
@@ -88,10 +106,27 @@ class MissionManagerNode(Node):
 
         self.last_incident = incident
         self.last_incident_time = self.get_clock().now()
-        if not self.degraded_override:
+        if not self.degraded_override and not self.safe_stop_override:
             self.current_state = 'RESPONDING'
 
     def system_health_callback(self, status):
+
+        if should_enter_safe_stop(self.robots, status.error_message):
+            if not self.safe_stop_override:
+                self.get_logger().warning('All robots lost fusion decisions: SAFE_STOP engaged')
+            self.safe_stop_override = True
+            self.current_state = 'SAFE_STOP'
+            return
+
+        if self.safe_stop_override:
+            self.safe_stop_override = False
+            if status.status == 'DEGRADED':
+                self.degraded_override = True
+                self.current_state = 'DEGRADED'
+            else:
+                self.degraded_override = False
+                self.current_state = 'EXPLORING'
+            return
 
         if status.status == 'DEGRADED':
             self.degraded_override = True
@@ -105,6 +140,9 @@ class MissionManagerNode(Node):
     def publish_state(self):
 
         now = self.get_clock().now()
+
+        if self.safe_stop_override:
+            self.current_state = 'SAFE_STOP'
 
         if self.current_state == 'INIT':
             elapsed = (now - self.start_time).nanoseconds / 1e9

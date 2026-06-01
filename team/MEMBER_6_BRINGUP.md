@@ -64,11 +64,18 @@ Planned tasks (owner: Member 6)
 
 Hybrid target: production-grade orchestration for Jetson + sensors + ROS 2 fusion.
 
-- [ ] Add `sensor_gateway_node`, `camera_inference_node`, and `fusion_decision_node` per robot in `full_system.launch.py` (TimerAction 8s offset consistent with robots).
-- [ ] Add `launch_profile` arg in `full_system.launch.py` (`sim`, `robot`, `debug`) with sim using `mock_camera_inference_node` and robot using real inference node.
-- [ ] In `health_monitor_node.py`, track `/robotX/fusion_decision` liveness; emit NodeStatus DEGRADED when silent > 5s with error `camera_sensor_timeout:robotX`.
-- [ ] If all three robots are in `camera_sensor_timeout`, transition `mission_manager` to SAFE_STOP state.
-- [ ] Extend `cmd_vel_safety_node.py` to subscribe to `/robotX/fusion_decision` and reduce max_linear_speed to 0.1 when `risk_level > 0.8`.
-- [ ] Allow cmd_vel passthrough without obstacle slow-down when `recommended_action` is `SUPPRESS` or `RESCUE`.
-- [ ] Add tests: `test_hybrid_failover_camera_timeout.py`, `test_hybrid_failover_both_timeout.py`, `test_cmd_vel_safety_risk_level.py`, `test_full_launch_hybrid_sim_profile.py`.
+- [x] Add `sensor_gateway_node`, `camera_inference_node`, and `fusion_decision_node` per robot in `full_system.launch.py` (TimerAction 8s offset consistent with robots).
+- [x] Add `launch_profile` arg in `full_system.launch.py` (`sim`, `robot`, `debug`) with sim using `mock_camera_inference_node` and robot using real inference node.
+- [x] In `health_monitor_node.py`, track `/robotX/fusion_decision` liveness; emit NodeStatus DEGRADED when silent > 5s with error `camera_sensor_timeout:robotX`.
+- [x] If all three robots are in `camera_sensor_timeout`, transition `mission_manager` to SAFE_STOP state.
+- [x] Extend `cmd_vel_safety_node.py` to subscribe to `/robotX/fusion_decision` and reduce max_linear_speed to 0.1 when `risk_level > 0.8`.
+- [x] Allow critical-task speed policy passthrough when `recommended_action` is `SUPPRESS` or `RESCUE`, while keeping close-obstacle avoidance active.
+- [x] Add tests: `test_hybrid_failover_camera_timeout.py`, `test_hybrid_failover_both_timeout.py`, `test_cmd_vel_safety_risk_level.py`, `test_full_launch_hybrid_sim_profile.py`.
 
+Run profiles:
+
+```bash
+ros2 launch bringup full_system.launch.py launch_profile:=sim
+ros2 launch bringup full_system.launch.py launch_profile:=robot model_path:=/path/to/model.pt
+ros2 launch bringup full_system.launch.py launch_profile:=debug
+```

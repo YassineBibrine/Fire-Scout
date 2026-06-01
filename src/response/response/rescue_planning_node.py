@@ -1,4 +1,5 @@
 from importlib import import_module
+from typing import Any
 
 import rclpy
 from rclpy.node import Node
@@ -93,7 +94,7 @@ class RescuePlanningNode(Node):
             f'RescuePlanningNode started for {self.robot_id}'
         )
 
-    def human_detection_callback(self, detection: HumanDetection) -> None:
+    def human_detection_callback(self, detection: Any) -> None:
         # Accept if explicitly flagged or confidence exceeds threshold
         if not detection.needs_rescue and detection.confidence <= 0.6:
             return
@@ -141,4 +142,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-

@@ -1,5 +1,6 @@
 import pytest
 pytest.importorskip('nav_msgs.msg')
+import math
 
 from nav_msgs.msg import OccupancyGrid
 
@@ -23,3 +24,10 @@ def test_map_merge_accepts_nonempty_maps():
     msg.data = [0, -1, 50, 100]
 
     assert MapMergeNode._is_valid_map(msg)
+
+
+def test_map_merge_projects_points_through_translation_and_rotation():
+    x, y = MapMergeNode._transform_xy(1.0, 0.0, (2.0, 3.0, math.pi / 2.0))
+
+    assert x == pytest.approx(2.0)
+    assert y == pytest.approx(4.0)

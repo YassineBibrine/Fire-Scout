@@ -10,6 +10,7 @@
   <buildtool_depend>ament_python</buildtool_depend>
   <depend>firescout_interfaces</depend>
   <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>rclpy</depend>
   <depend>std_msgs</depend>

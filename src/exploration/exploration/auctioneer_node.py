@@ -20,8 +20,10 @@ def main() -> None:
         def __init__(self) -> None:
             super().__init__('auctioneer')
             self.declare_parameter('auction_timeout_sec', 1.0)
+            self.declare_parameter('bid_collection_sec', 1.0)
             self.declare_parameter('task_type', 1)
             self.bid_cache: DefaultDict[str, List[LogicalBid]] = defaultdict(list)
+            self.first_bid_time = {}
             self.subscription = self.create_subscription(
                 AuctionBid,
                 '/coordination/auction_bids',
@@ -32,6 +34,10 @@ def main() -> None:
             self.timer = self.create_timer(0.5, self._publish_results)
 
         def _on_bid(self, msg) -> None:
+            self.first_bid_time.setdefault(
+                msg.auction_id,
+                self.get_clock().now().nanoseconds / 1e9,
+            )
             self.bid_cache[msg.auction_id].append(
                 LogicalBid(
                     auction_id=msg.auction_id,
@@ -46,9 +52,15 @@ def main() -> None:
 
         def _publish_results(self) -> None:
             timeout_sec = float(self.get_parameter('auction_timeout_sec').value)
+            collection_sec = float(self.get_parameter('bid_collection_sec').value)
+            now_sec = self.get_clock().now().nanoseconds / 1e9
             for auction_id in list(self.bid_cache.keys()):
+                if now_sec - self.first_bid_time[auction_id] < collection_sec:
+                    continue
                 selection = select_winner(self.bid_cache[auction_id], timeout_sec)
                 if selection is None:
+                    del self.bid_cache[auction_id]
+                    del self.first_bid_time[auction_id]
                     continue
 
                 result = AuctionResult()
@@ -68,6 +80,7 @@ def main() -> None:
 
                 self.publisher.publish(result)
                 del self.bid_cache[auction_id]
+                del self.first_bid_time[auction_id]
 
     rclpy.init()
     node = AuctioneerNode()

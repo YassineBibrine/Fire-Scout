@@ -1,4 +1,5 @@
 from importlib import import_module
+from typing import Any
 
 import rclpy
 from rclpy.duration import Duration
@@ -57,7 +58,7 @@ class CoordinationBridgeNode(Node):
 
         self.get_logger().info('CoordinationBridgeNode started')
 
-    def _fire_cb(self, msg: Incident) -> None:
+    def _fire_cb(self, msg: Any) -> None:
         assignment = self._build_assignment(msg, _TASK_TYPE_FIRE, _FIRE_DEADLINE_SEC)
         self._pub.publish(assignment)
         self.get_logger().info(
@@ -65,7 +66,7 @@ class CoordinationBridgeNode(Node):
             f'incident={msg.incident_id} priority={msg.priority:.3f}'
         )
 
-    def _human_cb(self, msg: Incident) -> None:
+    def _human_cb(self, msg: Any) -> None:
         assignment = self._build_assignment(msg, _TASK_TYPE_HUMAN, _HUMAN_DEADLINE_SEC)
         self._pub.publish(assignment)
         self.get_logger().info(
@@ -73,7 +74,7 @@ class CoordinationBridgeNode(Node):
             f'incident={msg.incident_id} priority={msg.priority:.3f}'
         )
 
-    def _build_assignment(self, incident: Incident, task_type: str, deadline_sec: float) -> TaskAssignment:
+    def _build_assignment(self, incident: Any, task_type: str, deadline_sec: float) -> Any:
         now = self.get_clock().now()
         assignment = TaskAssignment()
         assignment.task_id = incident.incident_id

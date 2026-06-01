@@ -4,3 +4,4 @@ fusion_decision_node:
     fire_sensor_threshold: 0.5
     vision_confidence_threshold: 0.4
     confirmed_cooldown_sec: 1.0
+    publish_rate_hz: 2.0

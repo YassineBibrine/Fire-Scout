@@ -1,7 +1,9 @@
 from importlib import import_module
+from typing import Any
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from sensor_msgs.msg import Image
 
 VisionDetectionArray = getattr(
@@ -21,7 +23,7 @@ class CameraInferenceNode(Node):
 
     Parameters:
         robot_id              – robot namespace (default: robot1)
-        model_path            – path to inference model; empty = stub mode
+        model_path            – path to inference model; required outside debug stub mode
         confidence_threshold  – minimum per-detection confidence (default: 0.5)
     """
 
@@ -31,6 +33,7 @@ class CameraInferenceNode(Node):
         self.declare_parameter('robot_id', 'robot1')
         self.declare_parameter('model_path', '')
         self.declare_parameter('confidence_threshold', 0.5)
+        self.declare_parameter('allow_stub_inference', False)
         if not self.has_parameter('use_sim_time'):
             self.declare_parameter('use_sim_time', False)
 
@@ -39,20 +42,28 @@ class CameraInferenceNode(Node):
         self.confidence_threshold: float = (
             self.get_parameter('confidence_threshold').value
         )
+        self.allow_stub_inference = bool(
+            self.get_parameter('allow_stub_inference').value
+        )
 
         self._model = self._load_model()
 
+        camera_detections_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+        )
         self._sub = self.create_subscription(
             Image,
             f'/{self.robot_id}/camera/image_raw',
             self._image_callback,
-            10,
+            qos_profile_sensor_data,
         )
 
         self._pub = self.create_publisher(
             VisionDetectionArray,
             f'/{self.robot_id}/camera_detections',
-            10,
+            camera_detections_qos,
         )
 
         mode = 'stub' if self._model is None else 'model'
@@ -67,21 +78,29 @@ class CameraInferenceNode(Node):
 
     def _load_model(self):
         if not self.model_path:
-            self.get_logger().warn(
-                'model_path not set; running in stub/passthrough mode.'
+            if self.allow_stub_inference:
+                self.get_logger().warn(
+                    'model_path not set; debug stub inference is enabled.'
+                )
+                return None
+            raise RuntimeError(
+                'model_path is required unless allow_stub_inference=true'
             )
-            return None
         try:
-            # Placeholder: swap in your actual model loader here.
-            # e.g.: import torch; return torch.load(self.model_path)
+            yolo_class = getattr(import_module('ultralytics'), 'YOLO')
+            model = yolo_class(self.model_path)
             self.get_logger().info(f'Loaded model from {self.model_path}')
-            return None  # Replace with real model object
+            return model
         except Exception as exc:
-            self.get_logger().error(
-                f'Failed to load model from "{self.model_path}": {exc}. '
-                'Falling back to stub mode.'
-            )
-            return None
+            if self.allow_stub_inference:
+                self.get_logger().error(
+                    f'Failed to load model from "{self.model_path}": {exc}. '
+                    'Debug stub inference remains enabled.'
+                )
+                return None
+            raise RuntimeError(
+                f'Failed to load inference model "{self.model_path}": {exc}'
+            ) from exc
 
     # ------------------------------------------------------------------
     # Image callback
@@ -139,8 +158,44 @@ class CameraInferenceNode(Node):
         return detections
 
     def _model_inference(self, msg: Image):
-        """Replace with real model inference; must return list[Detection]."""
-        return []
+        """Run Ultralytics YOLO inference and return Fire-Scout detections."""
+        np = import_module('numpy')
+
+        channels = 3
+        expected_size = int(msg.width) * int(msg.height) * channels
+        if msg.encoding.lower() not in ('rgb8', 'bgr8') or len(msg.data) < expected_size:
+            self.get_logger().warning(
+                f'Unsupported image encoding/size: {msg.encoding} bytes={len(msg.data)}'
+            )
+            return []
+
+        frame = np.frombuffer(msg.data, dtype=np.uint8, count=expected_size)
+        frame = frame.reshape((int(msg.height), int(msg.width), channels))
+        if msg.encoding.lower() == 'rgb8':
+            frame = frame[:, :, ::-1]
+
+        detections = []
+        model: Any = self._model
+        for result in model.predict(
+            source=frame,
+            conf=self.confidence_threshold,
+            verbose=False,
+        ):
+            names = result.names
+            for box in result.boxes:
+                class_index = int(box.cls[0])
+                label = str(names[class_index]).lower()
+                if label not in ('fire', 'smoke', 'human', 'person'):
+                    continue
+                detection = Detection()
+                detection.class_label = 'human' if label == 'person' else label
+                detection.confidence = float(box.conf[0])
+                detection.bounding_box = [
+                    float(value) for value in box.xyxy[0].tolist()
+                ]
+                detection.estimated_pose.orientation.w = 1.0
+                detections.append(detection)
+        return detections
 
 
 def main(args=None):
@@ -157,4 +212,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-

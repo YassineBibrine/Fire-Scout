@@ -11,6 +11,14 @@ import rclpy
 MissionState = getattr(import_module('firescout_interfaces.msg'), 'MissionState')
 NodeStatus = getattr(import_module('firescout_interfaces.msg'), 'NodeStatus')
 from rclpy.node import Node
+from coordination.fault_supervisor_node import degraded_robot_ids
+
+
+def test_timeout_tokens_are_parsed_into_robot_ids():
+    assert degraded_robot_ids(
+        'heartbeat_timeout:robot2,camera_sensor_timeout:robot3',
+        ['robot1', 'robot2', 'robot3'],
+    ) == {'robot2', 'robot3'}
 
 
 @pytest.fixture(scope='function')

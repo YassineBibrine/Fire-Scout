@@ -1,7 +1,10 @@
 from importlib import import_module
+import math
+from typing import Any
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 SensorData = getattr(import_module('firescout_interfaces.msg'), 'SensorData')
 FireSensorAlert = getattr(import_module('firescout_interfaces.msg'), 'FireSensorAlert')
@@ -39,17 +42,22 @@ class SensorGatewayNode(Node):
 
         self.robot_id = self.get_parameter('robot_id').value
 
+        reliable_depth_5 = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
+            reliability=ReliabilityPolicy.RELIABLE,
+        )
         self._sub = self.create_subscription(
             SensorData,
             f'/{self.robot_id}/esp32/sensors',
             self._sensor_callback,
-            10,
+            reliable_depth_5,
         )
 
         self._pub = self.create_publisher(
             FireSensorAlert,
             f'/{self.robot_id}/fire_sensor_alert',
-            10,
+            reliable_depth_5,
         )
 
         self.get_logger().info(
@@ -60,7 +68,7 @@ class SensorGatewayNode(Node):
     # Subscription callback
     # ------------------------------------------------------------------
 
-    def _sensor_callback(self, msg: SensorData) -> None:
+    def _sensor_callback(self, msg: Any) -> None:
         if not self._validate(msg):
             self.get_logger().warn(
                 f'Rejected sensor message: type="{msg.sensor_type}" '
@@ -81,13 +89,17 @@ class SensorGatewayNode(Node):
     # Validation
     # ------------------------------------------------------------------
 
-    def _validate(self, msg: SensorData) -> bool:
+    def _validate(self, msg: Any) -> bool:
         if msg.sensor_type not in _VALID_SENSOR_TYPES:
             return False
         if len(msg.data) < _MIN_DATA_LEN:
             return False
         smoke = msg.data[_IDX_SMOKE]
         gas = msg.data[_IDX_GAS]
+        flame = msg.data[_IDX_FLAME]
+        temp = msg.data[_IDX_TEMP]
+        if not all(math.isfinite(float(value)) for value in (flame, smoke, gas, temp)):
+            return False
         # Smoke and gas must be normalised [0, 1]
         if not (0.0 <= smoke <= 1.0 and 0.0 <= gas <= 1.0):
             return False
@@ -97,7 +109,7 @@ class SensorGatewayNode(Node):
     # Alert construction
     # ------------------------------------------------------------------
 
-    def _build_alert(self, msg: SensorData) -> FireSensorAlert:
+    def _build_alert(self, msg: Any) -> Any:
         flame = float(msg.data[_IDX_FLAME]) > 0.5
         smoke = float(msg.data[_IDX_SMOKE])
         gas = float(msg.data[_IDX_GAS])
@@ -140,4 +152,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
