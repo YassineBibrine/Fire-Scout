@@ -48,6 +48,8 @@ class TaskExecutorNode(Node):
         self.declare_parameter('max_angular_speed', 1.25)
         self.declare_parameter('goal_tolerance_m', 0.25)
         self.declare_parameter('heading_tolerance_rad', 0.2)
+        self.declare_parameter('stuck_timeout_sec', 15.0)
+        self.declare_parameter('stuck_progress_threshold_m', 0.2)
         self.declare_parameter('allow_identity_map_to_odom_fallback', True)
         self.declare_parameter('tf_listener_spin_thread', True)
 
@@ -68,6 +70,9 @@ class TaskExecutorNode(Node):
 
         self._latest_odom: Dict[str, Optional[Odometry]] = {robot_id: None for robot_id in self._robot_ids}
         self._active_task: Dict[str, Optional[Any]] = {robot_id: None for robot_id in self._robot_ids}
+        self._task_start_time: Dict[str, float] = {}
+        self._task_start_distance: Dict[str, float] = {}
+        self._task_min_distance: Dict[str, float] = {}
         self._reported_identity_fallback = set()
         self._cmd_vel_publishers = {
             robot_id: self.create_publisher(Twist, f'/{robot_id}/cmd_vel', 10)
@@ -85,6 +90,7 @@ class TaskExecutorNode(Node):
             spin_thread=self._tf_listener_spin_thread,
         )
         self.create_timer(1.0 / self._control_rate_hz, self._control_loop)
+        self.create_timer(5.0, self._diagnostics_timer)
 
         self.get_logger().info(f'Task Executor Node started for robots: {", ".join(self._robot_ids)}')
 
@@ -113,6 +119,10 @@ class TaskExecutorNode(Node):
                 return
 
         self._active_task[robot_id] = msg
+        now_sec = self.get_clock().now().nanoseconds / 1e9
+        self._task_start_time[robot_id] = now_sec
+        self._task_min_distance.pop(robot_id, None)
+        self._task_start_distance.pop(robot_id, None)
         self.get_logger().info(
             f'Received task {msg.task_id} for {robot_id} -> '
             f'({msg.target_pose.position.x:.2f}, {msg.target_pose.position.y:.2f})'
@@ -145,13 +155,28 @@ class TaskExecutorNode(Node):
                 odom.pose.pose.orientation.w,
             )
 
+            if not (math.isfinite(current_x) and math.isfinite(current_y) and math.isfinite(current_yaw)):
+                self._cmd_vel_publishers[robot_id].publish(twist)
+                continue
+
             dx = float(goal.position.x) - current_x
             dy = float(goal.position.y) - current_y
+            if not (math.isfinite(dx) and math.isfinite(dy)):
+                self._cmd_vel_publishers[robot_id].publish(twist)
+                continue
             distance = math.hypot(dx, dy)
             heading_error = _normalize_angle(math.atan2(dy, dx) - current_yaw)
 
+            prev_min = self._task_min_distance.get(robot_id, distance)
+            self._task_min_distance[robot_id] = min(prev_min, distance)
+            if self._task_start_distance.get(robot_id) is None:
+                self._task_start_distance[robot_id] = distance
+
             if distance <= self._goal_tolerance_m:
                 self._active_task[robot_id] = None
+                self._task_start_time.pop(robot_id, None)
+                self._task_start_distance.pop(robot_id, None)
+                self._task_min_distance.pop(robot_id, None)
                 self._cmd_vel_publishers[robot_id].publish(twist)
                 self.get_logger().info(f'{robot_id} reached task {assignment.task_id}')
                 continue
@@ -168,6 +193,38 @@ class TaskExecutorNode(Node):
                 twist.angular.z *= 0.5
 
             self._cmd_vel_publishers[robot_id].publish(twist)
+
+    def _diagnostics_timer(self) -> None:
+        stuck_timeout = float(self.get_parameter('stuck_timeout_sec').value)
+        stuck_threshold = float(self.get_parameter('stuck_progress_threshold_m').value)
+        now_sec = self.get_clock().now().nanoseconds / 1e9
+        status_parts = []
+        for robot_id in self._robot_ids:
+            has_odom = self._latest_odom.get(robot_id) is not None
+            has_task = self._active_task.get(robot_id) is not None
+
+            if has_task and robot_id in self._task_start_time:
+                elapsed = now_sec - self._task_start_time[robot_id]
+                start_dist = self._task_start_distance.get(robot_id)
+                min_dist = self._task_min_distance.get(robot_id)
+                if elapsed > stuck_timeout and start_dist is not None and min_dist is not None:
+                    progress = start_dist - min_dist
+                    if progress < stuck_threshold:
+                        task = self._active_task[robot_id]
+                        self._active_task[robot_id] = None
+                        self._task_start_time.pop(robot_id, None)
+                        self._task_start_distance.pop(robot_id, None)
+                        self._task_min_distance.pop(robot_id, None)
+                        self.get_logger().warning(
+                            f'{robot_id} STUCK on task {task.task_id}: '
+                            f'start_dist={start_dist:.2f}m min_dist={min_dist:.2f}m '
+                            f'progress={progress:.2f}m after {elapsed:.0f}s — abandoning'
+                        )
+                        has_task = False
+
+            status_parts.append(f'{robot_id}(odom={"Y" if has_odom else "N"},task={"Y" if has_task else "N"})')
+        sep = ' | '
+        self.get_logger().info(f'Executor status: {sep.join(status_parts)}')
 
     def _transform_goal_to_odom(self, robot_id: str, target_pose: Pose) -> Optional[Pose]:
         target_frame = f'{robot_id}/odom'

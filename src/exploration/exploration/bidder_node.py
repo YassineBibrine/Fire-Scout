@@ -32,6 +32,7 @@ def main() -> None:
                 return
 
             now = self.get_clock().now().to_msg()
+            bid_count = 0
             for frontier in msg.frontiers:
                 if frontier.robot_id and frontier.robot_id != self.robot_id:
                     continue
@@ -53,6 +54,13 @@ def main() -> None:
                 bid.target_pose = frontier.centroid
                 bid.timestamp = now
                 self.publisher.publish(bid)
+                bid_count += 1
+
+            if bid_count > 0:
+                self.get_logger().info(
+                    f'Bidder: received {len(msg.frontiers)} frontiers from {msg.robot_id}, '
+                    f'placed {bid_count} bids'
+                )
 
     rclpy.init()
     node = BidderNode()

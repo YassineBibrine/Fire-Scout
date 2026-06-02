@@ -134,14 +134,14 @@ class MockCameraInferenceNode(Node):
         self._latest_odom: dict[str, Odometry | None] = {r: None for r in self._robot_ids}
 
         # Per-robot VisionDetectionArray publisher
-        self._publishers: dict[str, Publisher[Any]] = {}
+        self._detection_publishers: dict[str, Publisher[Any]] = {}
         camera_detections_qos = QoSProfile(
             history=HistoryPolicy.KEEP_LAST,
             depth=1,
             reliability=ReliabilityPolicy.BEST_EFFORT,
         )
         for robot_id in self._robot_ids:
-            self._publishers[robot_id] = self.create_publisher(
+            self._detection_publishers[robot_id] = self.create_publisher(
                 VisionDetectionArray,
                 f'/{robot_id}/camera_detections',
                 camera_detections_qos,
@@ -167,7 +167,7 @@ class MockCameraInferenceNode(Node):
     def _publish_all(self) -> None:
         for robot_id in self._robot_ids:
             msg = self._build_detection_array(robot_id)
-            self._publishers[robot_id].publish(msg)
+            self._detection_publishers[robot_id].publish(msg)
 
     def _build_detection_array(self, robot_id: str) -> Any:
         now = self.get_clock().now().to_msg()

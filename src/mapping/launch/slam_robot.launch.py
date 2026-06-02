@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, TimerAction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
@@ -109,6 +109,7 @@ def generate_launch_description():
                 parameters=[
                     {'use_sim_time': use_sim_time},
                     {'autostart': True},
+                    {'bond_timeout': 10.0},
                     {'node_names': [f'slam_toolbox_{robot_id_value}']},
                 ],
             )
@@ -147,5 +148,8 @@ def generate_launch_description():
         lidar_static_tf_node,
         camera_static_tf_node,
         lidar_demux_node,
-        OpaqueFunction(function=_launch_lifecycle_manager),
+        TimerAction(
+            period=3.0,
+            actions=[OpaqueFunction(function=_launch_lifecycle_manager)],
+        ),
     ])

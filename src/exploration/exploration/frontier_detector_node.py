@@ -28,7 +28,7 @@ def main() -> None:
         def __init__(self) -> None:
             super().__init__('frontier_detector')
             self.declare_parameter('robot_id', 'robot1')
-            self.declare_parameter('frontier_min_size', 0.5)
+            self.declare_parameter('frontier_min_size', 0.05)
             self.declare_parameter('frontier_max_travel_cost', 100.0)
             self.robot_id = str(self.get_parameter('robot_id').value)
             self._latest_map = None
@@ -54,29 +54,30 @@ def main() -> None:
         def _on_fusion_decision(self, msg) -> None:
             self._latest_fusion_decision = msg
 
+        def _bootstrap_frontiers(self) -> List[FrontierCandidate]:
+            import hashlib
+            import random
+            robot_seed = int(hashlib.md5(self.robot_id.encode()).hexdigest(), 16) % (2 ** 32)
+            random.seed(robot_seed)
+            return [
+                FrontierCandidate(
+                    frontier_id=f'{self.robot_id}_explore_{i}',
+                    robot_id=self.robot_id,
+                    area_m2=1.0,
+                    info_gain=10.0,
+                    travel_cost=5.0 * (i + 1),
+                    reachable=True,
+                    centroid_x=random.uniform(-5.0, 5.0),
+                    centroid_y=random.uniform(-5.0, 5.0),
+                )
+                for i in range(3)
+            ]
+
         def _extract_frontiers(self) -> List[FrontierCandidate]:
             if self._latest_map is None:
                 if not self._odom_seen:
                     return []
-                # Publish exploration targets to bootstrap mapping
-                # These targets encourage robots to explore and build maps
-                import hashlib
-                import random
-                robot_seed = int(hashlib.md5(self.robot_id.encode()).hexdigest(), 16) % (2 ** 32)
-                random.seed(robot_seed)
-                return [
-                    FrontierCandidate(
-                        frontier_id=f'{self.robot_id}_explore_{i}',
-                        robot_id=self.robot_id,
-                        area_m2=1.0,
-                        info_gain=10.0,
-                        travel_cost=5.0 * (i + 1),
-                        reachable=True,
-                        centroid_x=random.uniform(-5.0, 5.0),
-                        centroid_y=random.uniform(-5.0, 5.0),
-                    )
-                    for i in range(3)
-                ]
+                return self._bootstrap_frontiers()
 
             grid = self._latest_map
             width = int(grid.info.width)
@@ -141,16 +142,29 @@ def main() -> None:
                         )
                     )
 
+            # Fallback: if map exists but has no frontier cells (e.g. all unknown),
+            # use bootstrap targets so the robot starts moving and builds the map.
+            if not candidates and self._odom_seen:
+                return self._bootstrap_frontiers()
+
             return candidates
 
         def _publish_frontiers(self) -> None:
             min_size = float(self.get_parameter('frontier_min_size').value)
             max_travel_cost = float(self.get_parameter('frontier_max_travel_cost').value)
+            raw = self._extract_frontiers()
             selected = select_frontiers(
-                self._extract_frontiers(),
+                raw,
                 min_size,
                 max_travel_cost,
                 hazard_decision=self._latest_fusion_decision,
+            )
+
+            has_map = self._latest_map is not None
+            self.get_logger().info(
+                f'Frontiers: map={"Y" if has_map else "N"} '
+                f'odom={"Y" if self._odom_seen else "N"} '
+                f'raw={len(raw)} selected={len(selected)}'
             )
 
             msg = FrontierArray()

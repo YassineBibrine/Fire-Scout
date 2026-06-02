@@ -54,6 +54,7 @@ def main() -> None:
             timeout_sec = float(self.get_parameter('auction_timeout_sec').value)
             collection_sec = float(self.get_parameter('bid_collection_sec').value)
             now_sec = self.get_clock().now().nanoseconds / 1e9
+            results_published = 0
             for auction_id in list(self.bid_cache.keys()):
                 if now_sec - self.first_bid_time[auction_id] < collection_sec:
                     continue
@@ -78,9 +79,17 @@ def main() -> None:
                     pose.pose.orientation.w = 1.0
                     result.target_pose = pose
 
+                self.get_logger().info(
+                    f'Auction result: {auction_id} -> winner={selection.winner.robot_id} '
+                    f'task={selection.winner.candidate_frontier_id}'
+                )
                 self.publisher.publish(result)
+                results_published += 1
                 del self.bid_cache[auction_id]
                 del self.first_bid_time[auction_id]
+
+            if results_published > 0:
+                self.get_logger().info(f'Auctioneer: published {results_published} results')
 
     rclpy.init()
     node = AuctioneerNode()
