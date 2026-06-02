@@ -28,6 +28,14 @@ def _normalize_angle(angle: float) -> float:
     return angle
 
 
+def _task_priority(task_type: str) -> int:
+    if task_type == 'RESCUE':
+        return 2
+    if task_type == 'SUPPRESS':
+        return 1
+    return 0
+
+
 class TaskExecutorNode(Node):
     def __init__(self, **kwargs) -> None:
         super().__init__('task_executor_node', **kwargs)
@@ -91,6 +99,18 @@ class TaskExecutorNode(Node):
         if robot_id not in self._active_task:
             self.get_logger().warning(f'Ignoring task {msg.task_id} for unknown robot {robot_id}')
             return
+
+        active = self._active_task[robot_id]
+        if active is not None:
+            active_priority = _task_priority(str(active.task_type))
+            incoming_priority = _task_priority(str(msg.task_type))
+            if active_priority > incoming_priority:
+                self.get_logger().warning(
+                    f'Rejecting task {msg.task_id} (type={msg.task_type}, priority={incoming_priority}) '
+                    f'for {robot_id}: active task {active.task_id} (type={active.task_type}, '
+                    f'priority={active_priority}) has higher priority'
+                )
+                return
 
         self._active_task[robot_id] = msg
         self.get_logger().info(

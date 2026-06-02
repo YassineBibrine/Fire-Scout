@@ -507,7 +507,7 @@
 
   <model name="human_victim_2">
     <static>true</static>
-    <pose>-1.5 -3.0 0.0 0 0 0</pose>
+    <pose>-4.0497 -4.8122 0.0 0 0 0</pose>
     <link name="body">
       <visual name="body_visual">
         <pose>0 0 0.20 0 0 0</pose>
@@ -527,7 +527,7 @@
 
   <model name="human_victim_3_blocked">
     <static>true</static>
-    <pose>2.0 -1.5 0.0 0 0 0</pose>
+    <pose>3.5 -4.5 0.0 0 0 0</pose>
     <link name="body">
       <visual name="body_visual">
         <pose>0 0 0.45 0 0 0</pose>
@@ -547,7 +547,7 @@
 
   <model name="debris_left">
     <static>true</static>
-    <pose>2.0 -0.7 0.0 0 0 0</pose>
+    <pose>3.0 -5.0 0.0 0 0 0</pose>
     <link name="link">
       <collision name="c"><geometry><box><size>0.6 0.6 0.8</size></box></geometry></collision>
       <visual name="v">
@@ -560,7 +560,7 @@
 
   <model name="debris_right">
     <static>true</static>
-    <pose>2.0 -2.3 0.0 0 0 0</pose>
+    <pose>3.0 -6.0 0.0 0 0 0</pose>
     <link name="link">
       <collision name="c"><geometry><box><size>0.6 0.6 0.8</size></box></geometry></collision>
       <visual name="v">
@@ -620,13 +620,13 @@
   </model>
 
   <!--
-    PHASE 2 - FIRE 2  position (4.02, 1.94)
+    PHASE 2 - FIRE 2  position (4.02, 5.7862)
     Static, no physics. Ignition zone radius ~0.8 m.
     seed=42 ensures deterministic placement across runs.
   -->
   <model name="fire_2">
     <static>true</static>
-    <pose>4.02 1.94 0.0 0 0 0</pose>
+    <pose>4.02 5.7862 0.0 0 0 0</pose>
     <link name="fire_base">
       <visual name="base_vis">
         <pose>0 0 0.05 0 0 0</pose>
@@ -767,13 +767,13 @@
   </model>
 
   <!--
-    PHASE 2 - FIRE 5  position (-4.78, 0.06)
+    PHASE 2 - FIRE 5  position (-7.3638, 0.9669)
     Static, no physics. Ignition zone radius ~0.8 m.
     seed=42 ensures deterministic placement across runs.
   -->
   <model name="fire_5">
     <static>true</static>
-    <pose>-4.78 0.06 0.0 0 0 0</pose>
+    <pose>-7.3638 0.9669 0.0 0 0 0</pose>
     <link name="fire_base">
       <visual name="base_vis">
         <pose>0 0 0.05 0 0 0</pose>

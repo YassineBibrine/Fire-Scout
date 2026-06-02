@@ -1,5 +1,5 @@
 /**:
   ros__parameters:
-    auction_timeout_sec: 30.0
+    auction_timeout_sec: 60.0
     bid_collection_sec: 0.3
     task_type: 1

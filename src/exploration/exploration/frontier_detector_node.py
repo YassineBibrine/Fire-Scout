@@ -60,8 +60,10 @@ def main() -> None:
                     return []
                 # Publish exploration targets to bootstrap mapping
                 # These targets encourage robots to explore and build maps
+                import hashlib
                 import random
-                random.seed(self.robot_id)
+                robot_seed = int(hashlib.md5(self.robot_id.encode()).hexdigest(), 16) % (2 ** 32)
+                random.seed(robot_seed)
                 return [
                     FrontierCandidate(
                         frontier_id=f'{self.robot_id}_explore_{i}',

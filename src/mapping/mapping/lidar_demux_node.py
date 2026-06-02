@@ -12,7 +12,13 @@ from sensor_msgs.msg import LaserScan
 
 
 class LidarDemuxNode(Node):
-    """Routes shared lidar scans to robot-specific scan topics based on frame_id."""
+    """Routes shared lidar scans to robot-specific scan topics based on frame_id.
+
+    NOTE: This node is intended for hardware deployments only, where a single
+    global /lidar topic is published and must be demultiplexed per robot.
+    In simulation, per-robot scan bridging is handled by bridge_robot.launch.py
+    and this node must NOT be launched alongside it to avoid duplicate scan messages.
+    """
 
     def __init__(self) -> None:
         super().__init__("lidar_demux_node")

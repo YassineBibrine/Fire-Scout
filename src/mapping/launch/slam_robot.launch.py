@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -10,6 +11,7 @@ def generate_launch_description():
     # robot_id is required by policy and intentionally has no default.
     robot_id = LaunchConfiguration('robot_id')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    use_global_lidar = LaunchConfiguration('use_global_lidar')
 
     # Centralized slam_toolbox YAML shared by all robots.
     slam_params = PathJoinSubstitution([
@@ -56,7 +58,7 @@ def generate_launch_description():
         output='screen',
         parameters=[
             {'robot_id': robot_id, 'use_sim_time': use_sim_time},
-            {'use_global_lidar': False},
+            {'use_global_lidar': use_global_lidar},
         ],
     )
 
@@ -112,6 +114,19 @@ def generate_launch_description():
             )
         ]
 
+    lidar_demux_node = Node(
+        package='mapping',
+        executable='lidar_demux_node',
+        name=['lidar_demux_', robot_id],
+        output='screen',
+        condition=IfCondition(use_global_lidar),
+        parameters=[
+            {'robot_ids': [robot_id]},
+            {'use_sim_time': use_sim_time},
+            {'input_topic': '/lidar'},
+        ],
+    )
+
     return LaunchDescription([
         DeclareLaunchArgument(
             'robot_id',
@@ -122,9 +137,15 @@ def generate_launch_description():
             default_value='true',
             description='Use simulated clock time.',
         ),
+        DeclareLaunchArgument(
+            'use_global_lidar',
+            default_value='false',
+            description='Set true on hardware when a single /lidar topic is shared across robots.',
+        ),
         slam_toolbox_node,
         slam_wrapper_node,
         lidar_static_tf_node,
         camera_static_tf_node,
+        lidar_demux_node,
         OpaqueFunction(function=_launch_lifecycle_manager),
     ])
