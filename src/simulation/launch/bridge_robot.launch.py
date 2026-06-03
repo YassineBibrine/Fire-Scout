@@ -1,7 +1,7 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, LogInfo
+from launch.actions import DeclareLaunchArgument, GroupAction, LogInfo
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, TextSubstitution
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
 
 
 def generate_launch_description():
@@ -46,6 +46,7 @@ def generate_launch_description():
                 'bridges.odometry.ros_type_name': 'nav_msgs/msg/Odometry',
                 'bridges.odometry.gz_type_name': 'gz.msgs.Odometry',
                 'bridges.odometry.direction': 'GZ_TO_ROS',
+                'bridges.odometry.publish_tf': True,
             },
             {
                 'bridges.lidar.ros_topic_name': PathJoinSubstitution(['/', robot_id, 'scan']),
@@ -67,10 +68,22 @@ def generate_launch_description():
         ],
     )
 
+    odom_tf = GroupAction([
+        PushRosNamespace(robot_id),
+        Node(
+            package='simulation',
+            executable='odom_tf_publisher.py',
+            name='odom_tf_publisher',
+            output='screen',
+            parameters=[{'use_sim_time': True}],
+        ),
+    ])
+
     return LaunchDescription([
         robot_id_arg,
         world_name_arg,
         lidar_gz_topic_arg,
         info,
         bridge,
+        odom_tf,
     ])

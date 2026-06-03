@@ -4,29 +4,20 @@ pytest.importorskip('rclpy')
 
 import rclpy
 from rclpy.parameter import Parameter
-from geometry_msgs.msg import Pose
 
 from coordination.task_executor_node import TaskExecutorNode
 
 
-def test_task_executor_uses_identity_goal_before_slam_tf():
+def test_task_executor_creates_nav_clients():
     rclpy.init()
     node = TaskExecutorNode(parameter_overrides=[
-        Parameter('tf_listener_spin_thread', Parameter.Type.BOOL, False),
+        Parameter('robot_ids', Parameter.Type.STRING_ARRAY, ['robot1', 'robot2', 'robot3']),
     ])
 
     try:
-        target = Pose()
-        target.position.x = 1.25
-        target.position.y = -0.5
-        target.orientation.w = 1.0
-
-        goal = node._transform_goal_to_odom('robot1', target)
-
-        assert goal is not None
-        assert goal.position.x == pytest.approx(1.25)
-        assert goal.position.y == pytest.approx(-0.5)
-        assert goal.orientation.w == pytest.approx(1.0)
+        assert 'robot1' in node._nav_clients
+        assert 'robot2' in node._nav_clients
+        assert 'robot3' in node._nav_clients
     finally:
         node.destroy_node()
         if rclpy.ok():

@@ -120,6 +120,19 @@ def generate_launch_description():
                 'use_sim_time': use_sim_time,
             }.items(),
         ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('bringup'),
+                    'launch',
+                    'nav2_robot.launch.py',
+                ])
+            ),
+            launch_arguments={
+                'robot_id': robot_id,
+                'use_sim_time': use_sim_time,
+            }.items(),
+        ),
         Node(
             package='coordination',
             executable='cmd_vel_safety_node',

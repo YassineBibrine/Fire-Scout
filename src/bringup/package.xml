@@ -17,6 +17,11 @@
   <depend>monitoring</depend>
   <depend>testing_tools</depend>
   <depend>slam_toolbox</depend>
+  <depend>nav2_bringup</depend>
+  <depend>nav2_controller</depend>
+  <depend>nav2_planner</depend>
+  <depend>nav2_bt_navigator</depend>
+  <depend>nav2_lifecycle_manager</depend>
   <depend>nav2_core</depend>
   <depend>rclpy</depend>
   <exec_depend>ros2launch</exec_depend>
