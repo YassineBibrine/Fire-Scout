@@ -99,8 +99,8 @@ def test_slam_wrapper_restamps_relayed_scan_and_odom():
 
             odom = Odometry()
             odom.header.frame_id = 'odom'
-            odom.header.stamp.sec = 0
-            odom.header.stamp.nanosec = 0
+            odom.header.stamp.sec = 12345
+            odom.header.stamp.nanosec = 67890
             odom.child_frame_id = 'base_link'
             odom.pose.pose.orientation.w = 1.0
             odom_pub.publish(odom)
@@ -114,7 +114,8 @@ def test_slam_wrapper_restamps_relayed_scan_and_odom():
                 assert relayed_odom.header.frame_id == 'robot1/odom'
                 assert relayed_odom.child_frame_id == 'robot1/base_link'
                 assert relayed_scan.header.stamp.sec != 0 or relayed_scan.header.stamp.nanosec != 0
-                assert relayed_odom.header.stamp.sec != 0 or relayed_odom.header.stamp.nanosec != 0
+                assert relayed_odom.header.stamp.sec == 12345
+                assert relayed_odom.header.stamp.nanosec == 67890
                 return
 
         assert False, 'slam_wrapper_node did not relay restamped scan and odom messages'

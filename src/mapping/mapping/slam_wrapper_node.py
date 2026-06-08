@@ -112,13 +112,10 @@ class SlamWrapperNode(Node):
 
     def _odom_callback(self, msg: Odometry) -> None:
         """Relay odometry data for slam_toolbox odom input remapping."""
-        now = self.get_clock().now()
         fixed = copy.copy(msg)
         fixed.header = copy.copy(msg.header)
-        # Set correct frame_id for slam_toolbox (expects robotX/odom)
         fixed.header.frame_id = f'{self._robot_id}/odom'
-        fixed.header.stamp = now.to_msg()
-        # Also set child_frame_id for base_link
+        # Keep original stamp — slam_toolbox message filter requires TF and odom to share the same timestamp
         fixed.child_frame_id = f'{self._robot_id}/base_link'
         self._odom_relay_pub.publish(fixed)
 

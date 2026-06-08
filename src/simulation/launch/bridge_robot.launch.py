@@ -1,7 +1,7 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, LogInfo
+from launch.actions import DeclareLaunchArgument, LogInfo
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, TextSubstitution
-from launch_ros.actions import Node, PushRosNamespace
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -68,22 +68,10 @@ def generate_launch_description():
         ],
     )
 
-    odom_tf = GroupAction([
-        PushRosNamespace(robot_id),
-        Node(
-            package='simulation',
-            executable='odom_tf_publisher.py',
-            name='odom_tf_publisher',
-            output='screen',
-            parameters=[{'use_sim_time': True}],
-        ),
-    ])
-
     return LaunchDescription([
         robot_id_arg,
         world_name_arg,
         lidar_gz_topic_arg,
         info,
         bridge,
-        odom_tf,
     ])

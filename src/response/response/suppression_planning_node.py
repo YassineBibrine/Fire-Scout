@@ -86,10 +86,7 @@ class SuppressionPlanningNode(Node):
         )
 
     def fire_detection_callback(self, detection: Any) -> None:
-        # Secondary confidence gate (primary gate is inside FireDetectionNode)
-        if detection.confidence <= 0.7:
-            return
-
+        # Upstream FireDetectionNode already gates on fire_confidence_threshold; all arriving detections are pre-qualified.
         position = getattr(detection, 'position', None)
         if position is None:
             self.get_logger().warn(

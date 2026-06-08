@@ -21,8 +21,9 @@ setup(
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={'console_scripts': [
-        'slam_wrapper_node = mapping.slam_wrapper_node:main',
-        'lidar_demux_node  = mapping.lidar_demux_node:main',
-        'map_merge_node    = mapping.map_merge_node:main',
+        'slam_wrapper_node         = mapping.slam_wrapper_node:main',
+        'lidar_demux_node          = mapping.lidar_demux_node:main',
+        'map_merge_node            = mapping.map_merge_node:main',
+        'slam_lifecycle_controller = mapping.slam_lifecycle_controller:main',
     ]},
 )

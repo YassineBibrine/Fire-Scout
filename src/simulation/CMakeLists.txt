@@ -12,10 +12,6 @@ install(DIRECTORY worlds models launch
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(PROGRAMS simulation/odom_tf_publisher.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_bridge_topics test/test_bridge_topics.py)

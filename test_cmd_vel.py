@@ -8,7 +8,11 @@ import time
 class CmdVelTest(Node):
     def __init__(self):
         super().__init__('cmd_vel_test')
-        self.pub = self.create_publisher(Twist, '/robot1/cmd_vel', 10)
+        # NOTE: Full system bridges /robotX/cmd_vel_safe to Gazebo (not /cmd_vel).
+        # cmd_vel_safety_node reads /robotX/cmd_vel and outputs /robotX/cmd_vel_safe.
+        # This script publishes directly to cmd_vel_safe, bypassing the safety node.
+        # Use only for direct testing when cmd_vel_safety_node is not running.
+        self.pub = self.create_publisher(Twist, '/robot1/cmd_vel_safe', 10)
         self.timer = self.create_timer(0.1, self.publish_cmd)
 
     def publish_cmd(self):

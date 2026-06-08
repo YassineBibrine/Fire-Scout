@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, TimerAction
+from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
@@ -98,22 +98,17 @@ def generate_launch_description():
         parameters=[{'use_sim_time': use_sim_time}],
     )
 
-    def _launch_lifecycle_manager(context, *args, **kwargs):
-        robot_id_value = robot_id.perform(context)
-        return [
-            Node(
-                package='nav2_lifecycle_manager',
-                executable='lifecycle_manager',
-                name=f'slam_toolbox_manager_{robot_id_value}',
-                output='screen',
-                parameters=[
-                    {'use_sim_time': use_sim_time},
-                    {'autostart': True},
-                    {'bond_timeout': 10.0},
-                    {'node_names': [f'slam_toolbox_{robot_id_value}']},
-                ],
-            )
-        ]
+    slam_lifecycle_controller = Node(
+        package='mapping',
+        executable='slam_lifecycle_controller',
+        name=['slam_lifecycle_controller_', robot_id],
+        output='screen',
+        parameters=[
+            {'robot_id': robot_id},
+            {'use_sim_time': use_sim_time},
+            {'check_rate': 5.0},
+        ],
+    )
 
     lidar_demux_node = Node(
         package='mapping',
@@ -148,8 +143,5 @@ def generate_launch_description():
         lidar_static_tf_node,
         camera_static_tf_node,
         lidar_demux_node,
-        TimerAction(
-            period=3.0,
-            actions=[OpaqueFunction(function=_launch_lifecycle_manager)],
-        ),
+        slam_lifecycle_controller,
     ])

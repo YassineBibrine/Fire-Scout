@@ -31,6 +31,7 @@ def generate_launch_description():
             name='controller_server',
             output='screen',
             parameters=[nav2_params, {'use_sim_time': use_sim_time}],
+            arguments=['--ros-args', '--log-level', 'ERROR'],
         ),
         Node(
             package='nav2_planner',
