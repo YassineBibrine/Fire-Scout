@@ -120,7 +120,7 @@ def generate_launch_description():
     )
     include_response_arg = DeclareLaunchArgument(
         'include_response',
-        default_value='false',
+        default_value='true',
         description='Include response pipeline inside robot_stack when true.',
     )
     global_stack = IncludeLaunchDescription(

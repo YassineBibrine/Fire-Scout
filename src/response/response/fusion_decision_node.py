@@ -205,11 +205,10 @@ class FusionDecisionNode(Node):
             out_vision_conf = float(best_human.confidence)
             incident_position = self._pose_to_map(best_human.estimated_pose)
             if incident_position is None:
-                fire_confirmed = False
-                human_confirmed = False
-                risk = 0.0
-                action = 'NONE'
-                out_vision_conf = vision_conf
+                self.get_logger().error(
+                    f'TF map<-{self.robot_id}/base_link unavailable; '
+                    'publishing human_confirmed=True with zero incident_position'
+                )
                 incident_position = Pose()
         elif fire_confirmed:
             best_fire = max(fire_dets, key=lambda d: d.confidence)
@@ -218,10 +217,10 @@ class FusionDecisionNode(Node):
             out_vision_conf = vision_conf
             incident_position = self._pose_to_map(best_fire.estimated_pose)
             if incident_position is None:
-                fire_confirmed = False
-                human_confirmed = False
-                risk = 0.0
-                action = 'NONE'
+                self.get_logger().error(
+                    f'TF map<-{self.robot_id}/base_link unavailable; '
+                    'publishing fire_confirmed=True with zero incident_position'
+                )
                 incident_position = Pose()
         else:
             risk = 0.0

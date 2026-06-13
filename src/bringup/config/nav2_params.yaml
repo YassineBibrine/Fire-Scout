@@ -99,7 +99,7 @@ robot1:
             data_type: LaserScan
         inflation_layer:
           plugin: nav2_costmap_2d::InflationLayer
-          inflation_radius: 0.6
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
   planner_server:
     ros__parameters:
@@ -107,36 +107,31 @@ robot1:
       expected_planner_frequency: 1.0
       planner_plugins: ["GridBased"]
       GridBased:
-        plugin: nav2_navfn_planner::NavfnPlanner
-        tolerance: 0.5
-        use_astar: false
+        plugin: nav2_smac_planner::SmacPlanner2D
+        tolerance: 1.0
         allow_unknown: true
+        downsample_costmap: true
+        downsampling_factor: 2
+        max_iterations: -1
+        max_planning_time: 10.0
+        terminal_checking_interval: 1
+        motion_model_for_search: "2D"
   global_costmap:
     global_costmap:
       ros__parameters:
         use_sim_time: true
         global_frame: robot1/map
         robot_base_frame: robot1/base_link
-        update_frequency: 1.0
-        publish_frequency: 1.0
+        update_frequency: 0.5
+        publish_frequency: 0.5
         transform_tolerance: 1.0
         resolution: 0.05
-        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        plugins: ["static_layer", "inflation_layer"]
         static_layer:
           plugin: nav2_costmap_2d::StaticLayer
-        obstacle_layer:
-          plugin: nav2_costmap_2d::ObstacleLayer
-          enabled: true
-          observation_sources: scan
-          scan:
-            topic: /robot1/scan
-            max_obstacle_height: 2.0
-            clearing: true
-            marking: true
-            data_type: LaserScan
         inflation_layer:
           plugin: nav2_costmap_2d::InflationLayer
-          inflation_radius: 0.6
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
   bt_navigator:
     ros__parameters:
@@ -146,7 +141,7 @@ robot1:
       odom_topic: /robot1/odom
       bt_loop_duration: 10
       default_server_timeout: 20
-      default_nav_to_pose_bt_xml: /opt/ros/kilted/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml
+      default_nav_to_pose_bt_xml: /home/ismhh06/Documents/Fire_Scout/Fire-Scout/src/bringup/config/navigate_w_replanning_only_if_path_becomes_invalid.xml
 
 robot2:
   controller_server:
@@ -245,7 +240,7 @@ robot2:
             data_type: LaserScan
         inflation_layer:
           plugin: nav2_costmap_2d::InflationLayer
-          inflation_radius: 0.6
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
   planner_server:
     ros__parameters:
@@ -253,36 +248,31 @@ robot2:
       expected_planner_frequency: 1.0
       planner_plugins: ["GridBased"]
       GridBased:
-        plugin: nav2_navfn_planner::NavfnPlanner
-        tolerance: 0.5
-        use_astar: false
+        plugin: nav2_smac_planner::SmacPlanner2D
+        tolerance: 1.0
         allow_unknown: true
+        downsample_costmap: true
+        downsampling_factor: 2
+        max_iterations: -1
+        max_planning_time: 10.0
+        terminal_checking_interval: 1
+        motion_model_for_search: "2D"
   global_costmap:
     global_costmap:
       ros__parameters:
         use_sim_time: true
         global_frame: robot2/map
         robot_base_frame: robot2/base_link
-        update_frequency: 1.0
-        publish_frequency: 1.0
+        update_frequency: 0.5
+        publish_frequency: 0.5
         transform_tolerance: 1.0
         resolution: 0.05
-        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        plugins: ["static_layer", "inflation_layer"]
         static_layer:
           plugin: nav2_costmap_2d::StaticLayer
-        obstacle_layer:
-          plugin: nav2_costmap_2d::ObstacleLayer
-          enabled: true
-          observation_sources: scan
-          scan:
-            topic: /robot2/scan
-            max_obstacle_height: 2.0
-            clearing: true
-            marking: true
-            data_type: LaserScan
         inflation_layer:
           plugin: nav2_costmap_2d::InflationLayer
-          inflation_radius: 0.6
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
   bt_navigator:
     ros__parameters:
@@ -292,7 +282,7 @@ robot2:
       odom_topic: /robot2/odom
       bt_loop_duration: 10
       default_server_timeout: 20
-      default_nav_to_pose_bt_xml: /opt/ros/kilted/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml
+      default_nav_to_pose_bt_xml: /home/ismhh06/Documents/Fire_Scout/Fire-Scout/src/bringup/config/navigate_w_replanning_only_if_path_becomes_invalid.xml
 
 robot3:
   controller_server:
@@ -391,7 +381,7 @@ robot3:
             data_type: LaserScan
         inflation_layer:
           plugin: nav2_costmap_2d::InflationLayer
-          inflation_radius: 0.6
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
   planner_server:
     ros__parameters:
@@ -399,36 +389,31 @@ robot3:
       expected_planner_frequency: 1.0
       planner_plugins: ["GridBased"]
       GridBased:
-        plugin: nav2_navfn_planner::NavfnPlanner
-        tolerance: 0.5
-        use_astar: false
+        plugin: nav2_smac_planner::SmacPlanner2D
+        tolerance: 1.0
         allow_unknown: true
+        downsample_costmap: true
+        downsampling_factor: 2
+        max_iterations: -1
+        max_planning_time: 10.0
+        terminal_checking_interval: 1
+        motion_model_for_search: "2D"
   global_costmap:
     global_costmap:
       ros__parameters:
         use_sim_time: true
         global_frame: robot3/map
         robot_base_frame: robot3/base_link
-        update_frequency: 1.0
-        publish_frequency: 1.0
+        update_frequency: 0.5
+        publish_frequency: 0.5
         transform_tolerance: 1.0
         resolution: 0.05
-        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        plugins: ["static_layer", "inflation_layer"]
         static_layer:
           plugin: nav2_costmap_2d::StaticLayer
-        obstacle_layer:
-          plugin: nav2_costmap_2d::ObstacleLayer
-          enabled: true
-          observation_sources: scan
-          scan:
-            topic: /robot3/scan
-            max_obstacle_height: 2.0
-            clearing: true
-            marking: true
-            data_type: LaserScan
         inflation_layer:
           plugin: nav2_costmap_2d::InflationLayer
-          inflation_radius: 0.6
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
   bt_navigator:
     ros__parameters:
@@ -438,4 +423,4 @@ robot3:
       odom_topic: /robot3/odom
       bt_loop_duration: 10
       default_server_timeout: 20
-      default_nav_to_pose_bt_xml: /opt/ros/kilted/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml
+      default_nav_to_pose_bt_xml: /home/ismhh06/Documents/Fire_Scout/Fire-Scout/src/bringup/config/navigate_w_replanning_only_if_path_becomes_invalid.xml
