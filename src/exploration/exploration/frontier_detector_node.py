@@ -142,11 +142,6 @@ def main() -> None:
                         )
                     )
 
-            # Fallback: if map exists but has no frontier cells (e.g. all unknown),
-            # use bootstrap targets so the robot starts moving and builds the map.
-            if not candidates and self._odom_seen:
-                return self._bootstrap_frontiers()
-
             return candidates
 
         def _publish_frontiers(self) -> None:
@@ -159,6 +154,15 @@ def main() -> None:
                 max_travel_cost,
                 hazard_decision=self._latest_fusion_decision,
             )
+
+            if not selected and self._odom_seen:
+                raw = self._bootstrap_frontiers()
+                selected = select_frontiers(
+                    raw,
+                    min_size,
+                    max_travel_cost,
+                    hazard_decision=self._latest_fusion_decision,
+                )
 
             has_map = self._latest_map is not None
             self.get_logger().info(
