@@ -83,14 +83,13 @@ class FireDetectionNode(Node):
         if not msg.fire_confirmed:
             return
 
-        combined_confidence = (msg.sensor_confidence + msg.vision_confidence) / 2.0
-
-        if combined_confidence < self.threshold:
-            self.get_logger().debug(
-                f'Fusion confirmed fire but combined confidence '
-                f'{combined_confidence:.2f} < threshold {self.threshold}'
-            )
-            return
+        # FusionDecisionNode has already applied the 2-of-2 sensor+camera
+        # gate. Do not apply a second threshold here, or low-risk confirmed
+        # fires can be blocked before the suppression planner sees them.
+        combined_confidence = max(
+            float(msg.risk_level),
+            (msg.sensor_confidence + msg.vision_confidence) / 2.0,
+        )
 
         detection = FireDetection()
         detection.robot_name = self.robot_id

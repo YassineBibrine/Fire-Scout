@@ -2,7 +2,7 @@
 
 Verifies without a running Gazebo instance:
 - fire_entity model exists in world_1.sdf.
-- fire_entity is placed at the expected position (3.0, 2.0, 0).
+- fire_entity has a valid pose that can be edited in the SDF.
 - fire_entity is declared static (no physics interaction).
 - Human victim entities exist at their expected positions.
 - sim.launch.py exposes spawn_fire_entities and spawn_human_entities arguments.
@@ -68,8 +68,8 @@ def test_fire_entity_exists_in_world_sdf():
     )
 
 
-def test_fire_entity_at_correct_position():
-    """Verify fire_entity is placed at (3.0, 2.0, 0.0) ± 0.05 m."""
+def test_fire_entity_has_valid_pose():
+    """Verify fire_entity has an editable SDF pose."""
     root = _load_world_xml()
     fire = _find_model(root, 'fire_entity')
     assert fire is not None, 'fire_entity model missing from world_1.sdf'
@@ -78,8 +78,8 @@ def test_fire_entity_at_correct_position():
     assert pose is not None, 'fire_entity has no <pose> element'
 
     x, y, z = pose
-    assert abs(x - 3.0) < 0.05, f'fire_entity x={x:.3f} expected ~3.0'
-    assert abs(y - 2.0) < 0.05, f'fire_entity y={y:.3f} expected ~2.0'
+    assert -20.0 <= x <= 20.0, f'fire_entity x={x:.3f} is outside the world bounds'
+    assert -20.0 <= y <= 20.0, f'fire_entity y={y:.3f} is outside the world bounds'
     assert abs(z - 0.0) < 0.05, f'fire_entity z={z:.3f} expected ~0.0'
 
 
@@ -195,6 +195,37 @@ def test_sim_launch_has_spawn_human_entities_arg():
     assert 'spawn_human_entities' in source, (
         'sim.launch.py missing spawn_human_entities argument (Phase 2 requirement).'
     )
+
+
+def test_sim_launch_starts_fire_suppression_helper():
+    """Verify sim.launch.py starts the Gazebo fire suppression helper by default."""
+    launch_path = Path(__file__).resolve().parents[1] / 'launch' / 'sim.launch.py'
+    source = launch_path.read_text(encoding='utf-8')
+
+    assert 'enable_fire_suppression' in source
+    assert 'fire_suppression_sim_node.py' in source
+    assert "default_value='true'" in source
+
+
+def test_fire_suppression_helper_removes_gazebo_entities():
+    """Verify the helper reads SDF fire positions and calls Gazebo removal."""
+    helper_path = (
+        Path(__file__).resolve().parents[1]
+        / 'scripts'
+        / 'fire_suppression_sim_node.py'
+    )
+    source = helper_path.read_text(encoding='utf-8')
+
+    assert '/world/{world_name}/remove' in source
+    assert 'gz.msgs.Entity' in source
+    assert "self.declare_parameter('allow_any_robot_to_suppress', False)" in source
+    assert "self.declare_parameter('auto_suppress_on_detection_robot_ids', ['robot1'])" in source
+    assert "self.declare_parameter('auto_suppress_on_detection_model_names', ['fire_entity'])" in source
+    assert "self.declare_parameter('auto_suppress_when_close_model_names', ['fire_entity'])" in source
+    assert "self.declare_parameter('auto_suppress_when_close_radius_m', 5.0)" in source
+    assert "self.declare_parameter('world_sdf_path', '')" in source
+    assert 'ET.parse(world_path)' in source
+    assert 'fire_entity' in source
 
 
 def test_sim_launch_default_values_are_true():

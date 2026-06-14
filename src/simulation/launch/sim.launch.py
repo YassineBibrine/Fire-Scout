@@ -8,6 +8,7 @@ from launch.actions import (
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import os
 
@@ -16,6 +17,8 @@ def generate_launch_description():
     start_paused = LaunchConfiguration('start_paused')
     spawn_fire_entities = LaunchConfiguration('spawn_fire_entities')
     spawn_human_entities = LaunchConfiguration('spawn_human_entities')
+    enable_fire_suppression = LaunchConfiguration('enable_fire_suppression')
+    world_name = LaunchConfiguration('world_name')
 
     pkg_sim = get_package_share_directory('simulation')
 
@@ -69,6 +72,29 @@ def generate_launch_description():
             'Set false to disable for lightweight CI runs.'
         ),
     )
+    enable_fire_suppression_arg = DeclareLaunchArgument(
+        'enable_fire_suppression',
+        default_value='true',
+        description='Remove Gazebo fire entities when a robot reaches a fire incident.',
+    )
+    world_name_arg = DeclareLaunchArgument(
+        'world_name',
+        default_value='villa_world',
+        description='Gazebo world name used by simulation helper nodes.',
+    )
+
+    fire_suppression_node = Node(
+        package='simulation',
+        executable='fire_suppression_sim_node.py',
+        name='fire_suppression_sim_node',
+        output='screen',
+        condition=IfCondition(enable_fire_suppression),
+        parameters=[{
+            'world_name': world_name,
+            'robot_ids': ['robot1', 'robot2', 'robot3'],
+            'use_sim_time': True,
+        }],
+    )
 
     def _gazebo_args(context):
         paused = start_paused.perform(context).lower() in ('true', '1', 'yes')
@@ -100,10 +126,13 @@ def generate_launch_description():
         start_paused_arg,
         spawn_fire_entities_arg,
         spawn_human_entities_arg,
+        enable_fire_suppression_arg,
+        world_name_arg,
         set_gz_resource_path,
         set_gz_model_path,
         set_fastrtps_shm,
         OpaqueFunction(function=_gazebo_args),
+        fire_suppression_node,
     ])
 
 

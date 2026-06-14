@@ -8,16 +8,16 @@ from rclpy.parameter import Parameter
 from coordination.task_executor_node import TaskExecutorNode
 
 
-def test_task_executor_creates_nav_clients():
+def test_task_executor_creates_cmd_publishers():
     rclpy.init()
     node = TaskExecutorNode(parameter_overrides=[
         Parameter('robot_ids', Parameter.Type.STRING_ARRAY, ['robot1', 'robot2', 'robot3']),
     ])
 
     try:
-        assert 'robot1' in node._nav_clients
-        assert 'robot2' in node._nav_clients
-        assert 'robot3' in node._nav_clients
+        assert 'robot1' in node._cmd_pubs
+        assert 'robot2' in node._cmd_pubs
+        assert 'robot3' in node._cmd_pubs
     finally:
         node.destroy_node()
         if rclpy.ok():

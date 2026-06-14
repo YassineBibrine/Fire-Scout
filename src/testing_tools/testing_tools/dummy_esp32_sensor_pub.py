@@ -1,22 +1,60 @@
 """Publish deterministic ESP32-style fire sensor payloads for simulation."""
 
 import math
+import os
 from importlib import import_module
+import xml.etree.ElementTree as ET
 
+from ament_index_python.packages import get_package_share_directory
 import rclpy
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 
 SensorData = getattr(import_module('firescout_interfaces.msg'), 'SensorData')
 
-_FIRE_POSITIONS = (
+_FALLBACK_FIRE_POSITIONS = (
     (3.0, 2.0),
-    (2.37, -5.22),
-    (4.02, 1.94),
+    (4.02, 5.7862),
     (6.67, -4.54),
-    (-1.33, -5.17),
-    (-4.78, 0.06),
+    (-1.8508, -5.17),
+    (-7.3638, 0.9669),
+    (-8.05, -3.31),
+    (7.77, -1.80),
 )
+
+
+def _load_fire_positions_from_world() -> tuple[tuple[float, float], ...]:
+    try:
+        world_path = os.path.join(
+            get_package_share_directory('simulation'),
+            'worlds',
+            'world_1.sdf',
+        )
+        root = ET.parse(world_path).getroot()
+    except (OSError, ET.ParseError, LookupError):
+        return _FALLBACK_FIRE_POSITIONS
+
+    world = root.find('world')
+    if world is None:
+        return _FALLBACK_FIRE_POSITIONS
+
+    positions = []
+    for model in world.findall('model'):
+        name = str(model.attrib.get('name', ''))
+        if not (name == 'fire_entity' or name.startswith('fire_')):
+            continue
+        pose_text = model.findtext('pose')
+        if not pose_text:
+            continue
+        parts = pose_text.split()
+        if len(parts) < 2:
+            continue
+        try:
+            positions.append((float(parts[0]), float(parts[1])))
+        except ValueError:
+            continue
+
+    return tuple(positions) or _FALLBACK_FIRE_POSITIONS
 
 
 class DummyEsp32SensorPub(Node):
@@ -32,6 +70,7 @@ class DummyEsp32SensorPub(Node):
         self.robot_id = str(self.get_parameter('robot_id').value)
         publish_rate_hz = max(float(self.get_parameter('publish_rate_hz').value), 0.5)
         self._latest_odom = None
+        self._fire_positions = _load_fire_positions_from_world()
 
         self.create_subscription(
             Odometry,
@@ -54,7 +93,7 @@ class DummyEsp32SensorPub(Node):
             return math.inf
         x = float(self._latest_odom.pose.pose.position.x)
         y = float(self._latest_odom.pose.pose.position.y)
-        return min(math.hypot(fire_x - x, fire_y - y) for fire_x, fire_y in _FIRE_POSITIONS)
+        return min(math.hypot(fire_x - x, fire_y - y) for fire_x, fire_y in self._fire_positions)
 
     def _publish_sensor_data(self) -> None:
         distance = self._nearest_fire_distance()

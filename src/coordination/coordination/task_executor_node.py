@@ -5,10 +5,8 @@ from importlib import import_module
 from typing import Any, Dict, Optional
 
 import rclpy
-from geometry_msgs.msg import PoseStamped
-from nav2_msgs.action import NavigateToPose
+from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-from rclpy.action import ActionClient
 from rclpy.node import Node
 
 TaskAssignment = getattr(import_module('firescout_interfaces.msg'), 'TaskAssignment')
@@ -27,6 +25,13 @@ class TaskExecutorNode(Node):
         super().__init__('task_executor_node', **kwargs)
 
         self.declare_parameter('robot_ids', ['robot1', 'robot2', 'robot3'])
+        self.declare_parameter('goal_tolerance_m', 0.35)
+        self.declare_parameter('heading_tolerance_rad', 0.45)
+        self.declare_parameter('control_period_sec', 0.1)
+        self.declare_parameter('max_linear_speed', 0.45)
+        self.declare_parameter('max_angular_speed', 1.2)
+        self.declare_parameter('linear_gain', 0.8)
+        self.declare_parameter('angular_gain', 1.8)
         self.declare_parameter('stuck_timeout_sec', 15.0)
         self.declare_parameter('stuck_progress_threshold_m', 0.2)
 
@@ -34,15 +39,14 @@ class TaskExecutorNode(Node):
         self._robot_ids = [str(robot_id) for robot_id in robot_ids if str(robot_id)] or ['robot1', 'robot2', 'robot3']
 
         self._active_task: Dict[str, Optional[Any]] = {robot_id: None for robot_id in self._robot_ids}
-        self._goal_handle: Dict[str, Optional[Any]] = {robot_id: None for robot_id in self._robot_ids}
         self._task_start_time: Dict[str, float] = {}
         self._task_start_distance: Dict[str, float] = {}
         self._task_min_distance: Dict[str, float] = {}
         self._latest_odom: Dict[str, Optional[Odometry]] = {robot_id: None for robot_id in self._robot_ids}
         self._task_queue: Dict[str, list] = {robot_id: [] for robot_id in self._robot_ids}
 
-        self._nav_clients: Dict[str, ActionClient] = {
-            robot_id: ActionClient(self, NavigateToPose, f'/{robot_id}/navigate_to_pose')
+        self._cmd_pubs = {
+            robot_id: self.create_publisher(Twist, f'/{robot_id}/cmd_vel', 10)
             for robot_id in self._robot_ids
         }
 
@@ -50,9 +54,11 @@ class TaskExecutorNode(Node):
         for robot_id in self._robot_ids:
             self.create_subscription(Odometry, f'/{robot_id}/odom', self._make_odom_callback(robot_id), 10)
 
+        control_period = float(self.get_parameter('control_period_sec').value)
+        self.create_timer(control_period, self._control_timer)
         self.create_timer(5.0, self._diagnostics_timer)
 
-        self.get_logger().info(f'Task Executor Node (Nav2) started for robots: {", ".join(self._robot_ids)}')
+        self.get_logger().info(f'Task Executor Node (direct cmd_vel) started for robots: {", ".join(self._robot_ids)}')
 
     def _make_odom_callback(self, robot_id: str):
         def _callback(msg: Odometry) -> None:
@@ -94,28 +100,8 @@ class TaskExecutorNode(Node):
         self._task_min_distance.pop(robot_id, None)
         self._task_start_distance.pop(robot_id, None)
         self.get_logger().info(
-            f'Sending task {task_msg.task_id} for {robot_id} -> '
+            f'Driving task {task_msg.task_id} for {robot_id} -> '
             f'({task_msg.target_pose.position.x:.2f}, {task_msg.target_pose.position.y:.2f})'
-        )
-
-        goal_msg = NavigateToPose.Goal()
-        goal_msg.pose = PoseStamped()
-        goal_msg.pose.header.frame_id = f'{robot_id}/map'
-        goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
-        goal_msg.pose.pose = task_msg.target_pose
-
-        if not self._nav_clients[robot_id].wait_for_server(timeout_sec=30.0):
-            self.get_logger().warning(
-                f'Nav2 navigate_to_pose server not available for {robot_id} after 30s. '
-                f'Task {task_msg.task_id} will be dropped.'
-            )
-            self._active_task[robot_id] = None
-            return
-        send_goal_future = self._nav_clients[robot_id].send_goal_async(
-            goal_msg, feedback_callback=self._make_feedback_callback(robot_id)
-        )
-        send_goal_future.add_done_callback(
-            self._make_goal_response_callback(robot_id, task_msg.task_id)
         )
 
     def _send_next_from_queue(self, robot_id: str) -> None:
@@ -126,61 +112,8 @@ class TaskExecutorNode(Node):
             )
             self._assign_and_send(robot_id, next_msg)
 
-    def _make_goal_response_callback(self, robot_id: str, expected_task_id: str):
-        def _callback(future):
-            goal_handle = future.result()
-            if not goal_handle.accepted:
-                self.get_logger().warning(f'{robot_id} NavigateToPose goal rejected')
-                self._abandon_task(robot_id, 'goal rejected')
-                return
-            self._goal_handle[robot_id] = goal_handle
-            result_future = goal_handle.get_result_async()
-            result_future.add_done_callback(self._make_result_callback(robot_id, expected_task_id))
-
-        return _callback
-
-    def _make_result_callback(self, robot_id: str, expected_task_id: str):
-        def _callback(future):
-            current = self._active_task.get(robot_id)
-            if current is None or current.task_id != expected_task_id:
-                return
-            self._goal_handle[robot_id] = None
-            result = future.result()
-            if result.status == 4:  # SUCCEEDED
-                self._active_task[robot_id] = None
-                self._task_start_time.pop(robot_id, None)
-                self._task_start_distance.pop(robot_id, None)
-                self._task_min_distance.pop(robot_id, None)
-                self.get_logger().info(
-                    f'{robot_id} reached task {expected_task_id} via Nav2'
-                )
-                self._send_next_from_queue(robot_id)
-            else:
-                self._abandon_task(robot_id, f'Nav2 result status={result.status}')
-
-        return _callback
-
-    def _make_feedback_callback(self, robot_id: str):
-        def _callback(feedback_msg):
-            feedback = feedback_msg.feedback
-            distance = feedback.distance_remaining
-            if not math.isfinite(distance):
-                return
-            prev_min = self._task_min_distance.get(robot_id)
-            if prev_min is None:
-                prev_min = distance
-            self._task_min_distance[robot_id] = min(prev_min, distance)
-            if self._task_start_distance.get(robot_id) is None:
-                self._task_start_distance[robot_id] = distance
-
-        return _callback
-
     def _cancel_goal(self, robot_id: str) -> None:
-        goal_handle = self._goal_handle.get(robot_id)
-        if goal_handle is not None:
-            cancel_future = goal_handle.cancel_goal_async()
-            cancel_future.add_done_callback(lambda f: None)
-            self._goal_handle[robot_id] = None
+        self._publish_stop(robot_id)
 
     def _abandon_task(self, robot_id: str, reason: str) -> None:
         task = self._active_task.get(robot_id)
@@ -191,10 +124,65 @@ class TaskExecutorNode(Node):
         self._task_start_time.pop(robot_id, None)
         self._task_start_distance.pop(robot_id, None)
         self._task_min_distance.pop(robot_id, None)
+        self._publish_stop(robot_id)
         self.get_logger().warning(
             f'{robot_id} abandoning task {task.task_id}: {reason}'
         )
         self._send_next_from_queue(robot_id)
+
+    def _control_timer(self) -> None:
+        goal_tolerance = float(self.get_parameter('goal_tolerance_m').value)
+        heading_tolerance = float(self.get_parameter('heading_tolerance_rad').value)
+        max_linear = float(self.get_parameter('max_linear_speed').value)
+        max_angular = float(self.get_parameter('max_angular_speed').value)
+        linear_gain = float(self.get_parameter('linear_gain').value)
+        angular_gain = float(self.get_parameter('angular_gain').value)
+
+        for robot_id in self._robot_ids:
+            task = self._active_task.get(robot_id)
+            odom = self._latest_odom.get(robot_id)
+            if task is None:
+                continue
+            if odom is None:
+                self._publish_stop(robot_id)
+                continue
+
+            pose = odom.pose.pose
+            dx = float(task.target_pose.position.x) - float(pose.position.x)
+            dy = float(task.target_pose.position.y) - float(pose.position.y)
+            distance = math.hypot(dx, dy)
+            if not math.isfinite(distance):
+                self._publish_stop(robot_id)
+                continue
+
+            if self._task_start_distance.get(robot_id) is None:
+                self._task_start_distance[robot_id] = distance
+            prev_min = self._task_min_distance.get(robot_id)
+            self._task_min_distance[robot_id] = distance if prev_min is None else min(prev_min, distance)
+
+            if distance <= goal_tolerance:
+                self._active_task[robot_id] = None
+                self._task_start_time.pop(robot_id, None)
+                self._task_start_distance.pop(robot_id, None)
+                self._task_min_distance.pop(robot_id, None)
+                self._publish_stop(robot_id)
+                self.get_logger().info(f'{robot_id} reached task {task.task_id} with direct cmd_vel')
+                self._send_next_from_queue(robot_id)
+                continue
+
+            target_heading = math.atan2(dy, dx)
+            heading_error = _normalize_angle(target_heading - _yaw_from_odom(odom))
+
+            cmd = Twist()
+            if abs(heading_error) < heading_tolerance:
+                cmd.linear.x = min(max_linear, linear_gain * distance)
+            else:
+                cmd.linear.x = 0.0
+            cmd.angular.z = max(-max_angular, min(max_angular, angular_gain * heading_error))
+            self._cmd_pubs[robot_id].publish(cmd)
+
+    def _publish_stop(self, robot_id: str) -> None:
+        self._cmd_pubs[robot_id].publish(Twist())
 
     def _diagnostics_timer(self) -> None:
         stuck_timeout = float(self.get_parameter('stuck_timeout_sec').value)
@@ -225,6 +213,21 @@ class TaskExecutorNode(Node):
             status_parts.append(f'{robot_id}(odom={"Y" if has_odom else "N"},task={"Y" if has_task else "N"})')
         sep = ' | '
         self.get_logger().info(f'Executor status: {sep.join(status_parts)}')
+
+
+def _yaw_from_odom(odom: Odometry) -> float:
+    orientation = odom.pose.pose.orientation
+    siny_cosp = 2.0 * (orientation.w * orientation.z + orientation.x * orientation.y)
+    cosy_cosp = 1.0 - 2.0 * (orientation.y * orientation.y + orientation.z * orientation.z)
+    return math.atan2(siny_cosp, cosy_cosp)
+
+
+def _normalize_angle(angle: float) -> float:
+    while angle > math.pi:
+        angle -= 2.0 * math.pi
+    while angle < -math.pi:
+        angle += 2.0 * math.pi
+    return angle
 
 
 def main(args=None) -> None:

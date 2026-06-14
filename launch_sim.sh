@@ -31,4 +31,6 @@ ros2 launch bringup full_system.launch.py \
     simulation:=true \
     use_sim_time:=true \
     world_name:=villa_world \
+    enable_nav2:=false \
+    enable_fire_suppression:=true \
     launch_profile:=sim

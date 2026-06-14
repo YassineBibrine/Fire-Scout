@@ -1,8 +1,8 @@
 """Mock camera inference node for Phase 2 hybrid simulation testing.
 
 This node simulates the output of a real camera_inference_node by using
-known scenario entity positions (fire at (3.0, 2.0) and human victims at
-(-3.0, 4.0), (-1.5, -3.0), (2.0, -1.5)) and each robot's odometry to
+known scenario entity positions (fire models and human victims) and each
+robot's odometry to
 decide whether the entity would be visible in the robot's forward-facing
 camera FOV.
 
@@ -18,8 +18,11 @@ Behaviour:
 
 from importlib import import_module
 import math
+import os
 from typing import Any, Callable, cast
+import xml.etree.ElementTree as ET
 
+from ament_index_python.packages import get_package_share_directory
 from geometry_msgs.msg import Pose
 import rclpy
 from nav_msgs.msg import Odometry
@@ -38,13 +41,70 @@ Detection = cast(Any, getattr(_interfaces_msg, 'Detection'))
 # Scenario entity definitions (deterministic, matches world_1.sdf Phase 2)
 # ---------------------------------------------------------------------------
 
-_SCENARIO_ENTITIES = [
+_FALLBACK_SCENARIO_ENTITIES = [
     # (world_x, world_y, class_label, base_confidence)
     (3.0,   2.0,  'fire',  0.88),
+    (4.02,  5.7862, 'fire', 0.86),
+    (6.67, -4.54, 'fire', 0.86),
+    (-1.8508, -5.17, 'fire', 0.86),
+    (-7.3638, 0.9669, 'fire', 0.86),
+    (-8.05, -3.31, 'fire', 0.86),
+    (7.77, -1.80, 'fire', 0.86),
     (-3.0,  4.0,  'human', 0.82),
     (-1.5, -3.0,  'human', 0.79),
     (2.0,  -1.5,  'human', 0.75),
 ]
+
+
+def _load_fire_entities_from_world() -> list[tuple[float, float, str, float]]:
+    try:
+        world_path = os.path.join(
+            get_package_share_directory('simulation'),
+            'worlds',
+            'world_1.sdf',
+        )
+        root = ET.parse(world_path).getroot()
+    except (OSError, ET.ParseError, LookupError):
+        return [
+            entity for entity in _FALLBACK_SCENARIO_ENTITIES
+            if entity[2] == 'fire'
+        ]
+
+    world = root.find('world')
+    if world is None:
+        return [
+            entity for entity in _FALLBACK_SCENARIO_ENTITIES
+            if entity[2] == 'fire'
+        ]
+
+    entities = []
+    for model in world.findall('model'):
+        name = str(model.attrib.get('name', ''))
+        if not (name == 'fire_entity' or name.startswith('fire_')):
+            continue
+        pose_text = model.findtext('pose')
+        if not pose_text:
+            continue
+        parts = pose_text.split()
+        if len(parts) < 2:
+            continue
+        try:
+            entities.append((float(parts[0]), float(parts[1]), 'fire', 0.86))
+        except ValueError:
+            continue
+
+    return entities or [
+        entity for entity in _FALLBACK_SCENARIO_ENTITIES
+        if entity[2] == 'fire'
+    ]
+
+
+def _scenario_entities() -> list[tuple[float, float, str, float]]:
+    human_entities = [
+        entity for entity in _FALLBACK_SCENARIO_ENTITIES
+        if entity[2] == 'human'
+    ]
+    return _load_fire_entities_from_world() + human_entities
 
 # Camera parameters (match SDF sensor definition)
 _CAMERA_FOV_RAD = 1.047      # ~60 degrees horizontal FOV
@@ -129,6 +189,7 @@ class MockCameraInferenceNode(Node):
 
         publish_rate_hz = max(float(self.get_parameter('publish_rate_hz').value), 0.5)
         self._confidence_jitter = float(self.get_parameter('confidence_jitter').value)
+        self._scenario_entities = _scenario_entities()
 
         # Per-robot latest odometry (used for FOV computation)
         self._latest_odom: dict[str, Odometry | None] = {r: None for r in self._robot_ids}
@@ -192,7 +253,7 @@ class MockCameraInferenceNode(Node):
         )
 
         detections = []
-        for (ex, ey, label, base_conf) in _SCENARIO_ENTITIES:
+        for (ex, ey, label, base_conf) in self._scenario_entities:
             visible, bearing, distance = _entity_in_fov(robot_x, robot_y, robot_yaw, ex, ey)
             if not visible:
                 continue
