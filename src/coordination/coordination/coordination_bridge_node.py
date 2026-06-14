@@ -74,6 +74,13 @@ class CoordinationBridgeNode(Node):
             f'incident={msg.incident_id} priority={msg.priority:.3f}'
         )
 
+    # TODO (Phase 3): Smart robot selection
+    # Currently assigns the incident task back to the detecting robot (incident.robot_id).
+    # This means if the detecting robot is already busy with a higher-priority task,
+    # task_executor will reject the assignment via the priority guard and no other
+    # robot will be tried. A proper implementation should query robot availability
+    # (battery, current task priority, proximity) and select the best available robot.
+    # Until this is implemented, incident response is effectively single-robot per detector.
     def _build_assignment(self, incident: Any, task_type: str, deadline_sec: float) -> Any:
         now = self.get_clock().now()
         assignment = TaskAssignment()

@@ -5,8 +5,3 @@ float32 area_m2
 float32 info_gain
 float32 travel_cost
 bool reachable
-float32 size
-float32 cost
-float32 gain
-float32[] boundary_x
-float32[] boundary_y

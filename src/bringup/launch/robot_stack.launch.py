@@ -16,6 +16,7 @@ def generate_launch_description():
     world_name = LaunchConfiguration('world_name')
     lidar_gz_topic = LaunchConfiguration('lidar_gz_topic')
     include_response = LaunchConfiguration('include_response')
+    enable_nav2 = LaunchConfiguration('enable_nav2')
     launch_profile = LaunchConfiguration('launch_profile')
     model_path = LaunchConfiguration('model_path')
     cmd_vel_safety_config = PathJoinSubstitution([
@@ -61,6 +62,11 @@ def generate_launch_description():
         'include_response',
         default_value='true',
         description='Launch per-robot response pipeline from robot_stack.',
+    )
+    enable_nav2_arg = DeclareLaunchArgument(
+        'enable_nav2',
+        default_value='false',
+        description='Launch Nav2 navigation stack for this robot.',
     )
     launch_profile_arg = DeclareLaunchArgument(
         'launch_profile',
@@ -120,6 +126,20 @@ def generate_launch_description():
                 'use_sim_time': use_sim_time,
             }.items(),
         ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('bringup'),
+                    'launch',
+                    'nav2_robot.launch.py',
+                ])
+            ),
+            condition=IfCondition(enable_nav2),
+            launch_arguments={
+                'robot_id': robot_id,
+                'use_sim_time': use_sim_time,
+            }.items(),
+        ),
         Node(
             package='coordination',
             executable='cmd_vel_safety_node',
@@ -171,6 +191,7 @@ def generate_launch_description():
         world_name_arg,
         lidar_gz_topic_arg,
         include_response_arg,
+        enable_nav2_arg,
         launch_profile_arg,
         model_path_arg,
         *includes,

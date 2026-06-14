@@ -95,9 +95,9 @@ class RescuePlanningNode(Node):
         )
 
     def human_detection_callback(self, detection: Any) -> None:
-        # Accept if explicitly flagged or confidence exceeds threshold
-        if not detection.needs_rescue and detection.confidence <= 0.6:
+        if not detection.needs_rescue:
             return
+        # Upstream HumanDetectionNode already gates on human_confidence_threshold.
 
         position = getattr(detection, 'position', None)
         if position is None:

@@ -46,6 +46,7 @@ def generate_launch_description():
                 'bridges.odometry.ros_type_name': 'nav_msgs/msg/Odometry',
                 'bridges.odometry.gz_type_name': 'gz.msgs.Odometry',
                 'bridges.odometry.direction': 'GZ_TO_ROS',
+                'bridges.odometry.publish_tf': True,
             },
             {
                 'bridges.lidar.ros_topic_name': PathJoinSubstitution(['/', robot_id, 'scan']),

@@ -9,6 +9,7 @@ import rclpy
 from builtin_interfaces.msg import Time
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, LaserScan
 from std_msgs.msg import String
@@ -48,9 +49,25 @@ class LatencyMonitorNode(Node):
             self.get_parameter('sensor_alert_max_latency_ms').value
         )
 
-        monitored_topics = [t for t in list(self.get_parameter('monitored_topics').value) if t]
+        monitored_param = self.get_parameter('monitored_topics')
+        if monitored_param.type_ == Parameter.Type.STRING_ARRAY:
+            monitored_topics = [t for t in list(monitored_param.value) if t]
+        else:
+            monitored_value = monitored_param.value
+            if isinstance(monitored_value, str) and monitored_value:
+                monitored_topics = [monitored_value]
+            else:
+                monitored_topics = []
         if not monitored_topics:
-            monitored_topics = [t for t in list(self.get_parameter('topics').value) if t]
+            topics_param = self.get_parameter('topics')
+            if topics_param.type_ == Parameter.Type.STRING_ARRAY:
+                monitored_topics = [t for t in list(topics_param.value) if t]
+            else:
+                topics_value = topics_param.value
+                if isinstance(topics_value, str) and topics_value:
+                    monitored_topics = [topics_value]
+                else:
+                    monitored_topics = []
 
         self._alarm_pub = self.create_publisher(String, '/monitoring/latency_alarm', 10)
         self._subscriptions = []

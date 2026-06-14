@@ -13,6 +13,8 @@ The auction winner selection in `exploration.auction_logic.select_winner` is det
 
 This guarantees stable output for the same set of bids and timeout.
 
+`auction_timeout_sec` is set to 60 s to ensure all frontiers within the 20 × 14 m villa world are reachable at the configured `speed_mps = 0.7 m/s` (worst-case eta ≈ 36 s).
+
 ## Frontier Ranking Rules
 
 Frontier selection in `exploration.frontier_logic.select_frontiers` is deterministic:

@@ -21,3 +21,14 @@ def test_bid_timeout_returns_none_when_all_late():
     ]
 
     assert select_winner(bids, timeout_sec=1.0) is None
+
+
+def test_auction_timeout_covers_villa_world_diagonal():
+    bids = [
+        AuctionBid('a4', 'robot1', 'f4', utility_score=5.0, eta_sec=36.0, energy_cost=1.0),
+    ]
+
+    winner = select_winner(bids, timeout_sec=60.0)
+
+    assert winner is not None
+    assert winner.winner.eta_sec == 36.0

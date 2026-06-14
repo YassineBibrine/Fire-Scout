@@ -28,6 +28,7 @@ setup(
             'task_allocator_node = coordination.task_allocator_node:main',
             'task_executor_node = coordination.task_executor_node:main',
             'cmd_vel_safety_node = coordination.cmd_vel_safety_node:main',
+            'coordination_bridge_node = coordination.coordination_bridge_node:main',
         ]
     },
 )

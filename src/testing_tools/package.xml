@@ -12,6 +12,8 @@
   <depend>sensor_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>firescout_interfaces</depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>simulation</exec_depend>
   <exec_depend>ros2launch</exec_depend>
   <test_depend>python3-pytest</test_depend>
 

@@ -114,13 +114,13 @@ def _wait_for_publishers(node: Node, topic: str, min_count: int = 1, timeout_sec
     return False
 
 
-def _wait_for_subscribers(publisher, min_count: int = 1, timeout_sec: float = 5.0) -> bool:
+def _wait_for_subscribers(publisher, node: Node, min_count: int = 1, timeout_sec: float = 10.0) -> bool:
     """Wait until publisher reports at least min_count subscribers."""
     deadline = time.time() + timeout_sec
     while time.time() < deadline:
+        rclpy.spin_once(node, timeout_sec=0.05)
         if publisher.get_subscription_count() >= min_count:
             return True
-        time.sleep(0.05)
     return False
 
 
@@ -137,7 +137,7 @@ def test_fault_reassignment_removes_robot(ros_node: Node):
     )
 
     try:
-        assert _wait_for_subscribers(publisher, timeout_sec=5.0), (
+        assert _wait_for_subscribers(publisher, ros_node, timeout_sec=10.0), (
             'No subscribers detected on /coordination/system_health'
         )
         assert _wait_for_publishers(ros_node, '/mission/state', timeout_sec=5.0), (

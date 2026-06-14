@@ -40,13 +40,16 @@ Before building, install the required ROS 2 Kilted packages:
 
 ```bash
 sudo apt install ros-kilted-slam-toolbox
-sudo apt install ros-kilted-nav2-core
 sudo apt install ros-kilted-rviz2
 sudo apt install ros-kilted-ros-gz
 sudo apt install ros-kilted-ros-gz-sim
 sudo apt install ros-kilted-turtlebot3
 sudo apt install ros-kilted-turtlebot3-description
 ```
+
+Nav2 is disabled by default. The remaining `nav2_robot.launch.py` and
+`nav2_params.yaml` files are kept only for optional experiments with
+`enable_nav2:=true`.
 
 Set TurtleBot3 model (example: Burger):
 

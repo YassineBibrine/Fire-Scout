@@ -3,6 +3,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -87,6 +88,13 @@ def generate_launch_description():
                 ])
             ),
             launch_arguments={'use_sim_time': use_sim_time}.items(),
+        ),
+        Node(
+            package='coordination',
+            executable='coordination_bridge_node',
+            name='coordination_bridge_node',
+            output='screen',
+            parameters=[{'use_sim_time': use_sim_time}],
         ),
     ]
 

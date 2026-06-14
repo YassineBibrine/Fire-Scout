@@ -34,19 +34,8 @@ def generate_launch_description():
             )
         )
 
-    # Single coordination bridge: consumes /incidents/fire and /incidents/human,
-    # publishes TaskAssignment to /coordination/task_assignments with bounded latency.
-    coordination_bridge = Node(
-        package='response',
-        executable='coordination_bridge_node',
-        name='coordination_bridge_node',
-        output='screen',
-        parameters=[{'use_sim_time': use_sim_time}],
-    )
-
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='true', description='Use simulated clock.'),
         LogInfo(msg=['Global incident fusion contract ready use_sim_time=', use_sim_time]),
         *planners,
-        coordination_bridge,
     ])

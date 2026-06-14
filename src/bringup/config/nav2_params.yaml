@@ -6,12 +6,73 @@ robot1:
   controller_server:
     ros__parameters:
       use_sim_time: true
-  planner_server:
+      controller_frequency: 10.0
+      min_x_velocity_threshold: 0.001
+      min_y_velocity_threshold: 0.5
+      min_theta_velocity_threshold: 0.001
+      failure_tolerance: 0.3
+      progress_checker_plugins: ["progress_checker"]
+      goal_checker_plugins: ["general_goal_checker"]
+      controller_plugins: ["FollowPath"]
+      progress_checker:
+        plugin: nav2_controller::SimpleProgressChecker
+        required_movement_radius: 0.5
+        movement_time_allowance: 10.0
+      general_goal_checker:
+        plugin: nav2_controller::SimpleGoalChecker
+        xy_goal_tolerance: 0.25
+        yaw_goal_tolerance: 0.25
+        stateful: true
+      FollowPath:
+        plugin: dwb_core::DWBLocalPlanner
+        debug_trajectory_details: true
+        min_vel_x: 0.0
+        max_vel_x: 0.35
+        max_vel_theta: 1.25
+        min_speed_xy: 0.0
+        max_speed_xy: 0.35
+        min_speed_theta: 0.0
+        acc_lim_x: 1.0
+        decel_lim_x: -1.0
+        acc_lim_theta: 2.0
+        decel_lim_theta: -2.0
+        vx_samples: 20
+        vy_samples: 5
+        vtheta_samples: 20
+        sim_time: 1.7
+        linear_granularity: 0.05
+        angular_granularity: 0.025
+        transform_tolerance: 1.0
+        xy_goal_tolerance: 0.25
+        trans_stopped_velocity: 0.01
+        short_circuit_trajectory_evaluation: true
+        stateful: true
+        critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+        BaseObstacle.scale: 0.02
+        PathAlign.scale: 32.0
+        PathAlign.forward_point_distance: 0.1
+        GoalAlign.scale: 24.0
+        GoalAlign.forward_point_distance: 0.1
+        PathDist.scale: 32.0
+        GoalDist.scale: 24.0
+        RotateToGoal.scale: 32.0
+        RotateToGoal.slowing_factor: 5.0
+        RotateToGoal.lookahead_time: -1.0
+  behavior_server:
     ros__parameters:
       use_sim_time: true
-  bt_navigator:
-    ros__parameters:
-      use_sim_time: true
+      local_costmap_topic: local_costmap/costmap_raw
+      global_costmap_topic: global_costmap/costmap_raw
+      local_footprint_topic: local_costmap/published_footprint
+      global_footprint_topic: global_costmap/published_footprint
+      cycle_frequency: 10.0
+      behavior_plugins: ["spin", "backup", "wait"]
+      spin:
+        plugin: nav2_behaviors::Spin
+      backup:
+        plugin: nav2_behaviors::BackUp
+      wait:
+        plugin: nav2_behaviors::Wait
   local_costmap:
     local_costmap:
       ros__parameters:
@@ -20,13 +81,14 @@ robot1:
         robot_base_frame: robot1/base_link
         update_frequency: 5.0
         publish_frequency: 2.0
+        transform_tolerance: 1.0
         rolling_window: true
-        width: 6.0
-        height: 6.0
+        width: !!float 6
+        height: !!float 6
         resolution: 0.05
         plugins: ["obstacle_layer", "inflation_layer"]
         obstacle_layer:
-          plugin: "nav2_costmap_2d::ObstacleLayer"
+          plugin: nav2_costmap_2d::ObstacleLayer
           enabled: true
           observation_sources: scan
           scan:
@@ -34,22 +96,124 @@ robot1:
             max_obstacle_height: 2.0
             clearing: true
             marking: true
-            data_type: "LaserScan"
+            data_type: LaserScan
         inflation_layer:
-          plugin: "nav2_costmap_2d::InflationLayer"
-          inflation_radius: 0.6
+          plugin: nav2_costmap_2d::InflationLayer
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
+  planner_server:
+    ros__parameters:
+      use_sim_time: true
+      expected_planner_frequency: 1.0
+      planner_plugins: ["GridBased"]
+      GridBased:
+        plugin: nav2_smac_planner::SmacPlanner2D
+        tolerance: 1.0
+        allow_unknown: true
+        downsample_costmap: true
+        downsampling_factor: 2
+        max_iterations: -1
+        max_planning_time: 10.0
+        terminal_checking_interval: 1
+        motion_model_for_search: "2D"
+  global_costmap:
+    global_costmap:
+      ros__parameters:
+        use_sim_time: true
+        global_frame: robot1/map
+        robot_base_frame: robot1/base_link
+        update_frequency: 0.5
+        publish_frequency: 0.5
+        transform_tolerance: 1.0
+        resolution: 0.05
+        plugins: ["static_layer", "inflation_layer"]
+        static_layer:
+          plugin: nav2_costmap_2d::StaticLayer
+        inflation_layer:
+          plugin: nav2_costmap_2d::InflationLayer
+          inflation_radius: 1.0
+          cost_scaling_factor: 3.0
+  bt_navigator:
+    ros__parameters:
+      use_sim_time: true
+      global_frame: robot1/map
+      robot_base_frame: robot1/base_link
+      odom_topic: /robot1/odom
+      bt_loop_duration: 10
+      default_server_timeout: 20
+      default_nav_to_pose_bt_xml: /opt/ros/kilted/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml
 
 robot2:
   controller_server:
     ros__parameters:
       use_sim_time: true
-  planner_server:
+      controller_frequency: 10.0
+      min_x_velocity_threshold: 0.001
+      min_y_velocity_threshold: 0.5
+      min_theta_velocity_threshold: 0.001
+      failure_tolerance: 0.3
+      progress_checker_plugins: ["progress_checker"]
+      goal_checker_plugins: ["general_goal_checker"]
+      controller_plugins: ["FollowPath"]
+      progress_checker:
+        plugin: nav2_controller::SimpleProgressChecker
+        required_movement_radius: 0.5
+        movement_time_allowance: 10.0
+      general_goal_checker:
+        plugin: nav2_controller::SimpleGoalChecker
+        xy_goal_tolerance: 0.25
+        yaw_goal_tolerance: 0.25
+        stateful: true
+      FollowPath:
+        plugin: dwb_core::DWBLocalPlanner
+        debug_trajectory_details: true
+        min_vel_x: 0.0
+        max_vel_x: 0.35
+        max_vel_theta: 1.25
+        min_speed_xy: 0.0
+        max_speed_xy: 0.35
+        min_speed_theta: 0.0
+        acc_lim_x: 1.0
+        decel_lim_x: -1.0
+        acc_lim_theta: 2.0
+        decel_lim_theta: -2.0
+        vx_samples: 20
+        vy_samples: 5
+        vtheta_samples: 20
+        sim_time: 1.7
+        linear_granularity: 0.05
+        angular_granularity: 0.025
+        transform_tolerance: 1.0
+        xy_goal_tolerance: 0.25
+        trans_stopped_velocity: 0.01
+        short_circuit_trajectory_evaluation: true
+        stateful: true
+        critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+        BaseObstacle.scale: 0.02
+        PathAlign.scale: 32.0
+        PathAlign.forward_point_distance: 0.1
+        GoalAlign.scale: 24.0
+        GoalAlign.forward_point_distance: 0.1
+        PathDist.scale: 32.0
+        GoalDist.scale: 24.0
+        RotateToGoal.scale: 32.0
+        RotateToGoal.slowing_factor: 5.0
+        RotateToGoal.lookahead_time: -1.0
+  behavior_server:
     ros__parameters:
       use_sim_time: true
-  bt_navigator:
-    ros__parameters:
-      use_sim_time: true
+      local_costmap_topic: local_costmap/costmap_raw
+      global_costmap_topic: global_costmap/costmap_raw
+      local_footprint_topic: local_costmap/published_footprint
+      global_footprint_topic: global_costmap/published_footprint
+      cycle_frequency: 10.0
+      behavior_plugins: ["spin", "backup", "wait"]
+      spin:
+        plugin: nav2_behaviors::Spin
+      backup:
+        plugin: nav2_behaviors::BackUp
+      wait:
+        plugin: nav2_behaviors::Wait
   local_costmap:
     local_costmap:
       ros__parameters:
@@ -58,13 +222,14 @@ robot2:
         robot_base_frame: robot2/base_link
         update_frequency: 5.0
         publish_frequency: 2.0
+        transform_tolerance: 1.0
         rolling_window: true
-        width: 6.0
-        height: 6.0
+        width: !!float 6
+        height: !!float 6
         resolution: 0.05
         plugins: ["obstacle_layer", "inflation_layer"]
         obstacle_layer:
-          plugin: "nav2_costmap_2d::ObstacleLayer"
+          plugin: nav2_costmap_2d::ObstacleLayer
           enabled: true
           observation_sources: scan
           scan:
@@ -72,48 +237,124 @@ robot2:
             max_obstacle_height: 2.0
             clearing: true
             marking: true
-            data_type: "LaserScan"
+            data_type: LaserScan
         inflation_layer:
-          plugin: "nav2_costmap_2d::InflationLayer"
-          inflation_radius: 0.6
+          plugin: nav2_costmap_2d::InflationLayer
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
+  planner_server:
+    ros__parameters:
+      use_sim_time: true
+      expected_planner_frequency: 1.0
+      planner_plugins: ["GridBased"]
+      GridBased:
+        plugin: nav2_smac_planner::SmacPlanner2D
+        tolerance: 1.0
+        allow_unknown: true
+        downsample_costmap: true
+        downsampling_factor: 2
+        max_iterations: -1
+        max_planning_time: 10.0
+        terminal_checking_interval: 1
+        motion_model_for_search: "2D"
   global_costmap:
     global_costmap:
       ros__parameters:
         use_sim_time: true
         global_frame: robot2/map
         robot_base_frame: robot2/base_link
-        update_frequency: 1.0
-        publish_frequency: 1.0
+        update_frequency: 0.5
+        publish_frequency: 0.5
+        transform_tolerance: 1.0
         resolution: 0.05
-        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        plugins: ["static_layer", "inflation_layer"]
         static_layer:
-          plugin: "nav2_costmap_2d::StaticLayer"
-        obstacle_layer:
-          plugin: "nav2_costmap_2d::ObstacleLayer"
-          enabled: true
-          observation_sources: scan
-          scan:
-            topic: /robot2/scan
-            max_obstacle_height: 2.0
-            clearing: true
-            marking: true
-            data_type: "LaserScan"
+          plugin: nav2_costmap_2d::StaticLayer
         inflation_layer:
-          plugin: "nav2_costmap_2d::InflationLayer"
-          inflation_radius: 0.6
+          plugin: nav2_costmap_2d::InflationLayer
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
+  bt_navigator:
+    ros__parameters:
+      use_sim_time: true
+      global_frame: robot2/map
+      robot_base_frame: robot2/base_link
+      odom_topic: /robot2/odom
+      bt_loop_duration: 10
+      default_server_timeout: 20
+      default_nav_to_pose_bt_xml: /opt/ros/kilted/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml
 
 robot3:
   controller_server:
     ros__parameters:
       use_sim_time: true
-  planner_server:
+      controller_frequency: 10.0
+      min_x_velocity_threshold: 0.001
+      min_y_velocity_threshold: 0.5
+      min_theta_velocity_threshold: 0.001
+      failure_tolerance: 0.3
+      progress_checker_plugins: ["progress_checker"]
+      goal_checker_plugins: ["general_goal_checker"]
+      controller_plugins: ["FollowPath"]
+      progress_checker:
+        plugin: nav2_controller::SimpleProgressChecker
+        required_movement_radius: 0.5
+        movement_time_allowance: 10.0
+      general_goal_checker:
+        plugin: nav2_controller::SimpleGoalChecker
+        xy_goal_tolerance: 0.25
+        yaw_goal_tolerance: 0.25
+        stateful: true
+      FollowPath:
+        plugin: dwb_core::DWBLocalPlanner
+        debug_trajectory_details: true
+        min_vel_x: 0.0
+        max_vel_x: 0.35
+        max_vel_theta: 1.25
+        min_speed_xy: 0.0
+        max_speed_xy: 0.35
+        min_speed_theta: 0.0
+        acc_lim_x: 1.0
+        decel_lim_x: -1.0
+        acc_lim_theta: 2.0
+        decel_lim_theta: -2.0
+        vx_samples: 20
+        vy_samples: 5
+        vtheta_samples: 20
+        sim_time: 1.7
+        linear_granularity: 0.05
+        angular_granularity: 0.025
+        transform_tolerance: 1.0
+        xy_goal_tolerance: 0.25
+        trans_stopped_velocity: 0.01
+        short_circuit_trajectory_evaluation: true
+        stateful: true
+        critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+        BaseObstacle.scale: 0.02
+        PathAlign.scale: 32.0
+        PathAlign.forward_point_distance: 0.1
+        GoalAlign.scale: 24.0
+        GoalAlign.forward_point_distance: 0.1
+        PathDist.scale: 32.0
+        GoalDist.scale: 24.0
+        RotateToGoal.scale: 32.0
+        RotateToGoal.slowing_factor: 5.0
+        RotateToGoal.lookahead_time: -1.0
+  behavior_server:
     ros__parameters:
       use_sim_time: true
-  bt_navigator:
-    ros__parameters:
-      use_sim_time: true
+      local_costmap_topic: local_costmap/costmap_raw
+      global_costmap_topic: global_costmap/costmap_raw
+      local_footprint_topic: local_costmap/published_footprint
+      global_footprint_topic: global_costmap/published_footprint
+      cycle_frequency: 10.0
+      behavior_plugins: ["spin", "backup", "wait"]
+      spin:
+        plugin: nav2_behaviors::Spin
+      backup:
+        plugin: nav2_behaviors::BackUp
+      wait:
+        plugin: nav2_behaviors::Wait
   local_costmap:
     local_costmap:
       ros__parameters:
@@ -122,13 +363,14 @@ robot3:
         robot_base_frame: robot3/base_link
         update_frequency: 5.0
         publish_frequency: 2.0
+        transform_tolerance: 1.0
         rolling_window: true
-        width: 6.0
-        height: 6.0
+        width: !!float 6
+        height: !!float 6
         resolution: 0.05
         plugins: ["obstacle_layer", "inflation_layer"]
         obstacle_layer:
-          plugin: "nav2_costmap_2d::ObstacleLayer"
+          plugin: nav2_costmap_2d::ObstacleLayer
           enabled: true
           observation_sources: scan
           scan:
@@ -136,60 +378,49 @@ robot3:
             max_obstacle_height: 2.0
             clearing: true
             marking: true
-            data_type: "LaserScan"
+            data_type: LaserScan
         inflation_layer:
-          plugin: "nav2_costmap_2d::InflationLayer"
-          inflation_radius: 0.6
+          plugin: nav2_costmap_2d::InflationLayer
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
+  planner_server:
+    ros__parameters:
+      use_sim_time: true
+      expected_planner_frequency: 1.0
+      planner_plugins: ["GridBased"]
+      GridBased:
+        plugin: nav2_smac_planner::SmacPlanner2D
+        tolerance: 1.0
+        allow_unknown: true
+        downsample_costmap: true
+        downsampling_factor: 2
+        max_iterations: -1
+        max_planning_time: 10.0
+        terminal_checking_interval: 1
+        motion_model_for_search: "2D"
   global_costmap:
     global_costmap:
       ros__parameters:
         use_sim_time: true
         global_frame: robot3/map
         robot_base_frame: robot3/base_link
-        update_frequency: 1.0
-        publish_frequency: 1.0
+        update_frequency: 0.5
+        publish_frequency: 0.5
+        transform_tolerance: 1.0
         resolution: 0.05
-        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        plugins: ["static_layer", "inflation_layer"]
         static_layer:
-          plugin: "nav2_costmap_2d::StaticLayer"
-        obstacle_layer:
-          plugin: "nav2_costmap_2d::ObstacleLayer"
-          enabled: true
-          observation_sources: scan
-          scan:
-            topic: /robot3/scan
-            max_obstacle_height: 2.0
-            clearing: true
-            marking: true
-            data_type: "LaserScan"
+          plugin: nav2_costmap_2d::StaticLayer
         inflation_layer:
-          plugin: "nav2_costmap_2d::InflationLayer"
-          inflation_radius: 0.6
+          plugin: nav2_costmap_2d::InflationLayer
+          inflation_radius: 1.0
           cost_scaling_factor: 3.0
-  global_costmap:
-    global_costmap:
-      ros__parameters:
-        use_sim_time: true
-        global_frame: robot1/map
-        robot_base_frame: robot1/base_link
-        update_frequency: 1.0
-        publish_frequency: 1.0
-        resolution: 0.05
-        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
-        static_layer:
-          plugin: "nav2_costmap_2d::StaticLayer"
-        obstacle_layer:
-          plugin: "nav2_costmap_2d::ObstacleLayer"
-          enabled: true
-          observation_sources: scan
-          scan:
-            topic: /robot1/scan
-            max_obstacle_height: 2.0
-            clearing: true
-            marking: true
-            data_type: "LaserScan"
-        inflation_layer:
-          plugin: "nav2_costmap_2d::InflationLayer"
-          inflation_radius: 0.6
-          cost_scaling_factor: 3.0
+  bt_navigator:
+    ros__parameters:
+      use_sim_time: true
+      global_frame: robot3/map
+      robot_base_frame: robot3/base_link
+      odom_topic: /robot3/odom
+      bt_loop_duration: 10
+      default_server_timeout: 20
+      default_nav_to_pose_bt_xml: /opt/ros/kilted/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml

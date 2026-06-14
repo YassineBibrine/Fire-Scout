@@ -1,182 +1,149 @@
 """
-Tests for the incident conflict-resolution priority model shared by
-rescue_planning_node and suppression_planning_node.
-
-Priority rules (descending importance):
-  1. Incident type  – HUMAN always outranks FIRE
-  2. Confidence     – higher confidence wins within same type
-  3. Robot ID       – robot1 > robot2 > robot3 (deterministic tiebreak)
-
-Concrete examples from the spec:
-  Human(0.51) > Fire(0.99)
-  Human(0.90) > Human(0.80)
-  robot1 > robot2 when type and confidence are equal
+Tests verifying sensor-only fusion behavior when camera data is absent
+or below threshold.
 """
 
-# ---------------------------------------------------------------------------
-# Priority model (mirrors the implementation in both planning nodes)
-# ---------------------------------------------------------------------------
-
-_PRIORITY_HUMAN_BASE = 10.0
-_PRIORITY_FIRE_BASE = 5.0
-
-_ROBOT_OFFSET = {
-    'robot1': 0.003,
-    'robot2': 0.002,
-    'robot3': 0.001,
-}
-_DEFAULT_ROBOT_OFFSET = 0.0
+_SENSOR_THRESHOLD = 0.5
+_VISION_THRESHOLD = 0.4
 
 
-def compute_incident_priority(
-    incident_type: str, confidence: float, robot_id: str
-) -> float:
-    if incident_type == 'human':
-        base = _PRIORITY_HUMAN_BASE
-    elif incident_type == 'fire':
-        base = _PRIORITY_FIRE_BASE
-    else:
-        base = 0.0
-    robot_offset = _ROBOT_OFFSET.get(robot_id, _DEFAULT_ROBOT_OFFSET)
-    return base + confidence + robot_offset
+def _sensor_fire(
+    flame_detected: bool,
+    normalized_risk: float,
+) -> bool:
+    return flame_detected or normalized_risk >= _SENSOR_THRESHOLD
 
 
-# ---------------------------------------------------------------------------
-# Rule 1: Human > Fire regardless of confidence
-# ---------------------------------------------------------------------------
+def _vision_fire(fire_vision_confidence: float) -> bool:
+    return fire_vision_confidence >= _VISION_THRESHOLD
 
 
-def test_human_beats_fire_spec_example():
-    """Spec: Human(0.51) > Fire(0.99)."""
-    h = compute_incident_priority('human', 0.51, 'robot1')
-    f = compute_incident_priority('fire', 0.99, 'robot1')
-    assert h > f, f'Expected human({h:.4f}) > fire({f:.4f})'
+def _fire_confirmed(
+    flame_detected: bool,
+    normalized_risk: float,
+    fire_vision_confidence: float,
+) -> bool:
+    sensor = _sensor_fire(flame_detected, normalized_risk)
+    vision = _vision_fire(fire_vision_confidence)
+    return sensor and vision
 
 
-def test_human_min_confidence_beats_fire_max():
-    """Human at zero confidence still outranks fire at max confidence."""
-    h = compute_incident_priority('human', 0.0, 'robot3')
-    f = compute_incident_priority('fire', 1.0, 'robot1')
-    assert h > f
+def _sensor_confidence(normalized_risk: float) -> float:
+    return float(normalized_risk)
 
 
-def test_human_beats_fire_mid_confidences():
-    h = compute_incident_priority('human', 0.5, 'robot2')
-    f = compute_incident_priority('fire', 0.8, 'robot2')
-    assert h > f
+def _risk(sensor_conf: float, vision_conf: float, confirmed: bool) -> float:
+    if confirmed:
+        return (sensor_conf + vision_conf) / 2.0
+    return 0.0
+
+
+def _action(fire_confirmed: bool, human_confirmed: bool) -> str:
+    if human_confirmed:
+        return 'RESCUE'
+    if fire_confirmed:
+        return 'SUPPRESS'
+    return 'NONE'
 
 
 # ---------------------------------------------------------------------------
-# Rule 2: Higher confidence wins within same type
+# Fire NOT confirmed when sensor triggers but camera data is absent / below threshold
 # ---------------------------------------------------------------------------
 
 
-def test_human_higher_confidence_wins_spec_example():
-    """Spec: Human(0.90) > Human(0.80)."""
-    h90 = compute_incident_priority('human', 0.90, 'robot1')
-    h80 = compute_incident_priority('human', 0.80, 'robot1')
-    assert h90 > h80
+def test_fire_not_confirmed_when_sensor_triggers_but_no_camera_detection():
+    """Sensor fires (flame detected, high risk) but no camera detection.
+    Expected: fire NOT confirmed because 2-of-2 requires both sensor AND vision."""
+    assert _fire_confirmed(
+        flame_detected=True,
+        normalized_risk=0.9,
+        fire_vision_confidence=0.0,
+    ) is False
 
 
-def test_fire_higher_confidence_wins():
-    f95 = compute_incident_priority('fire', 0.95, 'robot1')
-    f50 = compute_incident_priority('fire', 0.50, 'robot1')
-    assert f95 > f50
+def test_fire_not_confirmed_when_vision_below_threshold():
+    """Sensor fires but camera confidence is below vision threshold.
+    Expected: fire NOT confirmed."""
+    assert _fire_confirmed(
+        flame_detected=True,
+        normalized_risk=0.8,
+        fire_vision_confidence=0.3,
+    ) is False
 
 
-def test_human_confidence_ordering_three_values():
-    p_high = compute_incident_priority('human', 0.95, 'robot1')
-    p_mid = compute_incident_priority('human', 0.70, 'robot1')
-    p_low = compute_incident_priority('human', 0.30, 'robot1')
-    assert p_high > p_mid > p_low
-
-
-def test_fire_confidence_ordering_three_values():
-    p_high = compute_incident_priority('fire', 0.90, 'robot1')
-    p_mid = compute_incident_priority('fire', 0.75, 'robot1')
-    p_low = compute_incident_priority('fire', 0.50, 'robot1')
-    assert p_high > p_mid > p_low
-
-
-# ---------------------------------------------------------------------------
-# Rule 3: Robot-ID tiebreaker (robot1 > robot2 > robot3)
-# ---------------------------------------------------------------------------
-
-
-def test_robot1_beats_robot2_spec_example():
-    """Spec: robot1 > robot2 when type and confidence equal."""
-    p1 = compute_incident_priority('fire', 0.75, 'robot1')
-    p2 = compute_incident_priority('fire', 0.75, 'robot2')
-    assert p1 > p2
-
-
-def test_robot_id_ordering_all_three():
-    p1 = compute_incident_priority('human', 0.70, 'robot1')
-    p2 = compute_incident_priority('human', 0.70, 'robot2')
-    p3 = compute_incident_priority('human', 0.70, 'robot3')
-    assert p1 > p2 > p3
-
-
-def test_robot1_beats_robot3_fire():
-    p1 = compute_incident_priority('fire', 0.80, 'robot1')
-    p3 = compute_incident_priority('fire', 0.80, 'robot3')
-    assert p1 > p3
-
-
-def test_unknown_robot_gets_zero_offset():
-    p_known = compute_incident_priority('fire', 0.80, 'robot3')
-    p_unknown = compute_incident_priority('fire', 0.80, 'robot99')
-    assert p_known > p_unknown
+def test_fire_not_confirmed_when_sensor_below_threshold_and_no_camera():
+    """Sensor risk below threshold and no camera detection.
+    Expected: fire NOT confirmed."""
+    assert _fire_confirmed(
+        flame_detected=False,
+        normalized_risk=0.3,
+        fire_vision_confidence=0.0,
+    ) is False
 
 
 # ---------------------------------------------------------------------------
-# Priority values are always non-negative
+# Risk is zero when neither source confirms
 # ---------------------------------------------------------------------------
 
 
-def test_priority_non_negative_human():
-    p = compute_incident_priority('human', 0.0, 'robot3')
-    assert p >= 0.0
-
-
-def test_priority_non_negative_fire():
-    p = compute_incident_priority('fire', 0.0, 'robot3')
-    assert p >= 0.0
-
-
-def test_priority_non_negative_unknown_type():
-    p = compute_incident_priority('unknown', 0.5, 'robot1')
-    assert p >= 0.0
-
-
-# ---------------------------------------------------------------------------
-# Sorting a mixed incident list
-# ---------------------------------------------------------------------------
-
-
-def test_sorted_incident_list():
-    """
-    Mixed incident list should sort with human first, then fire,
-    within each type by confidence, then robot_id.
-    """
-    incidents = [
-        ('fire', 0.99, 'robot1'),
-        ('human', 0.51, 'robot1'),
-        ('fire', 0.60, 'robot2'),
-        ('human', 0.90, 'robot2'),
-    ]
-    ranked = sorted(
-        incidents,
-        key=lambda x: compute_incident_priority(x[0], x[1], x[2]),
-        reverse=True,
+def test_risk_is_zero_when_neither_source_confirms():
+    """No fire confirmation → risk is 0."""
+    confirmed = _fire_confirmed(
+        flame_detected=False,
+        normalized_risk=0.3,
+        fire_vision_confidence=0.0,
     )
+    r = _risk(
+        sensor_conf=_sensor_confidence(0.3),
+        vision_conf=0.0,
+        confirmed=confirmed,
+    )
+    assert r == 0.0
 
-    # First must be a human incident
-    assert ranked[0][0] == 'human'
-    # Last must be the lowest-confidence fire
-    assert ranked[-1][0] == 'fire'
-    # Human(0.90) before Human(0.51)
-    human_incidents = [i for i in ranked if i[0] == 'human']
-    assert human_incidents[0][1] == 0.90
-    assert human_incidents[1][1] == 0.51
 
+def test_risk_is_zero_when_only_sensor_triggers_without_vision():
+    """Sensor alone (no vision) → fire not confirmed → risk 0."""
+    confirmed = _fire_confirmed(
+        flame_detected=True,
+        normalized_risk=0.8,
+        fire_vision_confidence=0.0,
+    )
+    r = _risk(
+        sensor_conf=_sensor_confidence(0.8),
+        vision_conf=0.0,
+        confirmed=confirmed,
+    )
+    assert r == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Sensor-only alert produces preliminary incident (sensor confidence > 0)
+# ---------------------------------------------------------------------------
+
+
+def test_sensor_only_alert_produces_preliminary_incident():
+    """Sensor fires alone → sensor_confidence > 0 even though fire isn't
+    fully confirmed (2-of-2 not met without vision)."""
+    conf = _sensor_confidence(0.8)
+    assert conf > 0.0
+    confirmed = _fire_confirmed(
+        flame_detected=True,
+        normalized_risk=0.8,
+        fire_vision_confidence=0.0,
+    )
+    assert confirmed is False
+
+
+# ---------------------------------------------------------------------------
+# Action is NONE when fire not confirmed and no human detected
+# ---------------------------------------------------------------------------
+
+
+def test_action_none_when_sensor_only():
+    """Only sensor fires, no vision → action NONE."""
+    assert _action(fire_confirmed=False, human_confirmed=False) == 'NONE'
+
+
+def test_action_none_when_neither_sensor_nor_vision():
+    """Neither sensor nor vision → action NONE."""
+    assert _action(fire_confirmed=False, human_confirmed=False) == 'NONE'

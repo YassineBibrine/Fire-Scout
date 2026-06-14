@@ -28,6 +28,8 @@ def generate_launch_description():
     launch_profile = LaunchConfiguration('launch_profile')
     model_path = LaunchConfiguration('model_path')
     include_response = LaunchConfiguration('include_response')
+    enable_nav2 = LaunchConfiguration('enable_nav2')
+    enable_fire_suppression = LaunchConfiguration('enable_fire_suppression')
 
     def _prepare_rviz_config(context, *args, **kwargs):
         source = rviz_config.perform(context)
@@ -120,8 +122,18 @@ def generate_launch_description():
     )
     include_response_arg = DeclareLaunchArgument(
         'include_response',
-        default_value='false',
+        default_value='true',
         description='Include response pipeline inside robot_stack when true.',
+    )
+    enable_nav2_arg = DeclareLaunchArgument(
+        'enable_nav2',
+        default_value='false',
+        description='Launch Nav2 for each robot when true.',
+    )
+    enable_fire_suppression_arg = DeclareLaunchArgument(
+        'enable_fire_suppression',
+        default_value='true',
+        description='Remove Gazebo fire entities when robots reach fire incidents.',
     )
     global_stack = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -149,7 +161,33 @@ def generate_launch_description():
         condition=IfCondition(simulation),
         launch_arguments={
             'start_paused': start_paused,
+            'world_name': world_name,
+            'enable_fire_suppression': 'false',
         }.items(),
+    )
+
+    fire_suppression_node = TimerAction(
+        period=8.0,
+        actions=[Node(
+            package='simulation',
+            executable='fire_suppression_sim_node.py',
+            name='fire_suppression_sim_node',
+            output='screen',
+            condition=IfCondition(enable_fire_suppression),
+            parameters=[{
+                'world_name': world_name,
+                'robot_ids': ['robot1', 'robot2', 'robot3'],
+                'suppression_radius_m': 2.5,
+                'fire_match_radius_m': 4.0,
+                'gz_timeout_ms': 5000,
+                'allow_any_robot_to_suppress': False,
+                'auto_suppress_on_detection_robot_ids': ['robot1'],
+                'auto_suppress_on_detection_model_names': ['fire_entity'],
+                'auto_suppress_when_close_model_names': ['fire_entity'],
+                'auto_suppress_when_close_radius_m': 5.0,
+                'use_sim_time': use_sim_time,
+            }],
+        )],
     )
 
     robot_groups = []
@@ -176,6 +214,7 @@ def generate_launch_description():
                 'use_sim_time': use_sim_time,
                 'world_name': world_name,
                 'include_response': 'false',
+                'enable_nav2': enable_nav2,
                 'launch_profile': launch_profile,
                 'model_path': model_path,
             }.items(),
@@ -197,19 +236,19 @@ def generate_launch_description():
         )
         robot_groups.append(
             TimerAction(
-                period=8.0 + 4.0 * index,
+                period=15.0 + 4.0 * index,
                 actions=[robot_stack],
             )
         )
         hybrid_groups.append(
             TimerAction(
-                period=8.0 + 4.0 * index,
+                period=15.0 + 4.0 * index,
                 actions=[hybrid_pipeline],
             )
         )
 
     rviz_node = TimerAction(
-        period=22.0,   # last robot spawns at 8+4*2=16 s; allow extra margin
+        period=29.0,   # last robot spawns at 15+4*2=23 s; allow extra margin
         actions=[Node(
             package='rviz2',
             executable='rviz2',
@@ -230,7 +269,10 @@ def generate_launch_description():
         launch_profile_arg,
         model_path_arg,
         include_response_arg,
+        enable_nav2_arg,
+        enable_fire_suppression_arg,
         simulation_world,
+        fire_suppression_node,
         global_stack,
         *robot_groups,
         *hybrid_groups,

@@ -78,7 +78,7 @@ class DummyFrontierPub(Node):
 
         msg = FrontierArray()
         msg.robot_id = self.robot_id
-        msg.stamp = self.get_clock().now().to_msg()
+        msg.timestamp = self.get_clock().now().to_msg()
         msg.frontiers = [f1, f2]
 
         self.publisher_.publish(msg)
